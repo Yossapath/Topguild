@@ -406,19 +406,21 @@ function renderRoster() {
   const filteredRoster = {};
 
   Object.keys(guildRoster).forEach(job => {
-    let list = (guildRoster[job] || []).filter(m => {
-      if (!rosterSearchQuery) return true;
-      return m.name.toLowerCase().includes(rosterSearchQuery.toLowerCase());
-    });
-
-    // Dedupe & Sort
+    const rawList = Array.isArray(guildRoster[job]) ? guildRoster[job] : [];
     const seen = new Set();
-    list = list.filter(m => {
-      const k = m.name.trim().toLowerCase();
+
+    const list = rawList.filter(m => {
+      if (!m || !m.name) return false;
+      const mName = String(m.name).trim();
+      if (!mName) return false;
+      if (rosterSearchQuery && !mName.toLowerCase().includes(rosterSearchQuery.toLowerCase())) {
+        return false;
+      }
+      const k = mName.toLowerCase();
       if (seen.has(k)) return false;
       seen.add(k);
       return true;
-    }).sort((a, b) => (b.power || 0) - (a.power || 0));
+    }).sort((a, b) => (Number(b.power) || 0) - (Number(a.power) || 0));
 
     filteredRoster[job] = list;
     totalMembers += list.length;
