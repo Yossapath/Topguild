@@ -35,6 +35,45 @@
   --job-druid: #41b388;
 }
 
+/* Dark Mode System */
+[data-theme="dark"] {
+  --bg: #0b1324;
+  --bg-soft: #141f36;
+  --surface: #1b2845;
+  --surface-border: #2a3e66;
+  --blue-900: #e2e8f0;
+  --blue-700: #60a5fa;
+  --blue-500: #3b82f6;
+  --blue-300: #93c5fd;
+  --blue-100: #1e3a8a;
+  --line: #2a3e66;
+  --text-hi: #f1f5f9;
+  --text-lo: #94a3b8;
+  --accent: #14b8a6;
+  --accent-light: #134e48;
+}
+
+[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(59, 130, 246, 0.15), transparent 50%),
+    radial-gradient(ellipse at 100% 10%, rgba(20, 184, 166, 0.12), transparent 45%),
+    var(--bg);
+}
+
+/* Job Select Style Mode Overrides */
+[data-job-style="outline"] select.job-input {
+  background-color: var(--surface) !important;
+  color: var(--job-color, var(--text-hi)) !important;
+  border: 1.5px solid var(--job-color, var(--line)) !important;
+  box-shadow: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%2364748b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+}
+
+[data-theme="dark"][data-job-style="outline"] select.job-input {
+  background-color: var(--surface) !important;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%2394a3b8' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap');
 
 * {
