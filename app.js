@@ -93,8 +93,8 @@ const JOB_LIST = [
   "Gunslinger", "Druid"
 ];
 
-/* App State */
-let guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
+/* App State - Firebase Only (no LocalStorage) */
+let guildRoster = {};
 let teamsAssignments = {}; // slotKey -> {name, job, power} | null
 let occupiedMap = new Map(); // lowerName -> slotKey
 let rowJobFilter = {};
@@ -218,187 +218,113 @@ function serializeTeamsState() {
   });
 }
 
-/* LocalStorage Sync & Save */
-function loadFromLocalStorage() {
-  try {
-    const localRoster = localStorage.getItem('guild_roster');
-    const localTeams = localStorage.getItem('guild_teams');
-
-    if (localRoster) {
-      const parsedRoster = JSON.parse(localRoster);
-      if (parsedRoster && typeof parsedRoster === 'object' && Object.keys(parsedRoster).length > 0) {
-        guildRoster = parsedRoster;
-      } else {
-        guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
-      }
-    } else {
-      guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
-    }
-
-    if (localTeams) {
-      const teamsData = JSON.parse(localTeams);
-      if (Array.isArray(teamsData) && teamsData.length > 0) {
-        initTeamStructure(teamsData);
-      } else {
-        initTeamStructure(INITIAL_TEAMS);
-      }
-    } else {
-      initTeamStructure(INITIAL_TEAMS);
-    }
-  } catch (e) {
-    console.error("Failed to load local storage:", e);
-    guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
-    initTeamStructure(INITIAL_TEAMS);
-  }
-}
-
+/* Save to Firebase only - no LocalStorage */
 function saveState() {
-  try {
-    localStorage.setItem('guild_roster', JSON.stringify(guildRoster));
-    localStorage.setItem('guild_teams', JSON.stringify(serializeTeamsState()));
-  } catch (e) {}
-
   renderAll();
 
   if (isFirebaseActive && db) {
-    // Save to Firebase Firestore Cloud DB
     const rosterDoc = doc(db, 'guild_system', 'roster');
     const teamsDoc = doc(db, 'guild_system', 'teams');
-    const serializedTeams = serializeTeamsState();
-
     Promise.all([
       setDoc(rosterDoc, { data: guildRoster }),
-      setDoc(teamsDoc, { data: serializedTeams })
+      setDoc(teamsDoc, { data: serializeTeamsState() })
     ]).then(() => {
       showToast("บันทึกข้อมูลไปยัง Firebase สำเร็จ", "success");
     }).catch(err => {
       console.error("Firestore Save Error:", err);
-      showToast("เกิดข้อผิดพลาดในการบันทึกไปยัง Firebase: " + err.message, "error");
+      showToast("เกิดข้อผิดพลาดในการบันทึก: " + err.message, "error");
     });
   }
 }
 
-/* Save to LocalStorage only (used by Firebase listener to cache data locally) */
-function saveToLocalStorage() {
-  try {
-    localStorage.setItem('guild_roster', JSON.stringify(guildRoster));
-    localStorage.setItem('guild_teams', JSON.stringify(serializeTeamsState()));
-  } catch (e) {
-    console.error("saveToLocalStorage error:", e);
-  }
-}
-
-/* Firebase Connection Setup & Listeners */
+/* Firebase Connection Setup & Listeners - Firebase Only Mode */
 async function setupFirebase(configObj) {
-  // Synchronously update UI status immediately
-  updateStatusUI('connecting', 'กำลังเชื่อมต่อ Firebase Cloud Database (' + (configObj.projectId || 'topguild-eeb40') + ')...');
+  updateStatusUI('connecting', 'กำลังเชื่อมต่อ Firebase Cloud Database (' + configObj.projectId + ')...');
 
   try {
-    if (unsubRosterListener) unsubRosterListener();
-    if (unsubTeamsListener) unsubTeamsListener();
-
-    // Safely delete existing app instance to prevent duplicate-app errors
+    // Tear down old listeners & app
+    if (unsubRosterListener) { try { unsubRosterListener(); } catch(e){} }
+    if (unsubTeamsListener)  { try { unsubTeamsListener();  } catch(e){} }
     const existingApps = getApps();
-    if (existingApps.length > 0) {
-      try {
-        await deleteApp(existingApps[0]);
-      } catch (e) {}
-    }
+    if (existingApps.length > 0) { try { await deleteApp(existingApps[0]); } catch(e){} }
 
-    const app = initializeApp(configObj);
-    db = getFirestore(app);
+    const firebaseApp = initializeApp(configObj);
+    db = getFirestore(firebaseApp);
     isFirebaseActive = true;
 
-    // Firestore Listeners
     const rosterDocRef = doc(db, 'guild_system', 'roster');
-    const teamsDocRef = doc(db, 'guild_system', 'teams');
+    const teamsDocRef  = doc(db, 'guild_system', 'teams');
 
-    let isConnected = false;
-    const markConnected = () => {
-      if (!isConnected) {
-        isConnected = true;
-        updateStatusUI('online', 'เชื่อมต่อ Firebase Cloud Database (' + (configObj.projectId || 'topguild-eeb40') + ') Active 🟢');
-      }
+    // Helper: convert docSnap → roster object
+    const toRoster = (snap) => {
+      if (!snap.exists()) return null;
+      const d = snap.data();
+      // stored as { data: { "Lord Knight": [...], ... } }
+      if (d && d.data && typeof d.data === 'object' && !Array.isArray(d.data)) return d.data;
+      return null;
     };
 
-    const extractRosterData = (docSnap) => {
-      if (!docSnap.exists() || !docSnap.data()) return {};
-      const data = docSnap.data();
-      if (data.data && typeof data.data === 'object') return data.data;
-      if (typeof data === 'object') return data;
-      return {};
+    // Helper: convert docSnap → teams array
+    const toTeams = (snap) => {
+      if (!snap.exists()) return null;
+      const d = snap.data();
+      if (d && Array.isArray(d.data) && d.data.length > 0) return d.data;
+      return null;
     };
 
-    const extractTeamsData = (docSnap) => {
-      if (!docSnap.exists() || !docSnap.data()) return [];
-      const data = docSnap.data();
-      if (Array.isArray(data.data)) return data.data;
-      if (Array.isArray(data)) return data;
-      return [];
-    };
+    // Step 1: Fetch once immediately (getDoc is HTTP, always works)
+    updateStatusUI('connecting', 'กำลังดึงข้อมูลจาก Firebase...');
+    const [rSnap, tSnap] = await Promise.all([
+      getDoc(rosterDocRef),
+      getDoc(teamsDocRef)
+    ]);
 
-    // 1. Direct Immediate HTTP Fetch (Fast & AdBlocker resistant)
-    try {
-      const [rSnap, tSnap] = await Promise.all([
-        getDoc(rosterDocRef),
-        getDoc(teamsDocRef)
-      ]);
-      markConnected();
-      const rData = extractRosterData(rSnap);
-      const tData = extractTeamsData(tSnap);
+    updateStatusUI('online', 'เชื่อมต่อ Firebase Cloud Database (' + configObj.projectId + ') Active 🟢');
 
-      if (rData && Object.keys(rData).length > 0) {
-        guildRoster = rData;
-      }
-      if (tData && tData.length > 0) {
-        initTeamStructure(tData);
-      }
-      saveToLocalStorage();
-      renderAll();
-    } catch (e) {
-      console.warn("Direct getDoc fetch warning:", e);
+    const rosterData = toRoster(rSnap);
+    const teamsData  = toTeams(tSnap);
+
+    if (rosterData) {
+      guildRoster = rosterData;
+    } else {
+      guildRoster = {};
     }
 
-    // 2. Real-time Live Listener (onSnapshot)
-    unsubRosterListener = onSnapshot(rosterDocRef, (docSnap) => {
-      markConnected();
-      const rData = extractRosterData(docSnap);
-      if (rData && Object.keys(rData).length > 0) {
-        guildRoster = rData;
-        saveToLocalStorage();
+    if (teamsData) {
+      initTeamStructure(teamsData);
+    } else {
+      initTeamStructure([]);
+    }
+
+    renderAll();
+
+    // Step 2: Real-time listener for live updates
+    unsubRosterListener = onSnapshot(rosterDocRef, (snap) => {
+      const r = toRoster(snap);
+      if (r) {
+        guildRoster = r;
         renderAll();
       }
     }, (err) => {
-      console.error("Roster snapshot error:", err);
-      isFirebaseActive = false;
-      if (err.code === 'permission-denied' || (err.message && err.message.includes('permission'))) {
-        updateStatusUI('local', 'Firebase Access Denied: ต้องเปิดสิทธิ์ Rules ใน Firebase Console');
-        showToast("⚠️ Firebase Permission Denied: กรุณาไปที่ Firebase Console > Firestore Database > Rules แล้วแก้เป็น allow read, write: if true;", "error");
-      } else {
-        updateStatusUI('local', 'การเชื่อมต่อ Firebase ขัดข้อง (ใช้ LocalStorage)');
-        showToast("เกิดข้อผิดพลาดในการฟังข้อมูล Firestore: " + err.message, "error");
-      }
+      console.error("Roster listener error:", err);
     });
 
-    unsubTeamsListener = onSnapshot(teamsDocRef, (docSnap) => {
-      markConnected();
-      const tData = extractTeamsData(docSnap);
-      if (tData && tData.length > 0) {
-        initTeamStructure(tData);
-        saveToLocalStorage();
+    unsubTeamsListener = onSnapshot(teamsDocRef, (snap) => {
+      const t = toTeams(snap);
+      if (t) {
+        initTeamStructure(t);
         renderAll();
       }
     }, (err) => {
-      console.error("Teams snapshot error:", err);
+      console.error("Teams listener error:", err);
     });
 
   } catch (err) {
     console.error("Firebase init failed:", err);
     isFirebaseActive = false;
-    updateStatusUI('local', 'การเชื่อมต่อ Firebase ล้มเหลว (ใช้ LocalStorage)');
-    loadFromLocalStorage();
+    updateStatusUI('local', 'การเชื่อมต่อ Firebase ล้มเหลว: ' + err.message);
+    showToast("Firebase เชื่อมต่อไม่สำเร็จ: " + err.message, "error");
     renderAll();
-    showToast("รูปแบบ Firebase Config ไม่ถูกต้อง: " + err.message, "error");
   }
 }
 
@@ -1587,16 +1513,14 @@ function initApp() {
     });
   }
 
-  // Always load from local storage and render immediately so page is never blank
-  loadFromLocalStorage();
-  renderAll();
+  // Firebase Only Mode: render empty first, then Firebase will fill data
+  guildRoster = {};
+  initTeamStructure([]);
+  renderAll(); // shows loading state
 
-  // Automatic Default Firebase Cloud Connection (No manual setup required)
-  const configToUse = DEFAULT_FIREBASE_CONFIG;
-  localStorage.setItem('firebase_config_json', JSON.stringify(DEFAULT_FIREBASE_CONFIG, null, 2));
-
+  // Connect to Firebase (data will render automatically when fetched)
   try {
-    setupFirebase(configToUse);
+    setupFirebase(DEFAULT_FIREBASE_CONFIG);
   } catch (err) {
     console.error("Firebase auto-connect error:", err);
   }
@@ -1735,8 +1659,9 @@ function handleDisconnectFirebase() {
   if (unsubTeamsListener) unsubTeamsListener();
   isFirebaseActive = false;
   db = null;
-  updateStatusUI('local', 'LocalStorage (โหมดส่วนตัว/ยังไม่ได้เชื่อม Firebase)');
-  loadFromLocalStorage();
+  guildRoster = {};
+  initTeamStructure([]);
+  updateStatusUI('local', 'ยกเลิกการเชื่อมต่อ Firebase แล้ว');
   renderAll();
   showToast("ยกเลิกการเชื่อมต่อ Firebase แล้ว", "info");
 }
