@@ -66,7 +66,7 @@ const INITIAL_TEAMS = [
 
 /* Default Firebase Cloud Database Config */
 const DEFAULT_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyXPFxhSLBt9dQqf5glFrXvx6KLxqPmEE8",
+  apiKey: "AIzaSyBXPfxhSLBt9dQqf5glFrXvx6KLxqPmEE8",
   authDomain: "topguild-eeb40.firebaseapp.com",
   projectId: "topguild-eeb40",
   storageBucket: "topguild-eeb40.firebasestorage.app",
@@ -281,8 +281,18 @@ async function setupFirebase(configObj) {
 
     updateStatusUI('online', 'เชื่อมต่อ Firebase Cloud Database (' + configObj.projectId + ') Active 🟢');
 
+    console.log('[Firebase] rSnap.exists()=', rSnap.exists(), '| tSnap.exists()=', tSnap.exists());
+    if (rSnap.exists()) {
+      const raw = rSnap.data();
+      console.log('[Firebase] roster raw keys:', Object.keys(raw));
+      if (raw.data) console.log('[Firebase] roster data keys:', Object.keys(raw.data));
+    }
+
     const rosterData = toRoster(rSnap);
     const teamsData  = toTeams(tSnap);
+
+    console.log('[Firebase] rosterData:', rosterData ? Object.keys(rosterData) : null);
+    console.log('[Firebase] teamsData length:', teamsData ? teamsData.length : null);
 
     if (rosterData) {
       guildRoster = rosterData;
@@ -296,6 +306,7 @@ async function setupFirebase(configObj) {
       initTeamStructure([]);
     }
 
+    console.log('[Firebase] guildRoster keys after set:', Object.keys(guildRoster));
     renderAll();
 
     // Step 2: Real-time listener for live updates
