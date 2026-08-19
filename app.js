@@ -303,12 +303,14 @@ async function setupFirebase(configObj) {
 
     unsubRosterListener = onSnapshot(rosterDocRef, (docSnap) => {
       markConnected();
-      if (docSnap.exists() && docSnap.data().data && Object.keys(docSnap.data().data).length > 0) {
+      if (docSnap.exists() && docSnap.data() && docSnap.data().data && Object.keys(docSnap.data().data).length > 0) {
         guildRoster = docSnap.data().data;
+        saveToLocalStorage();
         renderAll();
       } else {
         // Auto-seed default roster if empty in Firestore
         guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
+        saveToLocalStorage();
         renderAll();
         setDoc(rosterDocRef, { data: guildRoster }).catch(e => console.error("SetDoc roster err:", e));
       }
@@ -326,12 +328,14 @@ async function setupFirebase(configObj) {
 
     unsubTeamsListener = onSnapshot(teamsDocRef, (docSnap) => {
       markConnected();
-      if (docSnap.exists() && docSnap.data().data && docSnap.data().data.length > 0) {
+      if (docSnap.exists() && docSnap.data() && docSnap.data().data && docSnap.data().data.length > 0) {
         initTeamStructure(docSnap.data().data);
+        saveToLocalStorage();
         renderAll();
       } else {
         // Auto-seed default teams if empty in Firestore
         initTeamStructure(INITIAL_TEAMS);
+        saveToLocalStorage();
         renderAll();
         setDoc(teamsDocRef, { data: serializeTeamsState() }).catch(e => console.error("SetDoc teams err:", e));
       }
@@ -1528,19 +1532,8 @@ function initApp() {
   renderAll();
 
   // Automatic Default Firebase Cloud Connection (No manual setup required)
-  let configToUse = DEFAULT_FIREBASE_CONFIG;
-  const savedConfigStr = localStorage.getItem('firebase_config_json');
-  if (savedConfigStr) {
-    try {
-      const parsed = JSON.parse(savedConfigStr);
-      if (parsed && parsed.apiKey) configToUse = parsed;
-    } catch (e) {}
-  }
-
-  const configInput = document.getElementById('firebaseConfigInput');
-  if (configInput) {
-    configInput.value = JSON.stringify(configToUse, null, 2);
-  }
+  const configToUse = DEFAULT_FIREBASE_CONFIG;
+  localStorage.setItem('firebase_config_json', JSON.stringify(DEFAULT_FIREBASE_CONFIG, null, 2));
 
   try {
     setupFirebase(configToUse);
