@@ -1038,11 +1038,12 @@ select.name-input {
 
 select.job-input {
   text-align: center;
+  text-align-last: center;
   border-radius: 20px;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 11.5px;
-  padding: 5px 22px 5px 10px;
+  padding: 5px 22px 5px 12px;
   background-color: var(--job-color, var(--blue-500)) !important;
   border: 1.5px solid var(--job-color, var(--blue-500)) !important;
   color: #ffffff !important;
@@ -1050,13 +1051,17 @@ select.job-input {
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   transition: all 0.18s ease;
   cursor: pointer;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 6px center;
-  background-size: 16px;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-position: calc(100% - 6px) center !important;
+  background-size: 14px !important;
+}
+
+select.job-input::-ms-expand {
+  display: none !important;
 }
 
 select.job-input.empty {
@@ -1065,7 +1070,7 @@ select.job-input.empty {
   color: var(--text-lo) !important;
   font-weight: 600;
   box-shadow: none;
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%2364748b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%2364748b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") !important;
 }
 
 select.job-input option {
