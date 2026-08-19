@@ -37,29 +37,41 @@
 
 /* Deep Obsidian Pitch-Black Dark Mode System */
 [data-theme="dark"] {
-  --bg: #0d0d0e;
-  --bg-soft: #141416;
-  --surface: #18181c;
-  --surface-border: #26262e;
-  --blue-900: #f4f4f5;
-  --blue-700: #3b82f6;
-  --blue-500: #2563eb;
+  --bg: #09090b;
+  --bg-soft: #121215;
+  --surface: #17171c;
+  --surface-border: #22222a;
+  --blue-900: #e4e4e7;
+  --blue-700: #2563eb;
+  --blue-500: #1d4ed8;
   --blue-300: #60a5fa;
-  --blue-100: #1e293b;
-  --line: #26262e;
+  --blue-100: #182238;
+  --line: #22222a;
   --text-hi: #f4f4f5;
-  --text-lo: #a1a1aa;
-  --accent: #14b8a6;
-  --accent-light: #064e3b;
-  --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
+  --text-lo: #71717a;
+  --accent: #0f766e;
+  --accent-light: #042f2e;
+  --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.85);
+
+  /* Muted Job Colors for True Dark Mode */
+  --job-lk: #7f1d1d;
+  --job-paladin: #7c2d12;
+  --job-hw: #1e3a8a;
+  --job-sniper: #713f12;
+  --job-priest: #14532d;
+  --job-champ: #042f2e;
+  --job-sin: #4c1d95;
+  --job-merch: #831843;
+  --job-gun: #451a03;
+  --job-druid: #064e3b;
 }
 
 [data-theme="dark"] body {
-  background: #0d0d0e !important;
+  background: #09090b !important;
   color: #f4f4f5 !important;
 }
 
-/* Deep Dark Mode Element Overrides */
+/* True Deep Dark Element Overrides */
 [data-theme="dark"] .summary-total-card,
 [data-theme="dark"] .summary-job-card,
 [data-theme="dark"] .team-card,
@@ -71,44 +83,77 @@
 [data-theme="dark"] .team-search-bar-container,
 [data-theme="dark"] .main-tab-btn,
 [data-theme="dark"] .field-tab-btn {
-  background-color: #18181c !important;
-  border-color: #26262e !important;
+  background-color: #141418 !important;
+  border-color: #22222a !important;
   color: #f4f4f5 !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.8) !important;
 }
 
 [data-theme="dark"] .main-tab-btn.active,
 [data-theme="dark"] .field-tab-btn.active {
-  background-color: var(--blue-700) !important;
-  color: #ffffff !important;
+  background-color: #1e3a8a !important;
+  color: #93c5fd !important;
+  border-color: #2563eb !important;
+}
+
+[data-theme="dark"] .summary-job-card {
+  background: #111115 !important;
+}
+
+[data-theme="dark"] .summary-job-count {
+  background: #1c1c24 !important;
+  color: #e4e4e7 !important;
+}
+
+[data-theme="dark"] .team-card-head {
+  background: #181820 !important;
+  border-bottom: 1px solid #22222a !important;
 }
 
 [data-theme="dark"] .team-table th {
-  background: #141416 !important;
-  color: #a1a1aa !important;
-  border-bottom-color: #26262e !important;
+  background: #111115 !important;
+  color: #71717a !important;
+  border-bottom-color: #22222a !important;
 }
 
 [data-theme="dark"] .team-table td {
-  border-bottom-color: #222226 !important;
+  border-bottom-color: #1c1c22 !important;
 }
 
 [data-theme="dark"] select.cell-input.name-input,
 [data-theme="dark"] input.power-input,
 [data-theme="dark"] .team-search-input,
 [data-theme="dark"] .form-control {
-  background-color: #141416 !important;
+  background-color: #111115 !important;
   color: #f4f4f5 !important;
-  border-color: #2b2b36 !important;
+  border-color: #22222a !important;
 }
 
 [data-theme="dark"] select.cell-input.name-input option {
-  background-color: #18181c !important;
+  background-color: #141418 !important;
   color: #f4f4f5 !important;
 }
 
+[data-theme="dark"] .status-badge.ok {
+  background: #064e3b !important;
+  color: #6ee7b7 !important;
+  border-color: #047857 !important;
+}
+
+[data-theme="dark"] .status-badge.warn {
+  background: #451a03 !important;
+  color: #fcd34d !important;
+  border-color: #78350f !important;
+}
+
+[data-theme="dark"] .sidebar-head {
+  background: #450a0a !important;
+  color: #fca5a5 !important;
+  border-bottom: 1px solid #7f1d1d !important;
+}
+
 [data-theme="dark"] .missing-row {
-  border-bottom-color: #222226 !important;
+  border-bottom-color: #1c1c22 !important;
 }
 
 [data-theme="dark"] .missing-row .mm-name {
@@ -116,7 +161,28 @@
 }
 
 [data-theme="dark"] .missing-row .mm-job {
+  color: #71717a !important;
+}
+
+[data-theme="dark"] .btn-primary {
+  background: #0f766e !important;
+  color: #e6fffa !important;
+  box-shadow: none !important;
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background: #115e59 !important;
+}
+
+[data-theme="dark"] .btn-secondary {
+  background: #181820 !important;
+  border-color: #2b2b36 !important;
   color: #a1a1aa !important;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background: #22222e !important;
+  color: #f4f4f5 !important;
 }
 
 /* Job Select Style Mode Overrides */
