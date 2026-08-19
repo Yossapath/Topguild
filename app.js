@@ -93,7 +93,7 @@ const JOB_LIST = [
 ];
 
 /* App State */
-let guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
+let guildRoster = {};
 let teamsAssignments = {}; // slotKey -> {name, job, power} | null
 let occupiedMap = new Map(); // lowerName -> slotKey
 let rowJobFilter = {};
@@ -302,35 +302,26 @@ async function setupFirebase(configObj) {
     };
 
     const extractRosterData = (docSnap) => {
-      if (!docSnap.exists() || !docSnap.data()) return null;
+      if (!docSnap.exists() || !docSnap.data()) return {};
       const data = docSnap.data();
-      if (data.data && typeof data.data === 'object' && Object.keys(data.data).length > 0) return data.data;
-      if (typeof data === 'object' && Object.keys(data).length > 0 && (data['Lord Knight'] || data['Paladin'] || data['Priest'])) return data;
-      return null;
+      if (data.data && typeof data.data === 'object') return data.data;
+      if (typeof data === 'object') return data;
+      return {};
     };
 
     const extractTeamsData = (docSnap) => {
-      if (!docSnap.exists() || !docSnap.data()) return null;
+      if (!docSnap.exists() || !docSnap.data()) return [];
       const data = docSnap.data();
-      if (Array.isArray(data.data) && data.data.length > 0) return data.data;
-      if (Array.isArray(data) && data.length > 0) return data;
-      return null;
+      if (Array.isArray(data.data)) return data.data;
+      if (Array.isArray(data)) return data;
+      return [];
     };
 
     unsubRosterListener = onSnapshot(rosterDocRef, (docSnap) => {
       markConnected();
-      const extracted = extractRosterData(docSnap);
-      if (extracted) {
-        guildRoster = extracted;
-        saveToLocalStorage();
-        renderAll();
-      } else {
-        // Auto-seed default roster if empty in Firestore
-        guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
-        saveToLocalStorage();
-        renderAll();
-        setDoc(rosterDocRef, { data: guildRoster }).catch(e => console.error("SetDoc roster err:", e));
-      }
+      guildRoster = extractRosterData(docSnap);
+      saveToLocalStorage();
+      renderAll();
     }, (err) => {
       console.error("Roster snapshot error:", err);
       isFirebaseActive = false;
@@ -345,18 +336,10 @@ async function setupFirebase(configObj) {
 
     unsubTeamsListener = onSnapshot(teamsDocRef, (docSnap) => {
       markConnected();
-      const extracted = extractTeamsData(docSnap);
-      if (extracted) {
-        initTeamStructure(extracted);
-        saveToLocalStorage();
-        renderAll();
-      } else {
-        // Auto-seed default teams if empty in Firestore
-        initTeamStructure(INITIAL_TEAMS);
-        saveToLocalStorage();
-        renderAll();
-        setDoc(teamsDocRef, { data: serializeTeamsState() }).catch(e => console.error("SetDoc teams err:", e));
-      }
+      const extractedTeams = extractTeamsData(docSnap);
+      initTeamStructure(extractedTeams);
+      saveToLocalStorage();
+      renderAll();
     }, (err) => {
       console.error("Teams snapshot error:", err);
     });
@@ -395,12 +378,6 @@ function renderRoster() {
   const summaryStrip = document.getElementById('summaryStrip');
   const jobGrid = document.getElementById('jobGrid');
   if (!summaryStrip || !jobGrid) return;
-
-  // Auto-restore initial default roster if roster is empty
-  if (getRosterTotalCount(guildRoster) === 0 && !rosterSearchQuery) {
-    guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
-    initTeamStructure(INITIAL_TEAMS);
-  }
 
   let totalMembers = 0;
   const filteredRoster = {};
