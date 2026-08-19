@@ -59,6 +59,15 @@
       if (modal) modal.classList.remove('show');
     }
 
+    function openSettingsPage() {
+      document.querySelectorAll('.main-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+      var settingsBtn = document.querySelector('[data-page="page-settings"]');
+      if (settingsBtn) settingsBtn.classList.add('active');
+      var settingsPage = document.getElementById('page-settings');
+      if (settingsPage) settingsPage.classList.add('active');
+    }
+
     window.applyTheme = applyTheme;
     window.toggleTheme = toggleTheme;
     window.setJobStyle = setJobStyle;
@@ -66,6 +75,7 @@
     window.closeAutoMatchModal = closeAutoMatchModal;
     window.openGuideModal = openGuideModal;
     window.closeGuideModal = closeGuideModal;
+    window.openSettingsPage = openSettingsPage;
 
     document.addEventListener('DOMContentLoaded', function() {
       var savedTheme = localStorage.getItem('guild_app_theme') || 'light';
@@ -90,7 +100,7 @@
       </div>
       <button type="button" class="btn-secondary" id="btnThemeToggle" onclick="toggleTheme()" style="border-color: var(--blue-500); color: var(--blue-700); font-weight: 700; font-size: 12.5px; padding: 5px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px; background: rgba(47,143,214,0.08); box-shadow: 0 2px 6px rgba(47,143,214,0.15);">🌙 ธีมมืด</button>
       <button type="button" class="btn-secondary" id="btnOpenGuideModal" onclick="openGuideModal()" style="border-color: var(--blue-500); color: var(--blue-700); font-weight: 700; font-size: 12.5px; padding: 5px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px; background: rgba(47,143,214,0.08); box-shadow: 0 2px 6px rgba(47,143,214,0.15);">💡 คู่มือการใช้งาน</button>
-      <button class="btn-config-toggle" id="btnConfigToggle">
+      <button type="button" class="btn-config-toggle" id="btnConfigToggle" onclick="openSettingsPage()">
         ⚙️ ตั้งค่า Firebase Cloud Database
       </button>
     </div>
@@ -524,6 +534,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="app.js?v=59"></script>
+<script type="module" src="app.js?v=60"></script>
 </body>
 </html>

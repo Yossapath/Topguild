@@ -1242,13 +1242,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Config Toggle Button in Top Bar
-  document.getElementById('btnConfigToggle').addEventListener('click', () => {
-    document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const settingsBtn = document.querySelector('[data-page="page-settings"]');
-    if (settingsBtn) settingsBtn.classList.add('active');
-    document.getElementById('page-settings').classList.add('active');
-  });
+  const btnConfig = document.getElementById('btnConfigToggle');
+  if (btnConfig) {
+    btnConfig.addEventListener('click', openSettingsPage);
+  }
 
 function getRecommendedMain60Candidates() {
   const masterList = getMasterMemberList();
