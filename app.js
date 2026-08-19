@@ -303,11 +303,13 @@ async function setupFirebase(configObj) {
 
     unsubRosterListener = onSnapshot(rosterDocRef, (docSnap) => {
       markConnected();
-      if (docSnap.exists() && docSnap.data().data) {
+      if (docSnap.exists() && docSnap.data().data && Object.keys(docSnap.data().data).length > 0) {
         guildRoster = docSnap.data().data;
         renderAll();
       } else {
-        // First time initialization in Firestore
+        // Auto-seed default roster if empty in Firestore
+        guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
+        renderAll();
         setDoc(rosterDocRef, { data: guildRoster }).catch(e => console.error("SetDoc roster err:", e));
       }
     }, (err) => {
@@ -324,11 +326,13 @@ async function setupFirebase(configObj) {
 
     unsubTeamsListener = onSnapshot(teamsDocRef, (docSnap) => {
       markConnected();
-      if (docSnap.exists() && docSnap.data().data) {
+      if (docSnap.exists() && docSnap.data().data && docSnap.data().data.length > 0) {
         initTeamStructure(docSnap.data().data);
         renderAll();
       } else {
-        // First time initialization in Firestore
+        // Auto-seed default teams if empty in Firestore
+        initTeamStructure(INITIAL_TEAMS);
+        renderAll();
         setDoc(teamsDocRef, { data: serializeTeamsState() }).catch(e => console.error("SetDoc teams err:", e));
       }
     }, (err) => {
@@ -1688,8 +1692,9 @@ function handleSeedDefaultData() {
   if (confirm("คุณต้องการโหลดข้อมูลเริ่มต้น (Default Guild Data) มาแทนที่ข้อมูลปัจจุบันใช่หรือไม่?")) {
     guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
     initTeamStructure(INITIAL_TEAMS);
+    renderAll();
     saveState();
-    showToast("โหลดข้อมูลเริ่มต้นสำเร็จ", "success");
+    showToast("โหลดข้อมูลเริ่มต้นสำเร็จ 🟢", "success");
   }
 }
 
@@ -1715,6 +1720,7 @@ function handleClearAllData() {
   if (confirm("⚠️ คำเตือน: คุณต้องการลบข้อมูลสมาชิกและการจัดทีมทั้งหมดใช่หรือไม่?")) {
     guildRoster = {};
     initTeamStructure([]);
+    renderAll();
     saveState();
     showToast("ล้างข้อมูลเรียบร้อยแล้ว", "info");
   }
