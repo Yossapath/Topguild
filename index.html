@@ -133,6 +133,7 @@
   <nav class="main-tabs" aria-label="เมนูหลัก">
     <button type="button" class="main-tab-btn active" data-page="page-roster" onclick="switchTab('page-roster')">📋 รายชื่อสมาชิก</button>
     <button type="button" class="main-tab-btn" data-page="page-teams" onclick="switchTab('page-teams')">🛡️ สนามหลัก-สนามรอง</button>
+    <button type="button" class="main-tab-btn" data-page="page-settings" onclick="switchTab('page-settings')">⚙️ ตั้งค่า Firebase & ข้อมูล</button>
   </nav>
 
   <!-- PAGE 1: ROSTER -->
@@ -203,8 +204,8 @@
       </div>
 
       <div class="btn-group">
-        <button class="btn-primary" id="btnSaveFirebaseConfig">💾 บันทึกและเชื่อมต่อ Firebase</button>
-        <button class="btn-secondary" id="btnDisconnectFirebase">🔌 ยกเลิกการเชื่อมต่อ (กลับไปใช้ LocalStorage)</button>
+        <button type="button" class="btn-primary" id="btnSaveFirebaseConfig" onclick="handleSaveFirebaseConfig()">💾 บันทึกและเชื่อมต่อ Firebase</button>
+        <button type="button" class="btn-secondary" id="btnDisconnectFirebase" onclick="handleDisconnectFirebase()">🔌 ยกเลิกการเชื่อมต่อ (กลับไปใช้ LocalStorage)</button>
       </div>
     </div>
 
@@ -213,11 +214,11 @@
       <p class="help-text">คุณสามารถนำเข้า/ส่งออกข้อมูล หรือรีเซ็ตข้อมูลกิลด์กลับเป็นค่าเริ่มต้นได้ที่นี่</p>
       
       <div class="btn-group">
-        <button class="btn-secondary" id="btnSeedDefault">🌱 โหลดข้อมูลเริ่มต้น (Initial Default Data)</button>
-        <button class="btn-secondary" id="btnExportJSON">📥 ส่งออก Backup JSON</button>
-        <button class="btn-secondary" id="btnImportJSON">📤 นำเข้า Backup JSON</button>
+        <button type="button" class="btn-secondary" id="btnSeedDefault" onclick="handleSeedDefaultData()">🌱 โหลดข้อมูลเริ่มต้น (Initial Default Data)</button>
+        <button type="button" class="btn-secondary" id="btnExportJSON" onclick="handleExportJSON()">📥 ส่งออก Backup JSON</button>
+        <button type="button" class="btn-secondary" id="btnImportJSON" onclick="handleImportJSON()">📤 นำเข้า Backup JSON</button>
         <input type="file" id="importFileInput" accept=".json" style="display:none;">
-        <button class="btn-danger" id="btnClearData">🗑️ ล้างข้อมูลทั้งหมด</button>
+        <button type="button" class="btn-danger" id="btnClearData" onclick="handleClearAllData()">🗑️ ล้างข้อมูลทั้งหมด</button>
       </div>
     </div>
   </section>
@@ -551,6 +552,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="app.js?v=61"></script>
+<script type="module" src="app.js?v=62"></script>
 </body>
 </html>

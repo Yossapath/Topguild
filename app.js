@@ -1474,135 +1474,153 @@ window.removeSpecificTeam = removeSpecificTeam;
     }
   }
 
-  document.getElementById('btnSaveFirebaseConfig').addEventListener('click', () => {
-    const rawVal = document.getElementById('firebaseConfigInput').value.trim();
-    if (!rawVal) {
-      showToast("กรุณากรอก Firebase Config", "error");
-      return;
-    }
-    try {
-      let parsed = null;
+  const btnSaveFB = document.getElementById('btnSaveFirebaseConfig');
+  if (btnSaveFB) btnSaveFB.addEventListener('click', handleSaveFirebaseConfig);
 
-      // 1. Try standard JSON.parse first
-      try {
-        parsed = JSON.parse(rawVal);
-      } catch (e) {}
+  const btnDiscFB = document.getElementById('btnDisconnectFirebase');
+  if (btnDiscFB) btnDiscFB.addEventListener('click', handleDisconnectFirebase);
 
-      // 2. Remove import lines and comments before evaluating JS object
-      if (!parsed) {
-        try {
-          const cleaned = rawVal
-            .split('\n')
-            .filter(line => !line.trim().startsWith('import') && !line.trim().startsWith('//'))
-            .join('\n');
+  const btnSeed = document.getElementById('btnSeedDefault');
+  if (btnSeed) btnSeed.addEventListener('click', handleSeedDefaultData);
 
-          const match = cleaned.match(/\{[\s\S]*?apiKey[\s\S]*?\}/);
-          if (match) {
-            parsed = Function(`"use strict"; return (${match[0]});`)();
-          }
-        } catch (e) {}
-      }
+  const btnExport = document.getElementById('btnExportJSON');
+  if (btnExport) btnExport.addEventListener('click', handleExportJSON);
 
-      // 3. Robust Direct Regex Pair Extraction (Immune to any surrounding code/imports)
-      if (!parsed || !parsed.apiKey) {
-        const apiKeyMatch = rawVal.match(/apiKey\s*:\s*["']([^"']+)["']/);
-        const authDomainMatch = rawVal.match(/authDomain\s*:\s*["']([^"']+)["']/);
-        const projectIdMatch = rawVal.match(/projectId\s*:\s*["']([^"']+)["']/);
-        const storageBucketMatch = rawVal.match(/storageBucket\s*:\s*["']([^"']+)["']/);
-        const messagingSenderIdMatch = rawVal.match(/messagingSenderId\s*:\s*["']([^"']+)["']/);
-        const appIdMatch = rawVal.match(/appId\s*:\s*["']([^"']+)["']/);
+  const btnImport = document.getElementById('btnImportJSON');
+  if (btnImport) btnImport.addEventListener('click', handleImportJSON);
 
-        if (apiKeyMatch && apiKeyMatch[1]) {
-          parsed = {
-            apiKey: apiKeyMatch[1],
-            authDomain: authDomainMatch ? authDomainMatch[1] : "",
-            projectId: projectIdMatch ? projectIdMatch[1] : "",
-            storageBucket: storageBucketMatch ? storageBucketMatch[1] : "",
-            messagingSenderId: messagingSenderIdMatch ? messagingSenderIdMatch[1] : "",
-            appId: appIdMatch ? appIdMatch[1] : ""
-          };
-        }
-      }
-
-      if (parsed && parsed.apiKey) {
-        localStorage.setItem('firebase_config_json', JSON.stringify(parsed, null, 2));
-        setupFirebase(parsed);
-      } else {
-        throw new Error("ไม่พบ apiKey หรือค่าในเครื่องหมายคำพูดว่างเปล่า");
-      }
-    } catch (err) {
-      showToast("รูปแบบ Config ไม่ถูกต้อง: " + err.message, "error");
-    }
-  });
-
-  document.getElementById('btnDisconnectFirebase').addEventListener('click', () => {
-    localStorage.removeItem('firebase_config_json');
-    if (unsubRosterListener) unsubRosterListener();
-    if (unsubTeamsListener) unsubTeamsListener();
-    isFirebaseActive = false;
-    db = null;
-    updateStatusUI('local', 'LocalStorage (โหมดส่วนตัว/ยังไม่ได้เชื่อม Firebase)');
-    loadFromLocalStorage();
-    renderAll();
-    showToast("ยกเลิกการเชื่อมต่อ Firebase แล้ว", "info");
-  });
-
-  // Data Management: Seed Default
-  document.getElementById('btnSeedDefault').addEventListener('click', () => {
-    if (confirm("คุณต้องการโหลดข้อมูลเริ่มต้น (Default Guild Data) มาแทนที่ข้อมูลปัจจุบันใช่หรือไม่?")) {
-      guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
-      initTeamStructure(INITIAL_TEAMS);
-      saveState();
-      showToast("โหลดข้อมูลเริ่มต้นสำเร็จ", "success");
-    }
-  });
-
-  // Export JSON
-  document.getElementById('btnExportJSON').addEventListener('click', () => {
-    const payload = {
-      roster: guildRoster,
-      teams: serializeTeamsState()
-    };
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `guild_backup_${new Date().toISOString().slice(0,10)}.json`);
-    dlAnchorElem.click();
-    showToast("ส่งออกไฟล์ Backup เรียบร้อยแล้ว", "success");
-  });
-
-  // Import JSON
   const importInput = document.getElementById('importFileInput');
-  document.getElementById('btnImportJSON').addEventListener('click', () => importInput.click());
-  importInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const parsed = JSON.parse(evt.target.result);
-        if (parsed.roster && parsed.teams) {
-          guildRoster = parsed.roster;
-          initTeamStructure(parsed.teams);
-          saveState();
-          showToast("นำเข้าข้อมูลจากไฟล์ Backup สำเร็จ", "success");
-        } else {
-          showToast("โครงสร้างไฟล์ JSON ไม่ถูกต้อง", "error");
+  if (importInput) {
+    importInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.roster && parsed.teams) {
+            guildRoster = parsed.roster;
+            initTeamStructure(parsed.teams);
+            saveState();
+            showToast("นำเข้าข้อมูลจากไฟล์ Backup สำเร็จ", "success");
+          } else {
+            showToast("โครงสร้างไฟล์ JSON ไม่ถูกต้อง", "error");
+          }
+        } catch (err) {
+          showToast("อ่านไฟล์ JSON ไม่สำเร็จ: " + err.message, "error");
         }
-      } catch (err) {
-        showToast("อ่านไฟล์ JSON ไม่สำเร็จ: " + err.message, "error");
-      }
-    };
-    reader.readAsText(file);
-  });
+      };
+      reader.readAsText(file);
+    });
+  }
 
-  // Clear Data
-  document.getElementById('btnClearData').addEventListener('click', () => {
-    if (confirm("⚠️ คำเตือน: คุณต้องการลบข้อมูลสมาชิกและการจัดทีมทั้งหมดใช่หรือไม่?")) {
-      guildRoster = {};
-      initTeamStructure([]);
-      saveState();
-      showToast("ล้างข้อมูลเรียบร้อยแล้ว", "info");
-    }
-  });
+  const btnClear = document.getElementById('btnClearData');
+  if (btnClear) btnClear.addEventListener('click', handleClearAllData);
 });
+
+function handleSaveFirebaseConfig() {
+  const rawVal = document.getElementById('firebaseConfigInput').value.trim();
+  if (!rawVal) {
+    showToast("กรุณากรอก Firebase Config", "error");
+    return;
+  }
+  try {
+    let parsed = null;
+    try { parsed = JSON.parse(rawVal); } catch (e) {}
+
+    if (!parsed) {
+      try {
+        const cleaned = rawVal
+          .split('\n')
+          .filter(line => !line.trim().startsWith('import') && !line.trim().startsWith('//'))
+          .join('\n');
+        const match = cleaned.match(/\{[\s\S]*?apiKey[\s\S]*?\}/);
+        if (match) parsed = Function(`"use strict"; return (${match[0]});`)();
+      } catch (e) {}
+    }
+
+    if (!parsed || !parsed.apiKey) {
+      const apiKeyMatch = rawVal.match(/apiKey\s*:\s*["']([^"']+)["']/);
+      const authDomainMatch = rawVal.match(/authDomain\s*:\s*["']([^"']+)["']/);
+      const projectIdMatch = rawVal.match(/projectId\s*:\s*["']([^"']+)["']/);
+      const storageBucketMatch = rawVal.match(/storageBucket\s*:\s*["']([^"']+)["']/);
+      const messagingSenderIdMatch = rawVal.match(/messagingSenderId\s*:\s*["']([^"']+)["']/);
+      const appIdMatch = rawVal.match(/appId\s*:\s*["']([^"']+)["']/);
+
+      if (apiKeyMatch && apiKeyMatch[1]) {
+        parsed = {
+          apiKey: apiKeyMatch[1],
+          authDomain: authDomainMatch ? authDomainMatch[1] : "",
+          projectId: projectIdMatch ? projectIdMatch[1] : "",
+          storageBucket: storageBucketMatch ? storageBucketMatch[1] : "",
+          messagingSenderId: messagingSenderIdMatch ? messagingSenderIdMatch[1] : "",
+          appId: appIdMatch ? appIdMatch[1] : ""
+        };
+      }
+    }
+
+    if (parsed && parsed.apiKey) {
+      localStorage.setItem('firebase_config_json', JSON.stringify(parsed, null, 2));
+      setupFirebase(parsed);
+    } else {
+      throw new Error("ไม่พบ apiKey หรือค่าในเครื่องหมายคำพูดว่างเปล่า");
+    }
+  } catch (err) {
+    showToast("รูปแบบ Config ไม่ถูกต้อง: " + err.message, "error");
+  }
+}
+
+function handleDisconnectFirebase() {
+  localStorage.removeItem('firebase_config_json');
+  if (unsubRosterListener) unsubRosterListener();
+  if (unsubTeamsListener) unsubTeamsListener();
+  isFirebaseActive = false;
+  db = null;
+  updateStatusUI('local', 'LocalStorage (โหมดส่วนตัว/ยังไม่ได้เชื่อม Firebase)');
+  loadFromLocalStorage();
+  renderAll();
+  showToast("ยกเลิกการเชื่อมต่อ Firebase แล้ว", "info");
+}
+
+function handleSeedDefaultData() {
+  if (confirm("คุณต้องการโหลดข้อมูลเริ่มต้น (Default Guild Data) มาแทนที่ข้อมูลปัจจุบันใช่หรือไม่?")) {
+    guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
+    initTeamStructure(INITIAL_TEAMS);
+    saveState();
+    showToast("โหลดข้อมูลเริ่มต้นสำเร็จ", "success");
+  }
+}
+
+function handleExportJSON() {
+  const payload = {
+    roster: guildRoster,
+    teams: serializeTeamsState()
+  };
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+  const dlAnchorElem = document.createElement('a');
+  dlAnchorElem.setAttribute("href", dataStr);
+  dlAnchorElem.setAttribute("download", `guild_backup_${new Date().toISOString().slice(0,10)}.json`);
+  dlAnchorElem.click();
+  showToast("ส่งออกไฟล์ Backup เรียบร้อยแล้ว", "success");
+}
+
+function handleImportJSON() {
+  const importInput = document.getElementById('importFileInput');
+  if (importInput) importInput.click();
+}
+
+function handleClearAllData() {
+  if (confirm("⚠️ คำเตือน: คุณต้องการลบข้อมูลสมาชิกและการจัดทีมทั้งหมดใช่หรือไม่?")) {
+    guildRoster = {};
+    initTeamStructure([]);
+    saveState();
+    showToast("ล้างข้อมูลเรียบร้อยแล้ว", "info");
+  }
+}
+
+window.handleSaveFirebaseConfig = handleSaveFirebaseConfig;
+window.handleDisconnectFirebase = handleDisconnectFirebase;
+window.handleSeedDefaultData = handleSeedDefaultData;
+window.handleExportJSON = handleExportJSON;
+window.handleImportJSON = handleImportJSON;
+window.handleClearAllData = handleClearAllData;
