@@ -233,6 +233,13 @@ function loadFromLocalStorage() {
 }
 
 function saveState() {
+  try {
+    localStorage.setItem('guild_roster', JSON.stringify(guildRoster));
+    localStorage.setItem('guild_teams', JSON.stringify(serializeTeamsState()));
+  } catch (e) {}
+
+  renderAll();
+
   if (isFirebaseActive && db) {
     // Save to Firebase Firestore Cloud DB
     const rosterDoc = doc(db, 'guild_system', 'roster');
@@ -248,15 +255,6 @@ function saveState() {
       console.error("Firestore Save Error:", err);
       showToast("เกิดข้อผิดพลาดในการบันทึกไปยัง Firebase: " + err.message, "error");
     });
-  } else {
-    // Save to LocalStorage
-    try {
-      localStorage.setItem('guild_roster', JSON.stringify(guildRoster));
-      localStorage.setItem('guild_teams', JSON.stringify(serializeTeamsState()));
-      renderAll();
-    } catch (e) {
-      showToast("ไม่สามารถบันทึก LocalStorage ได้", "error");
-    }
   }
 }
 
@@ -306,6 +304,8 @@ function setupFirebase(configObj) {
     console.error("Firebase init failed:", err);
     isFirebaseActive = false;
     updateStatusUI('local', 'การเชื่อมต่อ Firebase ล้มเหลว (ใช้ LocalStorage)');
+    loadFromLocalStorage();
+    renderAll();
     showToast("รูปแบบ Firebase Config ไม่ถูกต้อง: " + err.message, "error");
   }
 }
@@ -1462,6 +1462,10 @@ window.removeSpecificTeam = removeSpecificTeam;
     }
   });
 
+  // Always load from local storage and render immediately so page is never blank
+  loadFromLocalStorage();
+  renderAll();
+
   // Firebase Config Form
   const savedConfig = localStorage.getItem('firebase_config_json');
   if (savedConfig) {
@@ -1469,11 +1473,8 @@ window.removeSpecificTeam = removeSpecificTeam;
     try {
       setupFirebase(JSON.parse(savedConfig));
     } catch (e) {
-      loadFromLocalStorage();
+      console.error("Failed to parse saved Firebase config:", e);
     }
-  } else {
-    loadFromLocalStorage();
-    renderAll();
   }
 
   document.getElementById('btnSaveFirebaseConfig').addEventListener('click', () => {
