@@ -542,13 +542,15 @@ function getUnassignedJobCounts() {
 
 function jobSelectHtml(key, selectedJob) {
   const unassignedCounts = getUnassignedJobCounts();
-  let out = `<option value="">— เลือกอาชีพ —</option>`;
+  const cleanSelected = (selectedJob || '').trim();
+
+  let out = `<option value="" ${!cleanSelected ? 'selected' : ''}>— เลือกอาชีพ —</option>`;
   JOB_LIST.forEach(j => {
     const remain = unassignedCounts[j] || 0;
-    const isSelected = selectedJob === j;
+    const isSelected = cleanSelected !== '' && cleanSelected.toLowerCase() === j.toLowerCase();
     // Show only jobs that have remaining players or if currently selected in this row
     if (remain > 0 || isSelected) {
-      // Show pure job name if selected, or remaining count text if unselected in dropdown list
+      // Clean label: selected option ONLY displays pure job name (e.g. "High Wizard"), unselected shows (เหลือ N คน)
       const labelText = isSelected ? escapeHtml(j) : `${escapeHtml(j)} (เหลือ ${remain} คน)`;
       out += `<option value="${escapeHtml(j)}" ${isSelected ? 'selected' : ''}>${labelText}</option>`;
     }
