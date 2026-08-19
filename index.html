@@ -67,8 +67,7 @@
         <button type="button" id="btnTeamSearch" class="btn-search-trigger">🔍 ค้นหา</button>
       </div>
       <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-        <button type="button" class="btn-secondary" id="btnClearMainTeamsBtn" onclick="clearMainFieldTeams()" style="border-color: #e53e3e; color: #e53e3e; font-weight: 700;" title="ล้างสมาชิกในทีมสนามหลักทั้งหมด">🗑️ ล้างสนามหลัก</button>
-        <button type="button" class="btn-secondary" id="btnClearSubTeamsBtn" onclick="clearSubFieldTeams()" style="border-color: #e67e22; color: #e67e22; font-weight: 700;" title="ล้างสมาชิกในทีมสนามรองทั้งหมด">🗑️ ล้างสนามรอง</button>
+        <button type="button" class="btn-secondary" id="btnClearCurrentFieldTeamsBtn" onclick="clearCurrentFieldTeams()" style="border-color: #e53e3e; color: #e53e3e; font-weight: 700;" title="ล้างสมาชิกในทีมทั้งหมดของหน้านี้">🗑️ ล้างทีมทั้งหมด</button>
         <button type="button" class="btn-secondary" id="btnAddTeamBtn" style="border-color:var(--ok);color:var(--ok);font-weight:700;">➕ เพิ่มทีม (5 คน)</button>
         <button class="btn-primary" id="btnAutoOptimizeTeams" onclick="openAutoMatchModal()" style="background:linear-gradient(135deg, #15a083, #1c9d8b);box-shadow: 0 3px 10px rgba(21,160,131,0.25); white-space: nowrap;">⚡ จัดทีมให้อัตโนมัติ (ตามเงื่อนไขกิลด์)</button>
       </div>
@@ -527,6 +526,6 @@
 </script>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="app.js?v=56"></script>
+<script type="module" src="app.js?v=57"></script>
 </body>
 </html>

@@ -1107,8 +1107,18 @@ function clearSubFieldTeams() {
   showToast(`ล้างสมาชิกสนามรองเรียบร้อยแล้ว (${clearedCount} คน)`, "success");
 }
 
+/* Clear Current Field Teams (Main or Sub depending on active tab) */
+function clearCurrentFieldTeams() {
+  if (currentFieldIdx === 0) {
+    clearMainFieldTeams();
+  } else {
+    clearSubFieldTeams();
+  }
+}
+
 window.clearMainFieldTeams = clearMainFieldTeams;
 window.clearSubFieldTeams = clearSubFieldTeams;
+window.clearCurrentFieldTeams = clearCurrentFieldTeams;
 
 /* Team Search Logic */
 let lastFoundInfo = null;
