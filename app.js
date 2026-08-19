@@ -1500,15 +1500,25 @@ document.addEventListener('DOMContentLoaded', () => {
   loadFromLocalStorage();
   renderAll();
 
-  // Firebase Config Form
-  const savedConfig = localStorage.getItem('firebase_config_json');
-  if (savedConfig) {
-    document.getElementById('firebaseConfigInput').value = savedConfig;
+  // Automatic Default Firebase Cloud Connection (No manual setup required)
+  let configToUse = DEFAULT_FIREBASE_CONFIG;
+  const savedConfigStr = localStorage.getItem('firebase_config_json');
+  if (savedConfigStr) {
     try {
-      setupFirebase(JSON.parse(savedConfig));
-    } catch (e) {
-      console.error("Failed to parse saved Firebase config:", e);
-    }
+      const parsed = JSON.parse(savedConfigStr);
+      if (parsed && parsed.apiKey) configToUse = parsed;
+    } catch (e) {}
+  }
+
+  const configInput = document.getElementById('firebaseConfigInput');
+  if (configInput) {
+    configInput.value = JSON.stringify(configToUse, null, 2);
+  }
+
+  try {
+    setupFirebase(configToUse);
+  } catch (err) {
+    console.error("Firebase auto-connect error:", err);
   }
 
   const btnSaveFB = document.getElementById('btnSaveFirebaseConfig');
