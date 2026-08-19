@@ -59,13 +59,29 @@
       if (modal) modal.classList.remove('show');
     }
 
+    function switchTab(pageId) {
+      var btns = document.querySelectorAll('.main-tab-btn');
+      var pages = document.querySelectorAll('.page');
+
+      btns.forEach(function(b) {
+        if (b.getAttribute('data-page') === pageId) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+
+      pages.forEach(function(p) {
+        if (p.id === pageId) {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
+    }
+
     function openSettingsPage() {
-      document.querySelectorAll('.main-tab-btn').forEach(function(b) { b.classList.remove('active'); });
-      document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-      var settingsBtn = document.querySelector('[data-page="page-settings"]');
-      if (settingsBtn) settingsBtn.classList.add('active');
-      var settingsPage = document.getElementById('page-settings');
-      if (settingsPage) settingsPage.classList.add('active');
+      switchTab('page-settings');
     }
 
     window.applyTheme = applyTheme;
@@ -76,6 +92,7 @@
     window.openGuideModal = openGuideModal;
     window.closeGuideModal = closeGuideModal;
     window.openSettingsPage = openSettingsPage;
+    window.switchTab = switchTab;
 
     document.addEventListener('DOMContentLoaded', function() {
       var savedTheme = localStorage.getItem('guild_app_theme') || 'light';
@@ -114,8 +131,8 @@
 
   <!-- Navigation Tabs -->
   <nav class="main-tabs" aria-label="เมนูหลัก">
-    <button class="main-tab-btn active" data-page="page-roster">📋 รายชื่อสมาชิก</button>
-    <button class="main-tab-btn" data-page="page-teams">🛡️ สนามหลัก-สนามรอง</button>
+    <button type="button" class="main-tab-btn active" data-page="page-roster" onclick="switchTab('page-roster')">📋 รายชื่อสมาชิก</button>
+    <button type="button" class="main-tab-btn" data-page="page-teams" onclick="switchTab('page-teams')">🛡️ สนามหลัก-สนามรอง</button>
   </nav>
 
   <!-- PAGE 1: ROSTER -->
@@ -534,6 +551,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="app.js?v=60"></script>
+<script type="module" src="app.js?v=61"></script>
 </body>
 </html>

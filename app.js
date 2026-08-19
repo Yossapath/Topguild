@@ -1233,11 +1233,11 @@ function renderAll() {
 document.addEventListener('DOMContentLoaded', () => {
   // Main Tab Navigation
   document.querySelectorAll('.main-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(btn.dataset.page).classList.add('active');
+    btn.addEventListener('click', (e) => {
+      const pageId = e.currentTarget.dataset.page;
+      if (pageId && typeof switchTab === 'function') {
+        switchTab(pageId);
+      }
     });
   });
 
