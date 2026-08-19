@@ -869,23 +869,65 @@ function closeMemberModal() {
 }
 
 function saveMemberFromModal(origName, name, job, power) {
-  // If editing and name changed, remove old
-  if (origName && origName.toLowerCase() !== name.toLowerCase()) {
-    deleteMember(null, origName, false);
+  const newNameLower = name.trim().toLowerCase();
+  const origNameLower = origName ? origName.trim().toLowerCase() : null;
+  
+  // 1. ตรวจสอบป้องกันชื่อซ้ำกับคนอื่น
+  let foundOther = false;
+  let existingJob = null;
+  Object.keys(guildRoster).forEach(j => {
+    const found = (guildRoster[j] || []).find(m => m.name.trim().toLowerCase() === newNameLower);
+    if (found) {
+      if (!origNameLower || origNameLower !== newNameLower) {
+        foundOther = true;
+        existingJob = j;
+      }
+    }
+  });
+
+  if (foundOther) {
+    showToast(`ชื่อ "${name}" มีอยู่แล้วในระบบ (อาชีพ ${existingJob}) ไม่สามารถใช้ชื่อซ้ำได้!`, "error");
+    return;
   }
 
-  if (!guildRoster[job]) guildRoster[job] = [];
-  
-  const existingIdx = guildRoster[job].findIndex(m => m.name.toLowerCase() === name.toLowerCase());
-  if (existingIdx >= 0) {
-    guildRoster[job][existingIdx].power = power;
-  } else {
-    guildRoster[job].push({ name, power });
+  // 2. จัดการอัปเดตทีม (กรณีแก้ไขชื่อ/อาชีพ/พลัง)
+  if (origNameLower && occupiedMap.has(origNameLower)) {
+    const slot = occupiedMap.get(origNameLower);
+    const existingTeamData = teamsAssignments[slot];
+    if (existingTeamData) {
+      if (existingTeamData.job !== job) {
+        // เปลี่ยนอาชีพ -> นำออกจากทีม (เพื่อป้องกันปัญหาการคำนวณกฏของทีม)
+        teamsAssignments[slot] = null;
+        occupiedMap.delete(origNameLower);
+        showToast(`ระบบนำ ${origName} ออกจากทีมชั่วคราว เนื่องจากการเปลี่ยนอาชีพ`, "warning");
+      } else {
+        // เปลี่ยนแค่ชื่อหรือค่าพลัง -> อัปเดตในทีมให้เลย
+        teamsAssignments[slot].name = name;
+        teamsAssignments[slot].power = power;
+        if (origNameLower !== newNameLower) {
+          occupiedMap.delete(origNameLower);
+          occupiedMap.set(newNameLower, slot);
+        }
+      }
+    }
   }
+
+  // 3. ล้างรายชื่อเดิม (และที่อาจซ้ำ) ออกจากทุกอาชีพ
+  Object.keys(guildRoster).forEach(j => {
+    guildRoster[j] = (guildRoster[j] || []).filter(m => {
+      const mLower = m.name.trim().toLowerCase();
+      return mLower !== origNameLower && mLower !== newNameLower;
+    });
+  });
+
+  // 4. เพิ่มข้อมูลลงอาชีพที่ถูกต้อง
+  if (!guildRoster[job]) guildRoster[job] = [];
+  guildRoster[job].push({ name, power });
 
   closeMemberModal();
-  saveState();
-  showToast(`บันทึกสมาชิก "${name}" เรียบร้อยแล้ว`, "success");
+  saveState(); // ฟังก์ชันนี้จะเซฟลง Firebase อัตโนมัติ (เป็น Database Log ในตัว)
+  showToast(`บันทึกสมาชิก "${name}" สำเร็จ`, "success");
+  console.log(`[Member DB Log] ${origName ? 'Update' : 'Add'} - Name: ${name}, Job: ${job}, Power: ${power}`);
 }
 
 function deleteMember(job, name, triggerSave = true) {
