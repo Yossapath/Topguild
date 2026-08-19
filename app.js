@@ -654,44 +654,10 @@ function renderTeams() {
     fieldFilled += filled;
     fieldTotal += capacity;
     if (filled < capacity) teamsIncomplete++;
+    if (!hasPriest) missingPriestTeams.push(teamName);
 
-    // Check if team has Druid or Wizard (High Wizard) without Priest
-    let hasWizOrDruid = false;
-    for (let i = 0; i < capacity; i++) {
-      const key = slotKey(currentFieldIdx, teamName, i);
-      const a = teamsAssignments[key];
-      if (a && (a.job === 'High Wizard' || a.job === 'Wizard' || a.job === 'Druid')) {
-        hasWizOrDruid = true;
-      }
-    }
-
-    if (!hasPriest) {
-      if (hasWizOrDruid) {
-        missingPriestTeams.push(`${teamName} ⚠️มี Wiz/Druid`);
-      } else {
-        missingPriestTeams.push(teamName);
-      }
-    }
-
-    let badgeClass = '';
-    let badgeText = '';
-
-    if (filled === capacity) {
-      if (!hasPriest) {
-        badgeClass = 'warn';
-        badgeText = hasWizOrDruid ? '⚠️ ห้ามมี Wiz/Druid (ไม่มี Priest)' : '⚠ ไม่มี Priest';
-      } else {
-        badgeClass = 'ok';
-        badgeText = `ครบ ${filled}/${capacity}`;
-      }
-    } else {
-      if (!hasPriest && hasWizOrDruid) {
-        badgeClass = 'warn';
-        badgeText = '⚠️ ห้ามมี Wiz/Druid (ไม่มี Priest)';
-      } else {
-        badgeText = `ขาด ${capacity - filled} คน`;
-      }
-    }
+    const badgeClass = filled === capacity ? (!hasPriest ? 'warn' : 'ok') : '';
+    const badgeText = filled === capacity ? (!hasPriest ? '⚠ ไม่มี Priest' : `ครบ ${filled}/${capacity}`) : `ขาด ${capacity - filled} คน`;
 
     const cardDim = activeJobFilter && !matchInTeam ? 'dim' : '';
 
@@ -1071,13 +1037,7 @@ function autoOptimizeTeams(customMainNames = null) {
         if (!teamsAssignments[key]) {
           const candidate = allRemaining.find(m => {
             const lower = m.name.trim().toLowerCase();
-            if (assignedSet.has(lower)) return false;
-
-            if (!hasPriest && (m.job === 'Druid' || m.job === 'High Wizard')) {
-              return false;
-            }
-
-            return true;
+            return !assignedSet.has(lower);
           });
 
           if (candidate) {
