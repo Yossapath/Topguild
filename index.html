@@ -16,6 +16,10 @@
       <span class="db-status-text" id="dbStatusText">สถานะฐานข้อมูล: <b>LocalStorage (โหมดส่วนตัว/ยังไม่ได้เชื่อม Firebase)</b></span>
     </div>
     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <div style="display: flex; background: var(--bg-soft); border: 1.5px solid var(--line); border-radius: 20px; padding: 2px;" title="เลือกรูปแบบการแสดงผลช่องอาชีพ">
+        <button type="button" id="btnStyleSolid" onclick="setJobStyle('solid')" style="border:none; border-radius:18px; padding: 4px 10px; font-weight:700; font-size:12px; cursor:pointer; background:var(--blue-700); color:#ffffff; transition: all 0.15s ease;">🎨 สีพื้นหลัง</button>
+        <button type="button" id="btnStyleOutline" onclick="setJobStyle('outline')" style="border:none; border-radius:18px; padding: 4px 10px; font-weight:700; font-size:12px; cursor:pointer; background:transparent; color:var(--text-lo); transition: all 0.15s ease;">✏️ สีตัวหนังสือ</button>
+      </div>
       <button type="button" class="btn-secondary" id="btnThemeToggle" onclick="toggleTheme()" style="border-color: var(--blue-500); color: var(--blue-700); font-weight: 700; font-size: 12.5px; padding: 5px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px; background: rgba(47,143,214,0.08); box-shadow: 0 2px 6px rgba(47,143,214,0.15);">🌙 ธีมมืด</button>
       <button type="button" class="btn-secondary" id="btnOpenGuideModal" onclick="openGuideModal()" style="border-color: var(--blue-500); color: var(--blue-700); font-weight: 700; font-size: 12.5px; padding: 5px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px; background: rgba(47,143,214,0.08); box-shadow: 0 2px 6px rgba(47,143,214,0.15);">💡 คู่มือการใช้งาน</button>
       <button class="btn-config-toggle" id="btnConfigToggle">
@@ -63,10 +67,6 @@
         <button type="button" id="btnTeamSearch" class="btn-search-trigger">🔍 ค้นหา</button>
       </div>
       <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-        <div style="display: flex; background: var(--bg-soft); border: 1.5px solid var(--line); border-radius: 20px; padding: 2px;" title="เลือกรูปแบบการแสดงผลช่องอาชีพ">
-          <button type="button" id="btnStyleSolid" onclick="setJobStyle('solid')" style="border:none; border-radius:18px; padding: 5px 12px; font-weight:700; font-size:12px; cursor:pointer; background:var(--blue-700); color:#ffffff; transition: all 0.15s ease;">🎨 สีพื้นหลัง</button>
-          <button type="button" id="btnStyleOutline" onclick="setJobStyle('outline')" style="border:none; border-radius:18px; padding: 5px 12px; font-weight:700; font-size:12px; cursor:pointer; background:transparent; color:var(--text-lo); transition: all 0.15s ease;">✏️ สีตัวหนังสือ</button>
-        </div>
         <button type="button" class="btn-secondary" id="btnAddTeamBtn" style="border-color:var(--ok);color:var(--ok);font-weight:700;">➕ เพิ่มทีม (5 คน)</button>
         <button class="btn-primary" id="btnAutoOptimizeTeams" onclick="openAutoMatchModal()" style="background:linear-gradient(135deg, #15a083, #1c9d8b);box-shadow: 0 3px 10px rgba(21,160,131,0.25); white-space: nowrap;">⚡ จัดทีมให้อัตโนมัติ (ตามเงื่อนไขกิลด์)</button>
       </div>
@@ -331,6 +331,6 @@
 </script>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="app.js?v=40"></script>
+<script type="module" src="app.js?v=41"></script>
 </body>
 </html>
