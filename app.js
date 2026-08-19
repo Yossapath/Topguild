@@ -270,6 +270,9 @@ function saveState() {
 
 /* Firebase Connection Setup & Listeners */
 async function setupFirebase(configObj) {
+  // Synchronously update UI status immediately
+  updateStatusUI('connecting', 'กำลังเชื่อมต่อ Firebase Cloud Database (' + (configObj.projectId || 'topguild-eeb40') + ')...');
+
   try {
     if (unsubRosterListener) unsubRosterListener();
     if (unsubTeamsListener) unsubTeamsListener();
@@ -285,8 +288,6 @@ async function setupFirebase(configObj) {
     const app = initializeApp(configObj);
     db = getFirestore(app);
     isFirebaseActive = true;
-
-    updateStatusUI('connecting', 'กำลังเชื่อมต่อ Firebase Cloud Database (' + (configObj.projectId || 'Cloud') + ')...');
 
     // Firestore Listeners
     const rosterDocRef = doc(db, 'guild_system', 'roster');
