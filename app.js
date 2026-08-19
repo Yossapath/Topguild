@@ -1749,6 +1749,45 @@ function handleImportFileChange(e) {
   reader.readAsText(file);
 }
 
+window.appSeedDefault = function() {
+  guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
+  initTeamStructure(INITIAL_TEAMS);
+  renderAll();
+  saveState();
+  showToast("โหลดข้อมูลเริ่มต้นสำเร็จ 🟢", "success");
+};
+
+window.appExportJSON = function() {
+  const payload = {
+    roster: guildRoster,
+    teams: serializeTeamsState()
+  };
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+  const dlAnchorElem = document.createElement('a');
+  dlAnchorElem.setAttribute("href", dataStr);
+  dlAnchorElem.setAttribute("download", `guild_backup_${new Date().toISOString().slice(0,10)}.json`);
+  dlAnchorElem.click();
+  showToast("ส่งออกไฟล์ Backup เรียบร้อยแล้ว 🟢", "success");
+};
+
+window.appImportJSON = function(parsed) {
+  if (parsed && parsed.roster && parsed.teams) {
+    guildRoster = parsed.roster;
+    initTeamStructure(parsed.teams);
+    renderAll();
+    saveState();
+    showToast("นำเข้าข้อมูลจากไฟล์ Backup สำเร็จ 🟢", "success");
+  }
+};
+
+window.appClearAll = function() {
+  guildRoster = {};
+  initTeamStructure([]);
+  renderAll();
+  saveState();
+  showToast("ล้างข้อมูลเรียบร้อยแล้ว", "info");
+};
+
 window.parseFirebaseConfig = parseFirebaseConfig;
 window.handleSaveFirebaseConfig = handleSaveFirebaseConfig;
 window.handleDisconnectFirebase = handleDisconnectFirebase;

@@ -84,35 +84,82 @@
       switchTab('page-settings');
     }
 
-    function triggerSeedDefaultData() {
-      if (typeof window.handleSeedDefaultData === 'function') {
-        window.handleSeedDefaultData();
-      } else {
-        alert("ระบบกำลังโหลดสคริปต์... กรุณากดใหม่อีกครั้ง");
+    function handleSeedDefaultData() {
+      if (confirm("คุณต้องการโหลดข้อมูลเริ่มต้น (Default Guild Data) มาแทนที่ข้อมูลปัจจุบันใช่หรือไม่?")) {
+        if (typeof window.appSeedDefault === 'function') {
+          window.appSeedDefault();
+        } else {
+          localStorage.removeItem('guild_roster_v2');
+          localStorage.removeItem('guild_teams_v2');
+          location.reload();
+        }
       }
     }
 
-    function triggerExportJSON() {
-      if (typeof window.handleExportJSON === 'function') {
-        window.handleExportJSON();
+    function handleExportJSON() {
+      if (typeof window.appExportJSON === 'function') {
+        window.appExportJSON();
+        return;
+      }
+      var rosterStr = localStorage.getItem('guild_roster_v2') || '{}';
+      var teamsStr = localStorage.getItem('guild_teams_v2') || '[]';
+      var payload = {
+        roster: JSON.parse(rosterStr),
+        teams: JSON.parse(teamsStr)
+      };
+      if (window.guildRoster && Object.keys(window.guildRoster).length > 0) {
+        payload.roster = window.guildRoster;
+      }
+      var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+      var dlAnchorElem = document.createElement('a');
+      dlAnchorElem.setAttribute("href", dataStr);
+      dlAnchorElem.setAttribute("download", "guild_backup_" + new Date().toISOString().slice(0,10) + ".json");
+      document.body.appendChild(dlAnchorElem);
+      dlAnchorElem.click();
+      document.body.removeChild(dlAnchorElem);
+    }
+
+    function handleImportJSON() {
+      var fileInput = document.getElementById('importFileInput');
+      if (fileInput) {
+        fileInput.click();
       }
     }
 
-    function triggerImportJSON() {
-      if (typeof window.handleImportJSON === 'function') {
-        window.handleImportJSON();
-      }
+    function handleImportFileChange(e) {
+      var file = e.target ? e.target.files[0] : null;
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          var parsed = JSON.parse(evt.target.result);
+          if (parsed.roster && parsed.teams) {
+            localStorage.setItem('guild_roster_v2', JSON.stringify(parsed.roster));
+            localStorage.setItem('guild_teams_v2', JSON.stringify(parsed.teams));
+            if (typeof window.appImportJSON === 'function') {
+              window.appImportJSON(parsed);
+            } else {
+              location.reload();
+            }
+          } else {
+            alert("โครงสร้างไฟล์ JSON ไม่ถูกต้อง");
+          }
+        } catch (err) {
+          alert("อ่านไฟล์ JSON ไม่สำเร็จ: " + err.message);
+        }
+      };
+      reader.readAsText(file);
     }
 
-    function triggerClearAllData() {
-      if (typeof window.handleClearAllData === 'function') {
-        window.handleClearAllData();
-      }
-    }
-
-    function triggerImportFileChange(e) {
-      if (typeof window.handleImportFileChange === 'function') {
-        window.handleImportFileChange(e);
+    function handleClearAllData() {
+      if (confirm("⚠️ คำเตือน: คุณต้องการลบข้อมูลสมาชิกและการจัดทีมทั้งหมดใช่หรือไม่?")) {
+        if (typeof window.appClearAll === 'function') {
+          window.appClearAll();
+        } else {
+          localStorage.setItem('guild_roster_v2', '{}');
+          localStorage.setItem('guild_teams_v2', '[]');
+          location.reload();
+        }
       }
     }
 
@@ -125,11 +172,11 @@
     window.closeGuideModal = closeGuideModal;
     window.openSettingsPage = openSettingsPage;
     window.switchTab = switchTab;
-    window.triggerSeedDefaultData = triggerSeedDefaultData;
-    window.triggerExportJSON = triggerExportJSON;
-    window.triggerImportJSON = triggerImportJSON;
-    window.triggerClearAllData = triggerClearAllData;
-    window.triggerImportFileChange = triggerImportFileChange;
+    window.handleSeedDefaultData = handleSeedDefaultData;
+    window.handleExportJSON = handleExportJSON;
+    window.handleImportJSON = handleImportJSON;
+    window.handleImportFileChange = handleImportFileChange;
+    window.handleClearAllData = handleClearAllData;
 
     document.addEventListener('DOMContentLoaded', function() {
       var savedTheme = localStorage.getItem('guild_app_theme') || 'light';
@@ -229,11 +276,11 @@
       <p class="help-text">คุณสามารถนำเข้า/ส่งออกข้อมูล หรือรีเซ็ตข้อมูลกิลด์กลับเป็นค่าเริ่มต้นได้ที่นี่ (ระบบเชื่อมต่อ Cloud Database อัตโนมัติในพื้นหลัง)</p>
       
       <div class="btn-group">
-        <button type="button" class="btn-secondary" id="btnSeedDefault" onclick="triggerSeedDefaultData()">🌱 โหลดข้อมูลเริ่มต้น (Initial Default Data)</button>
-        <button type="button" class="btn-secondary" id="btnExportJSON" onclick="triggerExportJSON()">📥 ส่งออก Backup JSON</button>
-        <button type="button" class="btn-secondary" id="btnImportJSON" onclick="triggerImportJSON()">📤 นำเข้า Backup JSON</button>
-        <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="triggerImportFileChange(event)">
-        <button type="button" class="btn-danger" id="btnClearData" onclick="triggerClearAllData()">🗑️ ล้างข้อมูลทั้งหมด</button>
+        <button type="button" class="btn-secondary" id="btnSeedDefault" onclick="handleSeedDefaultData()">🌱 โหลดข้อมูลเริ่มต้น (Initial Default Data)</button>
+        <button type="button" class="btn-secondary" id="btnExportJSON" onclick="handleExportJSON()">📥 ส่งออก Backup JSON</button>
+        <button type="button" class="btn-secondary" id="btnImportJSON" onclick="handleImportJSON()">📤 นำเข้า Backup JSON</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="handleImportFileChange(event)">
+        <button type="button" class="btn-danger" id="btnClearData" onclick="handleClearAllData()">🗑️ ล้างข้อมูลทั้งหมด</button>
       </div>
     </div>
   </section>
@@ -567,6 +614,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="app.js?v=105"></script>
+<script type="module" src="app.js?v=110"></script>
 </body>
 </html>
