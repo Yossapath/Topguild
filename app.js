@@ -362,12 +362,27 @@ function updateStatusUI(mode, text) {
   txt.innerHTML = `สถานะฐานข้อมูล: <b>${escapeHtml(text)}</b>`;
 }
 
+function getRosterTotalCount(rosterObj) {
+  if (!rosterObj) return 0;
+  let count = 0;
+  Object.keys(rosterObj).forEach(j => {
+    if (Array.isArray(rosterObj[j])) count += rosterObj[j].length;
+  });
+  return count;
+}
+
 /* RENDERERS */
 
 function renderRoster() {
   const summaryStrip = document.getElementById('summaryStrip');
   const jobGrid = document.getElementById('jobGrid');
   if (!summaryStrip || !jobGrid) return;
+
+  // Auto-restore initial default roster if roster is empty
+  if (getRosterTotalCount(guildRoster) === 0 && !rosterSearchQuery) {
+    guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
+    initTeamStructure(INITIAL_TEAMS);
+  }
 
   let totalMembers = 0;
   const filteredRoster = {};
