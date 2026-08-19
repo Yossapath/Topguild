@@ -1518,55 +1518,80 @@ window.removeSpecificTeam = removeSpecificTeam;
   if (btnClear) btnClear.addEventListener('click', handleClearAllData);
 });
 
+function parseFirebaseConfig(rawVal) {
+  if (!rawVal) return null;
+
+  // 1. Try standard JSON.parse first
+  try {
+    const p = JSON.parse(rawVal);
+    if (p && p.apiKey) return p;
+  } catch (e) {}
+
+  // 2. Clean imports, const/let/var declarations and comments
+  try {
+    let cleaned = rawVal
+      .replace(/^[\s\S]*?(?:const|let|var)\s+\w+\s*=\s*/i, '')
+      .replace(/import\s+[\s\S]*?;\s*/g, '')
+      .trim();
+    if (cleaned.endsWith(';')) cleaned = cleaned.slice(0, -1).trim();
+
+    const p = JSON.parse(cleaned);
+    if (p && p.apiKey) return p;
+  } catch (e) {}
+
+  // 3. Try JS Object evaluation
+  try {
+    let cleaned = rawVal
+      .replace(/^[\s\S]*?(?:const|let|var)\s+\w+\s*=\s*/i, '')
+      .replace(/import\s+[\s\S]*?;\s*/g, '')
+      .trim();
+    if (cleaned.endsWith(';')) cleaned = cleaned.slice(0, -1).trim();
+    const match = cleaned.match(/\{[\s\S]*?\}/);
+    if (match) {
+      const evaled = Function(`"use strict"; return (${match[0]});`)();
+      if (evaled && evaled.apiKey) return evaled;
+    }
+  } catch (e) {}
+
+  // 4. Regex extraction for key-value pairs
+  try {
+    const getKey = (key) => {
+      const reg = new RegExp(key + `\\s*:\\s*["']([^"']+)["']`, 'i');
+      const m = rawVal.match(reg);
+      return m ? m[1].trim() : '';
+    };
+
+    const apiKey = getKey('apiKey');
+    if (apiKey) {
+      return {
+        apiKey: apiKey,
+        authDomain: getKey('authDomain'),
+        projectId: getKey('projectId'),
+        storageBucket: getKey('storageBucket'),
+        messagingSenderId: getKey('messagingSenderId'),
+        appId: getKey('appId')
+      };
+    }
+  } catch (e) {}
+
+  return null;
+}
+
 function handleSaveFirebaseConfig() {
   const rawVal = document.getElementById('firebaseConfigInput').value.trim();
   if (!rawVal) {
     showToast("กรุณากรอก Firebase Config", "error");
     return;
   }
-  try {
-    let parsed = null;
-    try { parsed = JSON.parse(rawVal); } catch (e) {}
 
-    if (!parsed) {
-      try {
-        const cleaned = rawVal
-          .split('\n')
-          .filter(line => !line.trim().startsWith('import') && !line.trim().startsWith('//'))
-          .join('\n');
-        const match = cleaned.match(/\{[\s\S]*?apiKey[\s\S]*?\}/);
-        if (match) parsed = Function(`"use strict"; return (${match[0]});`)();
-      } catch (e) {}
-    }
-
-    if (!parsed || !parsed.apiKey) {
-      const apiKeyMatch = rawVal.match(/apiKey\s*:\s*["']([^"']+)["']/);
-      const authDomainMatch = rawVal.match(/authDomain\s*:\s*["']([^"']+)["']/);
-      const projectIdMatch = rawVal.match(/projectId\s*:\s*["']([^"']+)["']/);
-      const storageBucketMatch = rawVal.match(/storageBucket\s*:\s*["']([^"']+)["']/);
-      const messagingSenderIdMatch = rawVal.match(/messagingSenderId\s*:\s*["']([^"']+)["']/);
-      const appIdMatch = rawVal.match(/appId\s*:\s*["']([^"']+)["']/);
-
-      if (apiKeyMatch && apiKeyMatch[1]) {
-        parsed = {
-          apiKey: apiKeyMatch[1],
-          authDomain: authDomainMatch ? authDomainMatch[1] : "",
-          projectId: projectIdMatch ? projectIdMatch[1] : "",
-          storageBucket: storageBucketMatch ? storageBucketMatch[1] : "",
-          messagingSenderId: messagingSenderIdMatch ? messagingSenderIdMatch[1] : "",
-          appId: appIdMatch ? appIdMatch[1] : ""
-        };
-      }
-    }
-
-    if (parsed && parsed.apiKey) {
-      localStorage.setItem('firebase_config_json', JSON.stringify(parsed, null, 2));
-      setupFirebase(parsed);
-    } else {
-      throw new Error("ไม่พบ apiKey หรือค่าในเครื่องหมายคำพูดว่างเปล่า");
-    }
-  } catch (err) {
-    showToast("รูปแบบ Config ไม่ถูกต้อง: " + err.message, "error");
+  const parsed = parseFirebaseConfig(rawVal);
+  if (parsed && parsed.apiKey) {
+    document.getElementById('firebaseConfigInput').value = JSON.stringify(parsed, null, 2);
+    localStorage.setItem('firebase_config_json', JSON.stringify(parsed, null, 2));
+    setupFirebase(parsed);
+    showToast("บันทึกและซิงค์ Firebase Config เรียบร้อย 🟢", "success");
+  } else {
+    showToast("รูปแบบ Config ไม่ถูกต้อง กรุณาวางโค้ด firebaseConfig ที่มี apiKey", "error");
   }
 }
 
@@ -1618,6 +1643,7 @@ function handleClearAllData() {
   }
 }
 
+window.parseFirebaseConfig = parseFirebaseConfig;
 window.handleSaveFirebaseConfig = handleSaveFirebaseConfig;
 window.handleDisconnectFirebase = handleDisconnectFirebase;
 window.handleSeedDefaultData = handleSeedDefaultData;
