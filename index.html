@@ -111,7 +111,7 @@
       <span class="db-status-text" id="dbStatusText">สถานะฐานข้อมูล: <b>LocalStorage (โหมดส่วนตัว/ยังไม่ได้เชื่อม Firebase)</b></span>
     </div>
     <button type="button" class="btn-config-toggle" id="btnConfigToggle" onclick="openSettingsPage()">
-      ⚙️ ตั้งค่า Firebase Cloud Database
+      📦 จัดการข้อมูล (Data Management)
     </button>
   </div>
 
@@ -135,7 +135,7 @@
   <nav class="main-tabs" aria-label="เมนูหลัก">
     <button type="button" class="main-tab-btn active" data-page="page-roster" onclick="switchTab('page-roster')">📋 รายชื่อสมาชิก</button>
     <button type="button" class="main-tab-btn" data-page="page-teams" onclick="switchTab('page-teams')">🛡️ สนามหลัก-สนามรอง</button>
-    <button type="button" class="main-tab-btn" data-page="page-settings" onclick="switchTab('page-settings')">⚙️ ตั้งค่า Firebase & ข้อมูล</button>
+    <button type="button" class="main-tab-btn" data-page="page-settings" onclick="switchTab('page-settings')">📦 จัดการข้อมูล (Data Management)</button>
   </nav>
 
   <!-- PAGE 1: ROSTER -->
@@ -185,35 +185,11 @@
     </div>
   </section>
 
-  <!-- PAGE 3: SETTINGS & DATABASE -->
+  <!-- PAGE 3: DATA MANAGEMENT -->
   <section id="page-settings" class="page">
     <div class="settings-card">
-      <h3>🔥 ตั้งค่าการเชื่อมต่อ Firebase Cloud Database</h3>
-      <p class="help-text">
-        เมื่อตั้งค่า Firebase Config แล้ว ข้อมูลสมาชิกและการจัดทีมจะถูกบันทึกขึ้น Cloud และซิงค์แบบ Real-time ให้ผู้ใช้อื่นๆ ในกิลด์เห็นทันที! (หากเว้นว่างไว้ ระบบจะใช้ LocalStorage ในเครื่องของคุณ)
-      </p>
-
-      <div class="form-group">
-        <label for="firebaseConfigInput">Firebase Config (วางโค้ด firebaseConfig JSON หรือ Object จาก Firebase Console):</label>
-        <textarea id="firebaseConfigInput" class="form-control" placeholder='{
-  "apiKey": "AIzaSy...",
-  "authDomain": "your-app.firebaseapp.com",
-  "projectId": "your-app-id",
-  "storageBucket": "your-app.appspot.com",
-  "messagingSenderId": "123456789",
-  "appId": "1:123456789:web:abcdef..."
-}'></textarea>
-      </div>
-
-      <div class="btn-group">
-        <button type="button" class="btn-primary" id="btnSaveFirebaseConfig">💾 บันทึกและเชื่อมต่อ Firebase</button>
-        <button type="button" class="btn-secondary" id="btnDisconnectFirebase">🔌 ยกเลิกการเชื่อมต่อ (กลับไปใช้ LocalStorage)</button>
-      </div>
-    </div>
-
-    <div class="settings-card">
       <h3>📦 จัดการข้อมูล (Data Management)</h3>
-      <p class="help-text">คุณสามารถนำเข้า/ส่งออกข้อมูล หรือรีเซ็ตข้อมูลกิลด์กลับเป็นค่าเริ่มต้นได้ที่นี่</p>
+      <p class="help-text">คุณสามารถนำเข้า/ส่งออกข้อมูล หรือรีเซ็ตข้อมูลกิลด์กลับเป็นค่าเริ่มต้นได้ที่นี่ (ระบบเชื่อมต่อ Cloud Database อัตโนมัติในพื้นหลัง)</p>
       
       <div class="btn-group">
         <button type="button" class="btn-secondary" id="btnSeedDefault">🌱 โหลดข้อมูลเริ่มต้น (Initial Default Data)</button>
@@ -554,6 +530,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="app.js?v=77"></script>
+<script type="module" src="app.js?v=78"></script>
 </body>
 </html>
