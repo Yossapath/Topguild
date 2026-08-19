@@ -84,6 +84,38 @@
       switchTab('page-settings');
     }
 
+    function triggerSeedDefaultData() {
+      if (typeof window.handleSeedDefaultData === 'function') {
+        window.handleSeedDefaultData();
+      } else {
+        alert("ระบบกำลังโหลดสคริปต์... กรุณากดใหม่อีกครั้ง");
+      }
+    }
+
+    function triggerExportJSON() {
+      if (typeof window.handleExportJSON === 'function') {
+        window.handleExportJSON();
+      }
+    }
+
+    function triggerImportJSON() {
+      if (typeof window.handleImportJSON === 'function') {
+        window.handleImportJSON();
+      }
+    }
+
+    function triggerClearAllData() {
+      if (typeof window.handleClearAllData === 'function') {
+        window.handleClearAllData();
+      }
+    }
+
+    function triggerImportFileChange(e) {
+      if (typeof window.handleImportFileChange === 'function') {
+        window.handleImportFileChange(e);
+      }
+    }
+
     window.applyTheme = applyTheme;
     window.toggleTheme = toggleTheme;
     window.setJobStyle = setJobStyle;
@@ -93,6 +125,11 @@
     window.closeGuideModal = closeGuideModal;
     window.openSettingsPage = openSettingsPage;
     window.switchTab = switchTab;
+    window.triggerSeedDefaultData = triggerSeedDefaultData;
+    window.triggerExportJSON = triggerExportJSON;
+    window.triggerImportJSON = triggerImportJSON;
+    window.triggerClearAllData = triggerClearAllData;
+    window.triggerImportFileChange = triggerImportFileChange;
 
     document.addEventListener('DOMContentLoaded', function() {
       var savedTheme = localStorage.getItem('guild_app_theme') || 'light';
@@ -192,11 +229,11 @@
       <p class="help-text">คุณสามารถนำเข้า/ส่งออกข้อมูล หรือรีเซ็ตข้อมูลกิลด์กลับเป็นค่าเริ่มต้นได้ที่นี่ (ระบบเชื่อมต่อ Cloud Database อัตโนมัติในพื้นหลัง)</p>
       
       <div class="btn-group">
-        <button type="button" class="btn-secondary" id="btnSeedDefault" onclick="handleSeedDefaultData()">🌱 โหลดข้อมูลเริ่มต้น (Initial Default Data)</button>
-        <button type="button" class="btn-secondary" id="btnExportJSON" onclick="handleExportJSON()">📥 ส่งออก Backup JSON</button>
-        <button type="button" class="btn-secondary" id="btnImportJSON" onclick="handleImportJSON()">📤 นำเข้า Backup JSON</button>
-        <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="handleImportFileChange(event)">
-        <button type="button" class="btn-danger" id="btnClearData" onclick="handleClearAllData()">🗑️ ล้างข้อมูลทั้งหมด</button>
+        <button type="button" class="btn-secondary" id="btnSeedDefault" onclick="triggerSeedDefaultData()">🌱 โหลดข้อมูลเริ่มต้น (Initial Default Data)</button>
+        <button type="button" class="btn-secondary" id="btnExportJSON" onclick="triggerExportJSON()">📥 ส่งออก Backup JSON</button>
+        <button type="button" class="btn-secondary" id="btnImportJSON" onclick="triggerImportJSON()">📤 นำเข้า Backup JSON</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="triggerImportFileChange(event)">
+        <button type="button" class="btn-danger" id="btnClearData" onclick="triggerClearAllData()">🗑️ ล้างข้อมูลทั้งหมด</button>
       </div>
     </div>
   </section>
@@ -530,6 +567,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="app.js?v=101"></script>
+<script type="module" src="app.js?v=105"></script>
 </body>
 </html>
