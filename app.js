@@ -1,5 +1,5 @@
 // Firebase Web SDK v10 Modular Imports from CDN
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
   getFirestore, 
   doc, 
@@ -62,6 +62,16 @@ const INITIAL_TEAMS = [
     }
   }
 ];
+
+/* Default Firebase Cloud Database Config */
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyXPFxhSLBt9dQqf5glFrXvx6KLxqPmEE8",
+  authDomain: "topguild-eeb40.firebaseapp.com",
+  projectId: "topguild-eeb40",
+  storageBucket: "topguild-eeb40.firebasestorage.app",
+  messagingSenderId: "879954426796",
+  appId: "1:879954426796:web:48e305dc9f78bda6a51809"
+};
 
 const JOB_COLORS = {
   "Lord Knight": "#c13829",
@@ -259,43 +269,67 @@ function saveState() {
 }
 
 /* Firebase Connection Setup & Listeners */
-function setupFirebase(configObj) {
+async function setupFirebase(configObj) {
   try {
     if (unsubRosterListener) unsubRosterListener();
     if (unsubTeamsListener) unsubTeamsListener();
+
+    // Safely delete existing app instance to prevent duplicate-app errors
+    const existingApps = getApps();
+    if (existingApps.length > 0) {
+      try {
+        await deleteApp(existingApps[0]);
+      } catch (e) {}
+    }
 
     const app = initializeApp(configObj);
     db = getFirestore(app);
     isFirebaseActive = true;
 
-    updateStatusUI('connecting', 'กำลังเชื่อมต่อ Firebase Cloud Database...');
+    updateStatusUI('connecting', 'กำลังเชื่อมต่อ Firebase Cloud Database (' + (configObj.projectId || 'Cloud') + ')...');
 
     // Firestore Listeners
     const rosterDocRef = doc(db, 'guild_system', 'roster');
     const teamsDocRef = doc(db, 'guild_system', 'teams');
 
+    let isConnected = false;
+    const markConnected = () => {
+      if (!isConnected) {
+        isConnected = true;
+        updateStatusUI('online', 'เชื่อมต่อ Firebase Cloud Database (' + (configObj.projectId || 'topguild-eeb40') + ') Active 🟢');
+      }
+    };
+
     unsubRosterListener = onSnapshot(rosterDocRef, (docSnap) => {
+      markConnected();
       if (docSnap.exists() && docSnap.data().data) {
         guildRoster = docSnap.data().data;
         renderAll();
       } else {
         // First time initialization in Firestore
-        setDoc(rosterDocRef, { data: guildRoster });
+        setDoc(rosterDocRef, { data: guildRoster }).catch(e => console.error("SetDoc roster err:", e));
       }
     }, (err) => {
       console.error("Roster snapshot error:", err);
-      showToast("เกิดข้อผิดพลาดในการฟังข้อมูล Firestore: " + err.message, "error");
+      isFirebaseActive = false;
+      if (err.code === 'permission-denied' || (err.message && err.message.includes('permission'))) {
+        updateStatusUI('local', 'Firebase Access Denied: ต้องเปิดสิทธิ์ Rules ใน Firebase Console');
+        showToast("⚠️ Firebase Permission Denied: กรุณาไปที่ Firebase Console > Firestore Database > Rules แล้วแก้เป็น allow read, write: if true;", "error");
+      } else {
+        updateStatusUI('local', 'การเชื่อมต่อ Firebase ขัดข้อง (ใช้ LocalStorage)');
+        showToast("เกิดข้อผิดพลาดในการฟังข้อมูล Firestore: " + err.message, "error");
+      }
     });
 
     unsubTeamsListener = onSnapshot(teamsDocRef, (docSnap) => {
+      markConnected();
       if (docSnap.exists() && docSnap.data().data) {
         initTeamStructure(docSnap.data().data);
         renderAll();
       } else {
         // First time initialization in Firestore
-        setDoc(teamsDocRef, { data: serializeTeamsState() });
+        setDoc(teamsDocRef, { data: serializeTeamsState() }).catch(e => console.error("SetDoc teams err:", e));
       }
-      updateStatusUI('online', 'เชื่อมต่อ Firebase Cloud Database (Real-time Active) 🟢');
     }, (err) => {
       console.error("Teams snapshot error:", err);
     });
