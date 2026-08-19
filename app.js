@@ -1726,10 +1726,46 @@ function handleClearAllData() {
   }
 }
 
+function handleImportFileChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      const parsed = JSON.parse(evt.target.result);
+      if (parsed.roster && parsed.teams) {
+        guildRoster = parsed.roster;
+        initTeamStructure(parsed.teams);
+        renderAll();
+        saveState();
+        showToast("นำเข้าข้อมูลจากไฟล์ Backup สำเร็จ 🟢", "success");
+      } else {
+        showToast("โครงสร้างไฟล์ JSON ไม่ถูกต้อง", "error");
+      }
+    } catch (err) {
+      showToast("อ่านไฟล์ JSON ไม่สำเร็จ: " + err.message, "error");
+    }
+  };
+  reader.readAsText(file);
+}
+
 window.parseFirebaseConfig = parseFirebaseConfig;
 window.handleSaveFirebaseConfig = handleSaveFirebaseConfig;
 window.handleDisconnectFirebase = handleDisconnectFirebase;
 window.handleSeedDefaultData = handleSeedDefaultData;
 window.handleExportJSON = handleExportJSON;
 window.handleImportJSON = handleImportJSON;
+window.handleImportFileChange = handleImportFileChange;
 window.handleClearAllData = handleClearAllData;
+window.openMemberModal = openMemberModal;
+window.closeMemberModal = closeMemberModal;
+window.deleteMember = deleteMember;
+window.clearCurrentFieldTeams = clearCurrentFieldTeams;
+window.openAutoMatchModal = openAutoMatchModal;
+window.closeAutoMatchModal = closeAutoMatchModal;
+window.switchTab = switchTab;
+window.openSettingsPage = openSettingsPage;
+window.addNewTeam = addNewTeam;
+window.removeLastTeam = removeLastTeam;
+window.handleTeamSearch = handleTeamSearch;
+window.warpToFoundTeam = warpToFoundTeam;
