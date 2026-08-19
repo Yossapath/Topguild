@@ -162,8 +162,55 @@
   </div>
 </div>
 
-<!-- Toast Notification Container -->
-<div class="toast-container" id="toastContainer"></div>
+  <!-- MODAL: AUTO OPTIMIZE SETTINGS -->
+  <div class="modal-overlay" id="autoMatchModal">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-head">
+        <h3>⚡ ตัวเลือกการจัดทีมให้อัตโนมัติ</h3>
+        <button class="modal-close" id="btnCloseAutoMatchModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 13px; color: var(--text-lo); margin-bottom: 16px;">
+          เลือกรูปแบบการจัดทีมตามเงื่อนไขกิลด์ (ทุกทีมมี Priest 1 คน, อาชีพไม่ซ้ำยกเว้น Wizard, เรียงตามพลังสูงสุด)
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Mode 1: Top Power Auto -->
+          <div style="background: var(--bg-soft); border: 1.5px solid var(--line); border-radius: 12px; padding: 14px;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-family: var(--font-display); color: var(--text-hi); font-size: 14px;">
+              <input type="radio" name="autoMatchMode" value="topPower" checked style="accent-color: var(--blue-700); width: 18px; height: 18px;">
+              <span>⚡ คัดจากสมาชิกพลังสูงสุด 60 คนแรกให้อัตโนมัติ</span>
+            </label>
+            <p style="font-size: 12px; color: var(--text-lo); margin-top: 6px; margin-left: 28px;">
+              ระบบจะดึง 60 สมาชิกที่มีค่าพลังสูงที่สุดในกิลด์มาจัดลงสนามหลักให้อัตโนมัติ
+            </p>
+          </div>
+
+          <!-- Mode 2: Custom List Paste -->
+          <div style="background: var(--bg-soft); border: 1.5px solid var(--line); border-radius: 12px; padding: 14px;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-family: var(--font-display); color: var(--text-hi); font-size: 14px;">
+              <input type="radio" name="autoMatchMode" value="customList" style="accent-color: var(--blue-700); width: 18px; height: 18px;">
+              <span>📋 กำหนดรายชื่อสมาชิกสนามหลักเอง (วางรายชื่อ)</span>
+            </label>
+            <p style="font-size: 12px; color: var(--text-lo); margin-top: 6px; margin-left: 28px;">
+              วางรายชื่อตัวละครของสนามหลักลงในช่องด้านล่าง (บรรทัดละ 1 ชื่อ) ระบบจะนำรายชื่อนี้ไปจัดสนามหลัก ส่วนคนที่เหลือจะไปสนามรอง
+            </p>
+
+            <div id="customListContainer" style="display: none; margin-top: 12px; margin-left: 28px;">
+              <textarea id="customMainListText" rows="7" style="width: 100%; border-radius: 8px; border: 1px solid var(--line); padding: 10px; font-family: var(--font-body); font-size: 12.5px; resize: vertical;" placeholder="วางรายชื่อตัวละครสนามหลักที่นี่...&#10;ตัวอย่าง:&#10;Heinzer&#10;XxerrosS&#10;OTANI"></textarea>
+              <div style="font-size: 12px; color: var(--blue-700); font-weight: 600; margin-top: 4px;" id="customListCountBadge">ตรวจพบรายชื่อ: 0 คน</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" id="btnCancelAutoMatchModal">ยกเลิก</button>
+        <button class="btn-primary" id="btnRunAutoMatchModal" style="background: linear-gradient(135deg, #15a083, #1c9d8b);">🚀 ประมวลผลจัดทีมทันที</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
 <script type="module" src="app.js?v=18"></script>

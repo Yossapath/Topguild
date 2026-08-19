@@ -862,25 +862,42 @@ function deleteMember(job, name, triggerSave = true) {
 }
 
 /* Custom Guild Team Optimization Algorithm */
-function autoOptimizeTeams() {
-  const allMembers = getMasterMemberList().sort((a, b) => (b.power || 0) - (a.power || 0));
+function autoOptimizeTeams(customMainNames = null) {
+  const masterList = getMasterMemberList();
 
   teamsAssignments = {};
   occupiedMap.clear();
-
   const assignedSet = new Set();
 
-  const priests = allMembers.filter(m => m.job === 'Priest').sort((a, b) => (b.power || 0) - (a.power || 0));
+  let mainCandidates = [];
 
-  /* --- 1. MAIN FIELD OPTIMIZATION (Field 0: 12 teams x 5 slots) --- */
+  if (customMainNames && Array.isArray(customMainNames) && customMainNames.length > 0) {
+    const customSet = new Set(customMainNames.map(n => n.trim().toLowerCase()));
+    
+    // Split masterList into main candidates
+    masterList.forEach(m => {
+      const lower = m.name.trim().toLowerCase();
+      if (customSet.has(lower)) {
+        mainCandidates.push(m);
+      }
+    });
+
+    mainCandidates.sort((a, b) => (b.power || 0) - (a.power || 0));
+  } else {
+    // Top Power default mode
+    mainCandidates = masterList.slice().sort((a, b) => (b.power || 0) - (a.power || 0));
+  }
+
+  /* --- 1. MAIN FIELD OPTIMIZATION (Field 0) --- */
   const mainFm = fieldMeta[0];
   if (mainFm) {
     const mainTeamNames = sortTeamNames(mainFm.teamNames);
-    
+    const mainPriests = mainCandidates.filter(m => m.job === 'Priest').sort((a, b) => (b.power || 0) - (a.power || 0));
+
     // Assign 1 top Priest to each of the 12 main teams
     mainTeamNames.forEach((teamName, tIdx) => {
-      if (priests[tIdx]) {
-        const p = priests[tIdx];
+      if (mainPriests[tIdx]) {
+        const p = mainPriests[tIdx];
         const key = slotKey(0, teamName, 4); // slot 5
         teamsAssignments[key] = { name: p.name, job: p.job, power: p.power };
         occupiedMap.set(p.name.trim().toLowerCase(), key);
@@ -889,7 +906,7 @@ function autoOptimizeTeams() {
       }
     });
 
-    // Fill remaining 4 slots of each main team (no duplicate jobs except High Wizard)
+    // Fill remaining 4 slots of each main team
     mainTeamNames.forEach((teamName) => {
       const teamJobsCount = {};
       for (let i = 0; i < 5; i++) {
@@ -903,17 +920,17 @@ function autoOptimizeTeams() {
       for (let i = 0; i < 5; i++) {
         const key = slotKey(0, teamName, i);
         if (!teamsAssignments[key]) {
-          const candidate = allMembers.find(m => {
+          const candidate = mainCandidates.find(m => {
             const lower = m.name.trim().toLowerCase();
             if (assignedSet.has(lower)) return false;
 
             const jCount = teamJobsCount[m.job] || 0;
             if (m.job === 'High Wizard') {
-              return jCount < 2; // HW allowed up to 2
+              return jCount < 2;
             } else if (m.job === 'Priest') {
-              return false; // Only 1 Priest per team
+              return false;
             } else {
-              return jCount < 1; // No duplicate for other jobs
+              return jCount < 1;
             }
           });
 
@@ -930,18 +947,17 @@ function autoOptimizeTeams() {
     });
   }
 
-  /* --- 2. SUB FIELD OPTIMIZATION (Field 1: 17 teams) --- */
+  /* --- 2. SUB FIELD OPTIMIZATION (Field 1) --- */
   const subFm = fieldMeta[1];
   if (subFm) {
     const subTeamNames = sortTeamNames(subFm.teamNames);
-
-    // Remaining Priests (after Main Field's 12 Priests)
-    const remainingPriests = priests.filter(p => !assignedSet.has(p.name.trim().toLowerCase()));
+    const allRemaining = masterList.filter(m => !assignedSet.has(m.name.trim().toLowerCase())).sort((a, b) => (b.power || 0) - (a.power || 0));
+    const subPriests = allRemaining.filter(m => m.job === 'Priest').sort((a, b) => (b.power || 0) - (a.power || 0));
 
     // Assign 1 Priest to highest power sub teams first
     subTeamNames.forEach((teamName, tIdx) => {
-      if (tIdx < remainingPriests.length) {
-        const p = remainingPriests[tIdx];
+      if (tIdx < subPriests.length) {
+        const p = subPriests[tIdx];
         const key = slotKey(1, teamName, 4); // slot 5
         teamsAssignments[key] = { name: p.name, job: p.job, power: p.power };
         occupiedMap.set(p.name.trim().toLowerCase(), key);
@@ -950,7 +966,7 @@ function autoOptimizeTeams() {
       }
     });
 
-    // Fill remaining slots for each sub team (if no Priest, forbid Druid and High Wizard)
+    // Fill remaining slots for each sub team
     subTeamNames.forEach((teamName) => {
       const cap = subFm.capacity[teamName];
       let hasPriest = false;
@@ -964,7 +980,7 @@ function autoOptimizeTeams() {
       for (let i = 0; i < cap; i++) {
         const key = slotKey(1, teamName, i);
         if (!teamsAssignments[key]) {
-          const candidate = allMembers.find(m => {
+          const candidate = allRemaining.find(m => {
             const lower = m.name.trim().toLowerCase();
             if (assignedSet.has(lower)) return false;
 
@@ -1120,12 +1136,69 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('page-settings').classList.add('active');
   });
 
-  document.getElementById('btnAutoOptimizeTeams')?.addEventListener('click', () => {
-    if (confirm('คุณต้องการให้ระบบจัดลำดับทีมให้อัตโนมัติ ตามเงื่อนไขกิลด์ใช่หรือไม่? (ทุกทีมจะมี Priest 1 คน, อาชีพไม่ซ้ำยกเว้น Wizard, เรียงจากพลังสูงสุด)')) {
-      autoOptimizeTeams();
-      showToast('⚡ จัดทีมให้อัตโนมัติเรียบร้อยแล้ว!', 'success');
+  // Auto Match Modal Controls
+  const btnAutoOptimize = document.getElementById('btnAutoOptimizeTeams');
+  const autoMatchModal = document.getElementById('autoMatchModal');
+  const btnCloseAutoModal = document.getElementById('btnCloseAutoMatchModal');
+  const btnCancelAutoModal = document.getElementById('btnCancelAutoMatchModal');
+  const btnRunAutoModal = document.getElementById('btnRunAutoMatchModal');
+  const customListContainer = document.getElementById('customListContainer');
+  const customMainListText = document.getElementById('customMainListText');
+  const customListCountBadge = document.getElementById('customListCountBadge');
+  const modeRadios = document.querySelectorAll('input[name="autoMatchMode"]');
+
+  if (btnAutoOptimize && autoMatchModal) {
+    btnAutoOptimize.addEventListener('click', () => {
+      autoMatchModal.style.display = 'flex';
+    });
+
+    const closeModal = () => {
+      autoMatchModal.style.display = 'none';
+    };
+
+    btnCloseAutoModal?.addEventListener('click', closeModal);
+    btnCancelAutoModal?.addEventListener('click', closeModal);
+
+    modeRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'customList') {
+          customListContainer.style.display = 'block';
+        } else {
+          customListContainer.style.display = 'none';
+        }
+      });
+    });
+
+    if (customMainListText && customListCountBadge) {
+      customMainListText.addEventListener('input', () => {
+        const raw = customMainListText.value;
+        const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${lines.length} คน`;
+      });
     }
-  });
+
+    btnRunAutoModal?.addEventListener('click', () => {
+      const selectedMode = document.querySelector('input[name="autoMatchMode"]:checked')?.value;
+
+      if (selectedMode === 'customList') {
+        const raw = customMainListText ? customMainListText.value : '';
+        const parsedNames = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+
+        if (parsedNames.length === 0) {
+          alert('กรุณาวางรายชื่อตัวละครอย่างน้อย 1 ชื่อในช่องข้อความ');
+          return;
+        }
+
+        autoOptimizeTeams(parsedNames);
+        showToast(`⚡ จัดสนามหลักตาม ${parsedNames.length} รายชื่อที่คุณกำหนดเรียบร้อยแล้ว!`, 'success');
+      } else {
+        autoOptimizeTeams(null);
+        showToast('⚡ จัดทีมให้อัตโนมัติ (คัดจาก 60 พลังสูงสุด) เรียบร้อยแล้ว!', 'success');
+      }
+
+      closeModal();
+    });
+  }
 
   // Team Search Handler
   const teamSearchInput = document.getElementById('teamSearchInput');
