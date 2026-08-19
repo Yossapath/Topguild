@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบข้อมูลกิลด์ - Guild Data & Team Center</title>
+  <meta name="description" content="ระบบจัดการสมาชิกกิลด์ จัดทีมสนามหลัก-สนามรอง เชื่อมต่อฐานข้อมูล Firebase Real-time">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <!-- Database Connection Status Bar -->
+  <div class="db-status-bar" id="dbStatusBar">
+    <div class="db-status-info">
+      <span class="status-indicator local" id="dbStatusDot"></span>
+      <span class="db-status-text" id="dbStatusText">สถานะฐานข้อมูล: <b>LocalStorage (โหมดส่วนตัว/ยังไม่ได้เชื่อม Firebase)</b></span>
+    </div>
+    <button class="btn-config-toggle" id="btnConfigToggle">
+      ⚙️ ตั้งค่า Firebase Cloud Database
+    </button>
+  </div>
+
+  <header>
+    <div class="eyebrow">Guild Data Center</div>
+    <h1>ระบบข้อมูลกิลด์</h1>
+    <div class="subtitle">รายชื่อสมาชิกแยกตามอาชีพ และการจัดทีมลงสนามหลัก / สนามรอง (ซิงค์ข้อมูล Real-time)</div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="main-tabs" aria-label="เมนูหลัก">
+    <button class="main-tab-btn active" data-page="page-roster">📋 รายชื่อสมาชิก</button>
+    <button class="main-tab-btn" data-page="page-teams">🛡️ สนามหลัก-สนามรอง</button>
+  </nav>
+
+  <!-- PAGE 1: ROSTER -->
+  <section id="page-roster" class="page active">
+    <div class="action-bar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="rosterSearch" placeholder="ค้นหาชื่อสมาชิก..." aria-label="ค้นหาชื่อสมาชิก">
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-primary" id="btnAddMember">➕ เพิ่มสมาชิกใหม่</button>
+      </div>
+    </div>
+
+    <div class="summary-strip" id="summaryStrip"></div>
+    <div class="job-grid" id="jobGrid"></div>
+  </section>
+
+  <!-- PAGE 2: TEAMS -->
+  <section id="page-teams" class="page">
+    <div class="field-tabs" id="fieldTabs"></div>
+    <div class="job-chips" id="jobChips"></div>
+
+    <div class="team-search-bar-container">
+      <div class="team-search-input-group">
+        <input type="text" id="teamSearchInput" class="team-search-input" placeholder="🔍 พิมพ์ชื่อตัวละคร / ชื่อตัวเอง เพื่อค้นหาทีม..." autocomplete="off">
+        <button type="button" id="btnTeamSearch" class="btn-search-trigger">🔍 ค้นหา</button>
+      </div>
+      <button class="btn-primary" id="btnAutoOptimizeTeams" style="background:linear-gradient(135deg, #15a083, #1c9d8b);box-shadow: 0 3px 10px rgba(21,160,131,0.25); white-space: nowrap;">⚡ จัดทีมให้อัตโนมัติ (ตามเงื่อนไขกิลด์)</button>
+    </div>
+    <div id="teamSearchResult" class="team-search-result-card"></div>
+    <div class="field-status-bar" id="fieldStatusBar"></div>
+
+    <div class="teams-layout">
+      <div class="teams-grid" id="teamsGrid"></div>
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          รายชื่อที่ยังไม่ได้จัดทีม
+          <small>เลือก "อาชีพ" ในแถวก่อน แล้วค่อยเลือก "ชื่อ" จากรายชื่ออาชีพนั้น</small>
+        </div>
+        <div class="sidebar-body" id="sidebarBody"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- PAGE 3: SETTINGS & DATABASE -->
+  <section id="page-settings" class="page">
+    <div class="settings-card">
+      <h3>🔥 ตั้งค่าการเชื่อมต่อ Firebase Cloud Database</h3>
+      <p class="help-text">
+        เมื่อตั้งค่า Firebase Config แล้ว ข้อมูลสมาชิกและการจัดทีมจะถูกบันทึกขึ้น Cloud และซิงค์แบบ Real-time ให้ผู้ใช้อื่นๆ ในกิลด์เห็นทันที! (หากเว้นว่างไว้ ระบบจะใช้ LocalStorage ในเครื่องของคุณ)
+      </p>
+
+      <div class="form-group">
+        <label for="firebaseConfigInput">Firebase Config (วางโค้ด firebaseConfig JSON หรือ Object จาก Firebase Console):</label>
+        <textarea id="firebaseConfigInput" class="form-control" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "your-app.firebaseapp.com",
+  "projectId": "your-app-id",
+  "storageBucket": "your-app.appspot.com",
+  "messagingSenderId": "123456789",
+  "appId": "1:123456789:web:abcdef..."
+}'></textarea>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-primary" id="btnSaveFirebaseConfig">💾 บันทึกและเชื่อมต่อ Firebase</button>
+        <button class="btn-secondary" id="btnDisconnectFirebase">🔌 ยกเลิกการเชื่อมต่อ (กลับไปใช้ LocalStorage)</button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>📦 จัดการข้อมูล (Data Management)</h3>
+      <p class="help-text">คุณสามารถนำเข้า/ส่งออกข้อมูล หรือรีเซ็ตข้อมูลกิลด์กลับเป็นค่าเริ่มต้นได้ที่นี่</p>
+      
+      <div class="btn-group">
+        <button class="btn-secondary" id="btnSeedDefault">🌱 โหลดข้อมูลเริ่มต้น (Initial Default Data)</button>
+        <button class="btn-secondary" id="btnExportJSON">📥 ส่งออก Backup JSON</button>
+        <button class="btn-secondary" id="btnImportJSON">📤 นำเข้า Backup JSON</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none;">
+        <button class="btn-danger" id="btnClearData">🗑️ ล้างข้อมูลทั้งหมด</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>ข้อมูลกิลด์ · อัปเดตล่าสุดและจัดการผ่านระบบ Firebase / LocalStorage</footer>
+</div>
+
+<!-- Modal: Add / Edit Member -->
+<div class="modal-backdrop" id="memberModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modalTitle">เพิ่มสมาชิกใหม่</h3>
+      <button class="modal-close" id="btnCloseModal">&times;</button>
+    </div>
+    <form id="memberForm">
+      <input type="hidden" id="editOriginalName">
+      <div class="form-group">
+        <label for="modalMemberName">ชื่อสมาชิก</label>
+        <input type="text" id="modalMemberName" class="form-control" placeholder="กรอกชื่อตัวละคร..." required>
+      </div>
+      <div class="form-group">
+        <label for="modalMemberJob">อาชีพ</label>
+        <select id="modalMemberJob" class="form-control" required style="font-weight: 600;">
+          <option value="">-- เลือกอาชีพ --</option>
+          <option value="Lord Knight">Lord Knight</option>
+          <option value="Paladin">Paladin</option>
+          <option value="High Wizard">High Wizard</option>
+          <option value="Sniper">Sniper</option>
+          <option value="Priest">Priest</option>
+          <option value="Champion">Champion</option>
+          <option value="Assassin Cross">Assassin Cross</option>
+          <option value="Merchant">Merchant</option>
+          <option value="Gunslinger">Gunslinger</option>
+          <option value="Druid">Druid</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="modalMemberPower">ค่าพลัง</label>
+        <input type="number" id="modalMemberPower" class="form-control" placeholder="เช่น 35000" min="0">
+      </div>
+      <div class="btn-group" style="justify-content: space-between;">
+        <button type="button" class="btn-danger" id="btnDeleteMemberModal" style="display:none;">🗑️ ลบสมาชิกนี้</button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn-secondary" id="btnCancelModal">ยกเลิก</button>
+          <button type="submit" class="btn-primary" id="btnSaveMember">บันทึกสมาชิก</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast Notification Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Firebase SDK v10 (CDN Module) -->
+<script type="module" src="app.js?v=18"></script>
+</body>
+</html>
