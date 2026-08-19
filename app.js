@@ -278,6 +278,16 @@ function saveState() {
   }
 }
 
+/* Save to LocalStorage only (used by Firebase listener to cache data locally) */
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem('guild_roster', JSON.stringify(guildRoster));
+    localStorage.setItem('guild_teams', JSON.stringify(serializeTeamsState()));
+  } catch (e) {
+    console.error("saveToLocalStorage error:", e);
+  }
+}
+
 /* Firebase Connection Setup & Listeners */
 async function setupFirebase(configObj) {
   // Synchronously update UI status immediately
