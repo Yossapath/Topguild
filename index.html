@@ -6,6 +6,74 @@
   <title>ระบบข้อมูลกิลด์ - Guild Data & Team Center</title>
   <meta name="description" content="ระบบจัดการสมาชิกกิลด์ จัดทีมสนามหลัก-สนามรอง เชื่อมต่อฐานข้อมูล Firebase Real-time">
   <link rel="stylesheet" href="styles.css">
+  <script>
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('guild_app_theme', theme);
+      var btn = document.getElementById('btnThemeToggle');
+      if (btn) {
+        btn.innerHTML = theme === 'dark' ? '☀️ ธีมสว่าง' : '🌙 ธีมมืด';
+      }
+    }
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    }
+
+    function setJobStyle(style) {
+      document.documentElement.setAttribute('data-job-style', style);
+      localStorage.setItem('guild_job_style', style);
+      var bSolid = document.getElementById('btnStyleSolid');
+      var bOutline = document.getElementById('btnStyleOutline');
+      if (bSolid && bOutline) {
+        if (style === 'outline') {
+          bSolid.style.background = 'transparent';
+          bSolid.style.color = 'var(--text-lo)';
+          bOutline.style.background = 'var(--blue-700)';
+          bOutline.style.color = '#ffffff';
+        } else {
+          bSolid.style.background = 'var(--blue-700)';
+          bSolid.style.color = '#ffffff';
+          bOutline.style.background = 'transparent';
+          bOutline.style.color = 'var(--text-lo)';
+        }
+      }
+    }
+
+    function openAutoMatchModal() {
+      var modal = document.getElementById('autoMatchModal');
+      if (modal) modal.classList.add('show');
+    }
+    function closeAutoMatchModal() {
+      var modal = document.getElementById('autoMatchModal');
+      if (modal) modal.classList.remove('show');
+    }
+    function openGuideModal() {
+      var modal = document.getElementById('guideModal');
+      if (modal) modal.classList.add('show');
+    }
+    function closeGuideModal() {
+      var modal = document.getElementById('guideModal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    window.applyTheme = applyTheme;
+    window.toggleTheme = toggleTheme;
+    window.setJobStyle = setJobStyle;
+    window.openAutoMatchModal = openAutoMatchModal;
+    window.closeAutoMatchModal = closeAutoMatchModal;
+    window.openGuideModal = openGuideModal;
+    window.closeGuideModal = closeGuideModal;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var savedTheme = localStorage.getItem('guild_app_theme') || 'light';
+      var savedStyle = localStorage.getItem('guild_job_style') || 'solid';
+      applyTheme(savedTheme);
+      setJobStyle(savedStyle);
+    });
+  </script>
 </head>
 <body>
 <div class="wrap">
@@ -455,77 +523,7 @@
 
   <div class="toast-container" id="toastContainer"></div>
 
-<script>
-  function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('guild_app_theme', theme);
-    var btn = document.getElementById('btnThemeToggle');
-    if (btn) {
-      btn.innerHTML = theme === 'dark' ? '☀️ ธีมสว่าง' : '🌙 ธีมมืด';
-    }
-  }
-
-  function toggleTheme() {
-    var current = document.documentElement.getAttribute('data-theme');
-    var next = current === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-  }
-
-  function setJobStyle(style) {
-    document.documentElement.setAttribute('data-job-style', style);
-    localStorage.setItem('guild_job_style', style);
-    var bSolid = document.getElementById('btnStyleSolid');
-    var bOutline = document.getElementById('btnStyleOutline');
-    if (bSolid && bOutline) {
-      if (style === 'outline') {
-        bSolid.style.background = 'transparent';
-        bSolid.style.color = 'var(--text-lo)';
-        bOutline.style.background = 'var(--blue-700)';
-        bOutline.style.color = '#ffffff';
-      } else {
-        bSolid.style.background = 'var(--blue-700)';
-        bSolid.style.color = '#ffffff';
-        bOutline.style.background = 'transparent';
-        bOutline.style.color = 'var(--text-lo)';
-      }
-    }
-  }
-
-  // Initial preference load
-  (function() {
-    var savedTheme = localStorage.getItem('guild_app_theme') || 'light';
-    var savedStyle = localStorage.getItem('guild_job_style') || 'solid';
-    applyTheme(savedTheme);
-    setJobStyle(savedStyle);
-  })();
-
-  function openAutoMatchModal() {
-    var modal = document.getElementById('autoMatchModal');
-    if (modal) {
-      modal.classList.add('show');
-    }
-  }
-  function closeAutoMatchModal() {
-    var modal = document.getElementById('autoMatchModal');
-    if (modal) {
-      modal.classList.remove('show');
-    }
-  }
-  function openGuideModal() {
-    var modal = document.getElementById('guideModal');
-    if (modal) {
-      modal.classList.add('show');
-    }
-  }
-  function closeGuideModal() {
-    var modal = document.getElementById('guideModal');
-    if (modal) {
-      modal.classList.remove('show');
-    }
-  }
-</script>
-
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="app.js?v=57"></script>
+<script type="module" src="app.js?v=58"></script>
 </body>
 </html>

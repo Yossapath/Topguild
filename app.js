@@ -1412,6 +1412,16 @@ window.removeSpecificTeam = removeSpecificTeam;
     });
   }
 
+  // Top Bar Controls Explicit Event Listeners
+  const bSolid = document.getElementById('btnStyleSolid');
+  if (bSolid) bSolid.addEventListener('click', () => setJobStyle('solid'));
+  const bOutline = document.getElementById('btnStyleOutline');
+  if (bOutline) bOutline.addEventListener('click', () => setJobStyle('outline'));
+  const bTheme = document.getElementById('btnThemeToggle');
+  if (bTheme) bTheme.addEventListener('click', () => toggleTheme());
+  const bGuide = document.getElementById('btnOpenGuideModal');
+  if (bGuide) bGuide.addEventListener('click', () => openGuideModal());
+
   // Roster Search
   const searchInput = document.getElementById('rosterSearch');
   if (searchInput) {
