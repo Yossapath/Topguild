@@ -419,61 +419,7 @@
 
   <div class="toast-container" id="toastContainer"></div>
 
-<script>
-  function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('guild_app_theme', theme);
-    var btn = document.getElementById('btnThemeToggle');
-    if (btn) {
-      btn.innerHTML = theme === 'dark' ? '☀️ ธีมสว่าง' : '🌙 ธีมมืด';
-    }
-  }
-
-  function toggleTheme() {
-    var current = document.documentElement.getAttribute('data-theme');
-    var next = current === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-  }
-
-  function setJobStyle(style) {
-    document.documentElement.setAttribute('data-job-style', style);
-    localStorage.setItem('guild_job_style', style);
-    var bSolid = document.getElementById('btnStyleSolid');
-    var bOutline = document.getElementById('btnStyleOutline');
-    if (bSolid && bOutline) {
-      if (style === 'outline') {
-        bSolid.style.background = 'transparent';
-        bSolid.style.color = 'var(--text-lo)';
-        bOutline.style.background = 'var(--blue-700)';
-        bOutline.style.color = '#ffffff';
-      } else {
-        bSolid.style.background = 'var(--blue-700)';
-        bSolid.style.color = '#ffffff';
-        bOutline.style.background = 'transparent';
-        bOutline.style.color = 'var(--text-lo)';
-      }
-    }
-  }
-
-  // Initial preference load
-  (function() {
-    var savedTheme = localStorage.getItem('guild_app_theme') || 'light';
-    var savedStyle = localStorage.getItem('guild_job_style') || 'solid';
-    applyTheme(savedTheme);
-    setJobStyle(savedStyle);
-  })();
-
-  function openAutoMatchModal() {
-    var modal = document.getElementById('autoMatchModal');
-    if (modal) {
-      modal.classList.add('show');
-    }
-  }
-
-</script>
-
-  <footer>ข้อมูลกิลด์ · อัปเดตล่าสุดและจัดการผ่านระบบ Firebase</footer>
-</div>
+</div><!-- end .wrap -->
 
 <!-- Modal: Add / Edit Member -->
 <div class="modal-backdrop" id="memberModal">
@@ -519,94 +465,81 @@
   </div>
 </div>
 
-  <!-- MODAL: AUTO OPTIMIZE SETTINGS -->
-  <div class="modal-backdrop" id="autoMatchModal">
-    <div class="modal-box" style="max-width: 580px;">
-      <div class="modal-header">
-        <h3>⚡ กำหนดรายชื่อสนามหลัก (60 คน) เพื่อจัดทีม</h3>
-        <button class="modal-close" id="btnCloseAutoMatchModal" onclick="closeAutoMatchModal()">✕</button>
+<!-- MODAL: AUTO OPTIMIZE SETTINGS -->
+<div class="modal-backdrop" id="autoMatchModal">
+  <div class="modal-box" style="max-width: 580px;">
+    <div class="modal-header">
+      <h3>⚡ กำหนดรายชื่อสนามหลัก (60 คน) เพื่อจัดทีม</h3>
+      <button class="modal-close" id="btnCloseAutoMatchModal" onclick="closeAutoMatchModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding-top: 6px;">
+      <p style="font-size: 13px; color: var(--text-lo); margin-bottom: 10px;">
+        ระบุหรือวางรายชื่อสมาชิก 60 คนสำหรับสนามหลัก (บรรทัดละ 1 ชื่อ) ระบบจะจัดสนามหลักตามรายชื่อนี้ และนำสมาชิกคนที่เหลือทั้งหมดไปจัดลงสนามรองตามกฎกิลด์ให้อัตโนมัติ
+      </p>
+      <div style="background: rgba(47, 143, 214, 0.08); border: 1px dashed var(--blue-500); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 12.5px; color: var(--blue-900); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+        <span>✨ <b>คำแนะนำ:</b> จำนวนที่ดึงอัตโนมัติ จะคัดเลือกมี Priest 12 คนสำหรับสนามหลักให้อัตโนมัติ</span>
       </div>
-      <div class="modal-body" style="padding-top: 6px;">
-        <p style="font-size: 13px; color: var(--text-lo); margin-bottom: 10px;">
-          ระบุหรือวางรายชื่อสมาชิก 60 คนสำหรับสนามหลัก (บรรทัดละ 1 ชื่อ) ระบบจะจัดสนามหลักตามรายชื่อนี้ และนำสมาชิกคนที่เหลือทั้งหมดไปจัดลงสนามรองตามกฎกิลด์ให้อัตโนมัติ
-        </p>
-        <div style="background: rgba(47, 143, 214, 0.08); border: 1px dashed var(--blue-500); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 12.5px; color: var(--blue-900); font-weight: 600; display: flex; align-items: center; gap: 6px;">
-          <span>✨ <b>คำแนะนำ:</b> จำนวนที่ดึงอัตโนมัติ จะคัดเลือกมี Priest 12 คนสำหรับสนามหลักให้อัตโนมัติ</span>
-        </div>
-
-        <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 13px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);" id="customListCountBadge">ตรวจพบรายชื่อ: 0 / 60 คน</span>
-          <button type="button" class="btn-secondary" id="btnFillTop60Power" style="font-size: 12px; padding: 5px 12px;">✨ ดึง 60 พลังสูงสุดมาวางให้ก่อน</button>
-        </div>
-
-        <textarea id="customMainListText" rows="10" style="width: 100%; border-radius: 10px; border: 1.5px solid var(--line); padding: 12px; font-family: var(--font-body); font-size: 13px; resize: vertical; line-height: 1.5;" placeholder="วางหรือพิมพ์รายชื่อสมาชิกสนามหลักที่นี่ (บรรทัดละ 1 ชื่อ)&#10;ตัวอย่าง:&#10;Heinzer&#10;XxerrosS&#10;OTANI"></textarea>
+      <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 13px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);" id="customListCountBadge">ตรวจพบรายชื่อ: 0 / 60 คน</span>
+        <button type="button" class="btn-secondary" id="btnFillTop60Power" style="font-size: 12px; padding: 5px 12px;">✨ ดึง 60 พลังสูงสุดมาวางให้ก่อน</button>
       </div>
-      <div class="btn-group" style="justify-content: flex-end; margin-top: 18px;">
-        <button class="btn-secondary" id="btnCancelAutoMatchModal" onclick="closeAutoMatchModal()">ยกเลิก</button>
-        <button class="btn-primary" id="btnRunAutoMatchModal" style="background: linear-gradient(135deg, #15a083, #1c9d8b);">🚀 ประมวลผลและจัดทีมทันที</button>
-      </div>
+      <textarea id="customMainListText" rows="10" style="width: 100%; border-radius: 10px; border: 1.5px solid var(--line); padding: 12px; font-family: var(--font-body); font-size: 13px; resize: vertical; line-height: 1.5;" placeholder="วางหรือพิมพ์รายชื่อสมาชิกสนามหลักที่นี่ (บรรทัดละ 1 ชื่อ)&#10;ตัวอย่าง:&#10;Heinzer&#10;XxerrosS&#10;OTANI"></textarea>
+    </div>
+    <div class="btn-group" style="justify-content: flex-end; margin-top: 18px;">
+      <button class="btn-secondary" id="btnCancelAutoMatchModal" onclick="closeAutoMatchModal()">ยกเลิก</button>
+      <button class="btn-primary" id="btnRunAutoMatchModal" style="background: linear-gradient(135deg, #15a083, #1c9d8b);">🚀 ประมวลผลและจัดทีมทันที</button>
     </div>
   </div>
+</div>
 
-  <!-- MODAL: USER GUIDE & TIPS -->
-  <div class="modal-backdrop" id="guideModal">
-    <div class="modal-box" style="max-width: 650px;">
-      <div class="modal-header">
-        <h3>💡 คู่มือและเทคนิคการใช้งานระบบจัดทีมกิลด์</h3>
-        <button class="modal-close" onclick="closeGuideModal()">✕</button>
+<!-- MODAL: USER GUIDE & TIPS -->
+<div class="modal-backdrop" id="guideModal">
+  <div class="modal-box" style="max-width: 650px;">
+    <div class="modal-header">
+      <h3>💡 คู่มือและเทคนิคการใช้งานระบบจัดทีมกิลด์</h3>
+      <button class="modal-close" onclick="closeGuideModal()">✕</button>
+    </div>
+    <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 8px;">
+      <div style="background: var(--bg-soft); border-left: 4px solid var(--blue-700); padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;">
+        <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">📋 1. การจัดการรายชื่อกิลด์ (หน้า 1: รายชื่อสมาชิก)</h4>
+        <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
+          <li><b>เพิ่ม/แก้ไขสมาชิก:</b> กดปุ่ม <code>+ เพิ่มสมาชิกใหม่</code> เพื่อระบุชื่อ, อาชีพ และค่าพลัง</li>
+          <li><b>ค้นหาชื่อ:</b> ใช้ช่องค้นหาด้านบน เพื่อกรองรายชื่อสมาชิกตามชื่อตัวละครได้ทันที</li>
+          <li><b>สรุปจำนวนอาชีพ:</b> การ์ดตารางแสดงจำนวนสมาชิกแยกตามอาชีพแบบ Real-time</li>
+        </ul>
       </div>
-      <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 8px;">
-
-        <!-- Section 1 -->
-        <div style="background: var(--bg-soft); border-left: 4px solid var(--blue-700); padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;">
-          <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">📋 1. การจัดการรายชื่อกิลด์ (หน้า 1: รายชื่อสมาชิก)</h4>
-          <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
-            <li><b>เพิ่ม/แก้ไขสมาชิก:</b> สามารถกดปุ่ม <code>+ เพิ่มสมาชิกใหม่</code> เพื่อระบุชื่อ, อาชีพ และค่าพลัง</li>
-            <li><b>ค้นหาชื่อ:</b> ใช้ช่องค้นหาด้านบน เพื่อกรองรายชื่อสมาชิกตามชื่อตัวละครได้ทันที</li>
-            <li><b>สรุปจำนวนอาชีพ:</b> การ์ดตารางแสดงจำนวนสมาชิกแยกตามอาชีพแบบ Real-time</li>
-          </ul>
-        </div>
-
-        <!-- Section 2 -->
-        <div style="background: var(--bg-soft); border-left: 4px solid var(--ok); padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;">
-          <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">🛡️ 2. การจัดทีมสนามหลัก และสนามรอง (หน้า 2)</h4>
-          <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
-            <li><b>สลับสนาม:</b> กดปุ่ม <code>[สนามหลัก]</code> หรือ <code>[สนามรอง]</code> เพื่อสลับหน้าจัดทีม</li>
-            <li><b>จัดทีมให้อัตโนมัติ:</b> กดปุ่ม <code>⚡ จัดทีมให้อัตโนมัติ</code> ระบบจะช่วยคัดรายชื่อสนามหลัก 60 คน (การันตีมี Priest ครบ 12 คน) และจัดลงทีมให้อัตโนมัติ</li>
-            <li><b>เงื่อนไขกิลด์สนามหลัก (60 คน):</b> ทุกทีมมี Priest 1 คน, อาชีพไม่ซ้ำยกเว้น High Wizard (ซ้ำได้ 2), เรียงลำดับจากทีมที่มีพลังรวมมากไปน้อย</li>
-            <li><b>เงื่อนไขกิลด์สนามรอง:</b> จัดสมาชิกที่เหลือทั้งหมดลงทีมตามลำดับค่าพลังสูงสุดจนครบทุกคน</li>
-          </ul>
-        </div>
-
-        <!-- Section 3 -->
-        <div style="background: var(--bg-soft); border-left: 4px solid #e53e3e; padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;">
-          <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">🛠️ 3. การเพิ่ม/ลบทีม และค้นหาตำแหน่งตัวละคร</h4>
-          <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
-            <li><b>เพิ่มทีม (5 คน):</b> กดปุ่ม <code>➕ เพิ่มทีม (5 คน)</code> (สนามหลักมีได้สูงสุด 12 ทีม = 60 คน)</li>
-            <li><b>ลบทีมเจาะจง:</b> กดปุ่มสีแดง <code>✕</code> บนหัวการ์ดของทีมที่ต้องการลบ (สมาชิกเดิมจะคืนกลับเข้าลิสต์ส่วนกลาง)</li>
-            <li><b>ค้นหาตำแหน่งตัวละคร:</b> พิมพ์ชื่อลงในช่องค้นหา แล้วกด <code>🚀 ไปยังทีมนี้</code> หน้าเว็บจะวาปไฮไลท์ทีมนั้นให้ทันที</li>
-          </ul>
-        </div>
-
-        <!-- Section 4 -->
-        <div style="background: var(--bg-soft); border-left: 4px solid #f39c12; padding: 12px 16px; border-radius: 8px; margin-bottom: 6px;">
-          <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">💾 4. การเชื่อมต่อและสำรองข้อมูล (Backup)</h4>
-          <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
-            <li><b>เชื่อมต่อ Firebase:</b> กด <code>⚙️ ตั้งค่า Firebase Cloud</code> ใส่ Config เพื่อซิงค์ข้อมูลกับเพื่อนในกิลด์ Real-time</li>
-            <li><b>สำรองข้อมูล (Backup JSON):</b> กด <code>📥 ส่งออก Backup JSON</code> เซฟไฟล์เก็บไว้ในคอมเพื่อกันข้อมูลหาย</li>
-          </ul>
-        </div>
-
+      <div style="background: var(--bg-soft); border-left: 4px solid var(--ok); padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;">
+        <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">🛡️ 2. การจัดทีมสนามหลัก และสนามรอง (หน้า 2)</h4>
+        <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
+          <li><b>สลับสนาม:</b> กดปุ่ม <code>[สนามหลัก]</code> หรือ <code>[สนามรอง]</code> เพื่อสลับหน้าจัดทีม</li>
+          <li><b>จัดทีมให้อัตโนมัติ:</b> กดปุ่ม <code>⚡ จัดทีมให้อัตโนมัติ</code> ระบบจะช่วยคัดรายชื่อสนามหลัก 60 คน (การันตีมี Priest ครบ 12 คน) และจัดลงทีมให้อัตโนมัติ</li>
+          <li><b>เงื่อนไขกิลด์สนามหลัก (60 คน):</b> ทุกทีมมี Priest 1 คน, อาชีพไม่ซ้ำยกเว้น High Wizard (ซ้ำได้ 2), เรียงลำดับจากทีมที่มีพลังรวมมากไปน้อย</li>
+          <li><b>เงื่อนไขกิลด์สนามรอง:</b> จัดสมาชิกที่เหลือทั้งหมดลงทีมตามลำดับค่าพลังสูงสุดจนครบทุกคน</li>
+        </ul>
       </div>
-      <div class="btn-group" style="justify-content: flex-end; margin-top: 16px;">
-        <button class="btn-primary" onclick="closeGuideModal()">เข้าใจแล้ว 👍</button>
+      <div style="background: var(--bg-soft); border-left: 4px solid #e53e3e; padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;">
+        <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">🛠️ 3. การเพิ่ม/ลบทีม และค้นหาตำแหน่งตัวละคร</h4>
+        <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
+          <li><b>เพิ่มทีม (5 คน):</b> กดปุ่ม <code>➕ เพิ่มทีม (5 คน)</code> (สนามหลักมีได้สูงสุด 12 ทีม = 60 คน)</li>
+          <li><b>ลบทีมเจาะจง:</b> กดปุ่มสีแดง <code>✕</code> บนหัวการ์ดของทีมที่ต้องการลบ</li>
+          <li><b>ค้นหาตำแหน่งตัวละคร:</b> พิมพ์ชื่อลงในช่องค้นหา แล้วกด <code>🚀 ไปยังทีมนี้</code></li>
+        </ul>
+      </div>
+      <div style="background: var(--bg-soft); border-left: 4px solid #f39c12; padding: 12px 16px; border-radius: 8px; margin-bottom: 6px;">
+        <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">💾 4. การเชื่อมต่อและสำรองข้อมูล (Backup)</h4>
+        <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
+          <li><b>Firebase Real-time:</b> ระบบเชื่อมต่อ Cloud Database อัตโนมัติ ข้อมูลซิงค์ทันที</li>
+          <li><b>สำรองข้อมูล (Backup JSON):</b> กด <code>📥 ส่งออก Backup JSON</code> เซฟไฟล์เก็บไว้ในคอม</li>
+        </ul>
       </div>
     </div>
+    <div class="btn-group" style="justify-content: flex-end; margin-top: 16px;">
+      <button class="btn-primary" onclick="closeGuideModal()">เข้าใจแล้ว 👍</button>
+    </div>
   </div>
-
-  <div class="toast-container" id="toastContainer"></div>
+</div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="app.js?v=final1"></script>
+<script type="module" src="app.js?v=2.0"></script>
 </body>
 </html>

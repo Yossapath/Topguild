@@ -272,7 +272,7 @@ async function setupFirebase(configObj) {
       return null;
     };
 
-    // Step 1: Fetch once immediately (getDoc is HTTP, always works)
+    // Step 1: Fetch once immediately (getDoc is HTTP, fast & reliable)
     updateStatusUI('connecting', 'กำลังดึงข้อมูลจาก Firebase...');
     const [rSnap, tSnap] = await Promise.all([
       getDoc(rosterDocRef),
@@ -281,32 +281,16 @@ async function setupFirebase(configObj) {
 
     updateStatusUI('online', 'เชื่อมต่อ Firebase Cloud Database (' + configObj.projectId + ') Active 🟢');
 
-    console.log('[Firebase] rSnap.exists()=', rSnap.exists(), '| tSnap.exists()=', tSnap.exists());
-    if (rSnap.exists()) {
-      const raw = rSnap.data();
-      console.log('[Firebase] roster raw keys:', Object.keys(raw));
-      if (raw.data) console.log('[Firebase] roster data keys:', Object.keys(raw.data));
-    }
-
     const rosterData = toRoster(rSnap);
     const teamsData  = toTeams(tSnap);
 
-    console.log('[Firebase] rosterData:', rosterData ? Object.keys(rosterData) : null);
-    console.log('[Firebase] teamsData length:', teamsData ? teamsData.length : null);
-
-    if (rosterData) {
-      guildRoster = rosterData;
-    } else {
-      guildRoster = {};
-    }
-
+    guildRoster = rosterData || {};
     if (teamsData) {
       initTeamStructure(teamsData);
     } else {
       initTeamStructure([]);
     }
 
-    console.log('[Firebase] guildRoster keys after set:', Object.keys(guildRoster));
     renderAll();
 
     // Step 2: Real-time listener for live updates
