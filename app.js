@@ -3,6 +3,7 @@ import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/fireb
 import { 
   getFirestore, 
   doc, 
+  getDoc,
   setDoc, 
   onSnapshot 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -93,7 +94,7 @@ const JOB_LIST = [
 ];
 
 /* App State */
-let guildRoster = {};
+let guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
 let teamsAssignments = {}; // slotKey -> {name, job, power} | null
 let occupiedMap = new Map(); // lowerName -> slotKey
 let rowJobFilter = {};
@@ -317,11 +318,37 @@ async function setupFirebase(configObj) {
       return [];
     };
 
-    unsubRosterListener = onSnapshot(rosterDocRef, (docSnap) => {
+    // 1. Direct Immediate HTTP Fetch (Fast & AdBlocker resistant)
+    try {
+      const [rSnap, tSnap] = await Promise.all([
+        getDoc(rosterDocRef),
+        getDoc(teamsDocRef)
+      ]);
       markConnected();
-      guildRoster = extractRosterData(docSnap);
+      const rData = extractRosterData(rSnap);
+      const tData = extractTeamsData(tSnap);
+
+      if (rData && Object.keys(rData).length > 0) {
+        guildRoster = rData;
+      }
+      if (tData && tData.length > 0) {
+        initTeamStructure(tData);
+      }
       saveToLocalStorage();
       renderAll();
+    } catch (e) {
+      console.warn("Direct getDoc fetch warning:", e);
+    }
+
+    // 2. Real-time Live Listener (onSnapshot)
+    unsubRosterListener = onSnapshot(rosterDocRef, (docSnap) => {
+      markConnected();
+      const rData = extractRosterData(docSnap);
+      if (rData && Object.keys(rData).length > 0) {
+        guildRoster = rData;
+        saveToLocalStorage();
+        renderAll();
+      }
     }, (err) => {
       console.error("Roster snapshot error:", err);
       isFirebaseActive = false;
@@ -336,10 +363,12 @@ async function setupFirebase(configObj) {
 
     unsubTeamsListener = onSnapshot(teamsDocRef, (docSnap) => {
       markConnected();
-      const extractedTeams = extractTeamsData(docSnap);
-      initTeamStructure(extractedTeams);
-      saveToLocalStorage();
-      renderAll();
+      const tData = extractTeamsData(docSnap);
+      if (tData && tData.length > 0) {
+        initTeamStructure(tData);
+        saveToLocalStorage();
+        renderAll();
+      }
     }, (err) => {
       console.error("Teams snapshot error:", err);
     });
