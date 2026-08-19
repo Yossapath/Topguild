@@ -1246,6 +1246,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnConfig) {
     btnConfig.addEventListener('click', openSettingsPage);
   }
+});
 
 function getRecommendedMain60Candidates() {
   const masterList = getMasterMemberList();
@@ -1382,6 +1383,8 @@ function removeSpecificTeam(targetTeamName) {
 
 window.removeSpecificTeam = removeSpecificTeam;
 
+/* DOM Event Listeners Initialization */
+document.addEventListener('DOMContentLoaded', () => {
   // Team Search Handler
   const teamSearchInput = document.getElementById('teamSearchInput');
   const btnTeamSearch = document.getElementById('btnTeamSearch');
