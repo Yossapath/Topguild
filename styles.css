@@ -35,29 +35,88 @@
   --job-druid: #41b388;
 }
 
-/* Dark Mode System */
+/* Deep Obsidian Pitch-Black Dark Mode System */
 [data-theme="dark"] {
-  --bg: #0b1324;
-  --bg-soft: #141f36;
-  --surface: #1b2845;
-  --surface-border: #2a3e66;
-  --blue-900: #e2e8f0;
-  --blue-700: #60a5fa;
-  --blue-500: #3b82f6;
-  --blue-300: #93c5fd;
-  --blue-100: #1e3a8a;
-  --line: #2a3e66;
-  --text-hi: #f1f5f9;
-  --text-lo: #94a3b8;
+  --bg: #0d0d0e;
+  --bg-soft: #141416;
+  --surface: #18181c;
+  --surface-border: #26262e;
+  --blue-900: #f4f4f5;
+  --blue-700: #3b82f6;
+  --blue-500: #2563eb;
+  --blue-300: #60a5fa;
+  --blue-100: #1e293b;
+  --line: #26262e;
+  --text-hi: #f4f4f5;
+  --text-lo: #a1a1aa;
   --accent: #14b8a6;
-  --accent-light: #134e48;
+  --accent-light: #064e3b;
+  --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
 }
 
 [data-theme="dark"] body {
-  background:
-    radial-gradient(ellipse at 15% 0%, rgba(59, 130, 246, 0.15), transparent 50%),
-    radial-gradient(ellipse at 100% 10%, rgba(20, 184, 166, 0.12), transparent 45%),
-    var(--bg);
+  background: #0d0d0e !important;
+  color: #f4f4f5 !important;
+}
+
+/* Deep Dark Mode Element Overrides */
+[data-theme="dark"] .summary-total-card,
+[data-theme="dark"] .summary-job-card,
+[data-theme="dark"] .team-card,
+[data-theme="dark"] .sidebar,
+[data-theme="dark"] .settings-card,
+[data-theme="dark"] .modal-box,
+[data-theme="dark"] .db-status-bar,
+[data-theme="dark"] .field-status-bar,
+[data-theme="dark"] .team-search-bar-container,
+[data-theme="dark"] .main-tab-btn,
+[data-theme="dark"] .field-tab-btn {
+  background-color: #18181c !important;
+  border-color: #26262e !important;
+  color: #f4f4f5 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="dark"] .main-tab-btn.active,
+[data-theme="dark"] .field-tab-btn.active {
+  background-color: var(--blue-700) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .team-table th {
+  background: #141416 !important;
+  color: #a1a1aa !important;
+  border-bottom-color: #26262e !important;
+}
+
+[data-theme="dark"] .team-table td {
+  border-bottom-color: #222226 !important;
+}
+
+[data-theme="dark"] select.cell-input.name-input,
+[data-theme="dark"] input.power-input,
+[data-theme="dark"] .team-search-input,
+[data-theme="dark"] .form-control {
+  background-color: #141416 !important;
+  color: #f4f4f5 !important;
+  border-color: #2b2b36 !important;
+}
+
+[data-theme="dark"] select.cell-input.name-input option {
+  background-color: #18181c !important;
+  color: #f4f4f5 !important;
+}
+
+[data-theme="dark"] .missing-row {
+  border-bottom-color: #222226 !important;
+}
+
+[data-theme="dark"] .missing-row .mm-name {
+  color: #f4f4f5 !important;
+}
+
+[data-theme="dark"] .missing-row .mm-job {
+  color: #a1a1aa !important;
 }
 
 /* Job Select Style Mode Overrides */
@@ -70,7 +129,7 @@
 }
 
 [data-theme="dark"][data-job-style="outline"] select.job-input {
-  background-color: var(--surface) !important;
+  background-color: #141416 !important;
   background-image: url("data:image/svg+xml;utf8,<svg fill='%2394a3b8' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
 }
 
