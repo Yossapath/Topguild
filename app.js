@@ -301,10 +301,27 @@ async function setupFirebase(configObj) {
       }
     };
 
+    const extractRosterData = (docSnap) => {
+      if (!docSnap.exists() || !docSnap.data()) return null;
+      const data = docSnap.data();
+      if (data.data && typeof data.data === 'object' && Object.keys(data.data).length > 0) return data.data;
+      if (typeof data === 'object' && Object.keys(data).length > 0 && (data['Lord Knight'] || data['Paladin'] || data['Priest'])) return data;
+      return null;
+    };
+
+    const extractTeamsData = (docSnap) => {
+      if (!docSnap.exists() || !docSnap.data()) return null;
+      const data = docSnap.data();
+      if (Array.isArray(data.data) && data.data.length > 0) return data.data;
+      if (Array.isArray(data) && data.length > 0) return data;
+      return null;
+    };
+
     unsubRosterListener = onSnapshot(rosterDocRef, (docSnap) => {
       markConnected();
-      if (docSnap.exists() && docSnap.data() && docSnap.data().data && Object.keys(docSnap.data().data).length > 0) {
-        guildRoster = docSnap.data().data;
+      const extracted = extractRosterData(docSnap);
+      if (extracted) {
+        guildRoster = extracted;
         saveToLocalStorage();
         renderAll();
       } else {
@@ -328,8 +345,9 @@ async function setupFirebase(configObj) {
 
     unsubTeamsListener = onSnapshot(teamsDocRef, (docSnap) => {
       markConnected();
-      if (docSnap.exists() && docSnap.data() && docSnap.data().data && docSnap.data().data.length > 0) {
-        initTeamStructure(docSnap.data().data);
+      const extracted = extractTeamsData(docSnap);
+      if (extracted) {
+        initTeamStructure(extracted);
         saveToLocalStorage();
         renderAll();
       } else {
