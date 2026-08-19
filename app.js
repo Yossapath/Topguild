@@ -1418,8 +1418,24 @@ function removeSpecificTeam(targetTeamName) {
 
 window.removeSpecificTeam = removeSpecificTeam;
 
-/* DOM Event Listeners Initialization */
-document.addEventListener('DOMContentLoaded', () => {
+/* DOM Event Listeners & Initialization */
+function initApp() {
+  // Main Tab Navigation
+  document.querySelectorAll('.main-tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const pageId = e.currentTarget.dataset.page;
+      if (pageId && typeof switchTab === 'function') {
+        switchTab(pageId);
+      }
+    });
+  });
+
+  // Config Toggle Button in Top Bar
+  const btnConfig = document.getElementById('btnConfigToggle');
+  if (btnConfig) {
+    btnConfig.addEventListener('click', openSettingsPage);
+  }
+
   // Team Search Handler
   const teamSearchInput = document.getElementById('teamSearchInput');
   const btnTeamSearch = document.getElementById('btnTeamSearch');
@@ -1467,9 +1483,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Add Member Modal
-  document.getElementById('btnAddMember').addEventListener('click', () => openMemberModal());
-  document.getElementById('btnCloseModal').addEventListener('click', closeMemberModal);
-  document.getElementById('btnCancelModal').addEventListener('click', closeMemberModal);
+  const btnAddM = document.getElementById('btnAddMember');
+  if (btnAddM) btnAddM.addEventListener('click', () => openMemberModal());
+  const btnCloseM = document.getElementById('btnCloseModal');
+  if (btnCloseM) btnCloseM.addEventListener('click', closeMemberModal);
+  const btnCancelM = document.getElementById('btnCancelModal');
+  if (btnCancelM) btnCancelM.addEventListener('click', closeMemberModal);
 
   const modalDeleteBtn = document.getElementById('btnDeleteMemberModal');
   if (modalDeleteBtn) {
@@ -1485,17 +1504,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  document.getElementById('memberForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const origName = document.getElementById('editOriginalName').value;
-    const name = document.getElementById('modalMemberName').value.trim();
-    const job = document.getElementById('modalMemberJob').value;
-    const power = document.getElementById('modalMemberPower').value === '' ? null : Number(document.getElementById('modalMemberPower').value);
-    
-    if (name && job) {
-      saveMemberFromModal(origName, name, job, power);
-    }
-  });
+  const memberFm = document.getElementById('memberForm');
+  if (memberFm) {
+    memberFm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const origName = document.getElementById('editOriginalName').value;
+      const name = document.getElementById('modalMemberName').value.trim();
+      const job = document.getElementById('modalMemberJob').value;
+      const power = document.getElementById('modalMemberPower').value === '' ? null : Number(document.getElementById('modalMemberPower').value);
+      
+      if (name && job) {
+        saveMemberFromModal(origName, name, job, power);
+      }
+    });
+  }
 
   // Always load from local storage and render immediately so page is never blank
   loadFromLocalStorage();
@@ -1564,7 +1586,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const btnClear = document.getElementById('btnClearData');
   if (btnClear) btnClear.addEventListener('click', handleClearAllData);
-});
+}
+
+// Guarantee execution for ES Module scripts regardless of document.readyState
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 function parseFirebaseConfig(rawVal) {
   if (!rawVal) return null;
