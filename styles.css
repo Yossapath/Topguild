@@ -233,6 +233,18 @@
   color: #94a3b8 !important;
 }
 
+[data-theme="dark"] #btnClearMainTeamsBtn {
+  background: #2b0808 !important;
+  border-color: #7f1d1d !important;
+  color: #fca5a5 !important;
+}
+
+[data-theme="dark"] #btnClearSubTeamsBtn {
+  background: #291003 !important;
+  border-color: #78350f !important;
+  color: #fcd34d !important;
+}
+
 /* Job Select Style Mode Overrides */
 [data-job-style="outline"] select.job-input {
   background-color: var(--surface) !important;

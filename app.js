@@ -1055,6 +1055,61 @@ function autoOptimizeTeams(customMainNames = null) {
   saveState();
 }
 
+/* Clear All Main Field Teams */
+function clearMainFieldTeams() {
+  if (!confirm("⚠️ คุณต้องการล้างสมาชิกสนามหลักทั้งหมด (12 ทีม) ใช่หรือไม่?\n(สมาชิกทั้งหมดจะถูกคืนกลับเข้าสู่ลิสต์ส่วนกลาง)")) {
+    return;
+  }
+
+  const fm = fieldMeta[0];
+  if (!fm) return;
+
+  let clearedCount = 0;
+  fm.teamNames.forEach(teamName => {
+    const cap = fm.capacity[teamName] || 5;
+    for (let i = 0; i < cap; i++) {
+      const key = slotKey(0, teamName, i);
+      if (teamsAssignments[key]) {
+        delete teamsAssignments[key];
+        delete rowJobFilter[key];
+        clearedCount++;
+      }
+    }
+  });
+
+  saveState();
+  showToast(`ล้างสมาชิกสนามหลักเรียบร้อยแล้ว (${clearedCount} คน)`, "success");
+}
+
+/* Clear All Sub Field Teams */
+function clearSubFieldTeams() {
+  if (!confirm("⚠️ คุณต้องการล้างสมาชิกสนามรองทั้งหมดใช่หรือไม่?\n(สมาชิกทั้งหมดจะถูกคืนกลับเข้าสู่ลิสต์ส่วนกลาง)")) {
+    return;
+  }
+
+  const fm = fieldMeta[1];
+  if (!fm) return;
+
+  let clearedCount = 0;
+  fm.teamNames.forEach(teamName => {
+    const cap = fm.capacity[teamName] || 5;
+    for (let i = 0; i < cap; i++) {
+      const key = slotKey(1, teamName, i);
+      if (teamsAssignments[key]) {
+        delete teamsAssignments[key];
+        delete rowJobFilter[key];
+        clearedCount++;
+      }
+    }
+  });
+
+  saveState();
+  showToast(`ล้างสมาชิกสนามรองเรียบร้อยแล้ว (${clearedCount} คน)`, "success");
+}
+
+window.clearMainFieldTeams = clearMainFieldTeams;
+window.clearSubFieldTeams = clearSubFieldTeams;
+
 /* Team Search Logic */
 let lastFoundInfo = null;
 
