@@ -439,9 +439,18 @@ function getActiveFieldStats() {
   JOB_LIST.forEach(j => jobCounts[j] = 0);
 
   if (fm) {
+    if (currentFieldIdx === 1) {
+      // Sub Field total capacity = Total Guild Members - 60
+      const totalMembers = getMasterMemberList().length;
+      totalCapacity = Math.max(0, totalMembers - 60);
+    } else {
+      fm.teamNames.forEach(teamName => {
+        totalCapacity += (fm.capacity[teamName] || 5);
+      });
+    }
+
     fm.teamNames.forEach(teamName => {
-      const cap = fm.capacity[teamName];
-      totalCapacity += cap;
+      const cap = fm.capacity[teamName] || 5;
       for (let i = 0; i < cap; i++) {
         const key = slotKey(currentFieldIdx, teamName, i);
         const a = teamsAssignments[key];
@@ -656,7 +665,10 @@ function renderTeams() {
             <span>${escapeHtml(teamName)}</span>
             <span class="team-power-sum">⚡ ${teamPowerSum.toLocaleString('en-US')}</span>
           </div>
-          <span class="status-badge ${badgeClass}">${badgeText}</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span class="status-badge ${badgeClass}">${badgeText}</span>
+            <button type="button" class="btn-delete-team-card" onclick="removeSpecificTeam('${escapeHtml(teamName)}')" data-team="${escapeHtml(teamName)}" title="ลบ${escapeHtml(teamName)}">✕</button>
+          </div>
         </div>
         <table class="team-table">
           <thead><tr><th style="width:18px;"></th><th>ชื่อ</th><th>อาชีพ</th><th>ค่าพลัง</th><th style="width:26px;"></th></tr></thead>
@@ -668,7 +680,8 @@ function renderTeams() {
   // Status Bar
   const statusBar = document.getElementById('fieldStatusBar');
   if (statusBar) {
-    let bar = `<span class="pill">กรอกแล้ว <b>${fieldFilled}</b> / ${fieldTotal} คน</span>`;
+    const displayTotal = currentFieldIdx === 1 ? Math.max(0, getMasterMemberList().length - 60) : fieldTotal;
+    let bar = `<span class="pill">กรอกแล้ว <b>${fieldFilled}</b> / ${displayTotal} คน</span>`;
     bar += `<span class="pill">ทีมยังไม่ครบ <b>${teamsIncomplete}</b> ทีม</span>`;
     if (missingPriestTeams.length > 0) {
       const listStr = missingPriestTeams.join(', ');
@@ -800,6 +813,12 @@ function attachRowListeners() {
   document.querySelectorAll('.clear-btn').forEach(btn => {
     btn.addEventListener('click', e => handleClearSlot(e.currentTarget.dataset.slot));
   });
+  document.querySelectorAll('.btn-delete-team-card').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      removeSpecificTeam(e.currentTarget.dataset.team);
+    });
+  });
 }
 
 /* Member CRUD Logic */
@@ -861,6 +880,20 @@ function deleteMember(job, name, triggerSave = true) {
   }
 }
 
+window.openAutoMatchModal = function() {
+  const modal = document.getElementById('autoMatchModal');
+  if (modal) {
+    modal.classList.add('show');
+  }
+};
+
+window.closeAutoMatchModal = function() {
+  const modal = document.getElementById('autoMatchModal');
+  if (modal) {
+    modal.classList.remove('show');
+  }
+};
+
 /* Custom Guild Team Optimization Algorithm */
 function autoOptimizeTeams(customMainNames = null) {
   const masterList = getMasterMemberList();
@@ -884,17 +917,36 @@ function autoOptimizeTeams(customMainNames = null) {
 
     mainCandidates.sort((a, b) => (b.power || 0) - (a.power || 0));
   } else {
-    // Top Power default mode
-    mainCandidates = masterList.slice().sort((a, b) => (b.power || 0) - (a.power || 0));
+    // Main Field Selection Rule: Pick 60 candidates guaranteed to include at least 12 top Priests!
+    const allPriests = masterList.filter(m => m.job === 'Priest').sort((a, b) => (b.power || 0) - (a.power || 0));
+    const top12Priests = allPriests.slice(0, 12);
+    const top12PriestNames = new Set(top12Priests.map(p => p.name.trim().toLowerCase()));
+
+    const remainingMembers = masterList.filter(m => !top12PriestNames.has(m.name.trim().toLowerCase())).sort((a, b) => (b.power || 0) - (a.power || 0));
+    
+    const neededOthers = Math.max(0, 60 - top12Priests.length);
+    const topOthers = remainingMembers.slice(0, neededOthers);
+
+    mainCandidates = [...top12Priests, ...topOthers];
+    mainCandidates.sort((a, b) => (b.power || 0) - (a.power || 0));
   }
 
   /* --- 1. MAIN FIELD OPTIMIZATION (Field 0) --- */
   const mainFm = fieldMeta[0];
   if (mainFm) {
     const mainTeamNames = sortTeamNames(mainFm.teamNames);
+    const neededPriests = mainTeamNames.length;
     const mainPriests = mainCandidates.filter(m => m.job === 'Priest').sort((a, b) => (b.power || 0) - (a.power || 0));
 
-    // Assign 1 top Priest to each of the 12 main teams
+    // Validation: Check if Priests in Main Field names are sufficient
+    if (mainPriests.length < neededPriests) {
+      const confirmProceed = confirm(`⚠️ Priest มีรายชื่อในสนามหลักไม่เพียงพอ\n(ต้องการอย่างน้อย ${neededPriests} คนสำหรับสนามหลัก แต่พบในรายชื่อเพียง ${mainPriests.length} คน)\n\nคุณต้องการยืนยันจัดทีมต่อไปหรือไม่?`);
+      if (!confirmProceed) {
+        return false; // Abort operation
+      }
+    }
+
+    // Assign 1 top Priest to each of the main teams
     mainTeamNames.forEach((teamName, tIdx) => {
       if (mainPriests[tIdx]) {
         const p = mainPriests[tIdx];
@@ -1136,73 +1188,149 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('page-settings').classList.add('active');
   });
 
+function getRecommendedMain60Candidates() {
+  const masterList = getMasterMemberList();
+  const allPriests = masterList.filter(m => m.job === 'Priest').sort((a, b) => (b.power || 0) - (a.power || 0));
+  const top12Priests = allPriests.slice(0, 12);
+  const top12PriestNames = new Set(top12Priests.map(p => p.name.trim().toLowerCase()));
+
+  const remainingMembers = masterList.filter(m => !top12PriestNames.has(m.name.trim().toLowerCase())).sort((a, b) => (b.power || 0) - (a.power || 0));
+  const neededOthers = Math.max(0, 60 - top12Priests.length);
+  const topOthers = remainingMembers.slice(0, neededOthers);
+
+  const combined = [...top12Priests, ...topOthers];
+  combined.sort((a, b) => (b.power || 0) - (a.power || 0));
+  return combined;
+}
+
   // Auto Match Modal Controls
   const btnAutoOptimize = document.getElementById('btnAutoOptimizeTeams');
   const autoMatchModal = document.getElementById('autoMatchModal');
-  const btnCloseAutoModal = document.getElementById('btnCloseAutoMatchModal');
-  const btnCancelAutoModal = document.getElementById('btnCancelAutoMatchModal');
   const btnRunAutoModal = document.getElementById('btnRunAutoMatchModal');
-  const customListContainer = document.getElementById('customListContainer');
+  const btnFillTop60Power = document.getElementById('btnFillTop60Power');
   const customMainListText = document.getElementById('customMainListText');
   const customListCountBadge = document.getElementById('customListCountBadge');
-  const modeRadios = document.querySelectorAll('input[name="autoMatchMode"]');
 
   if (btnAutoOptimize && autoMatchModal) {
     btnAutoOptimize.addEventListener('click', () => {
-      autoMatchModal.style.display = 'flex';
+      openAutoMatchModal();
+      // Pre-fill with recommended 60 candidates (including top 12 Priests)
+      if (customMainListText && !customMainListText.value.trim()) {
+        const rec60 = getRecommendedMain60Candidates();
+        customMainListText.value = rec60.map(m => m.name).join('\n');
+        if (customListCountBadge) customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${rec60.length} / 60 คน`;
+      }
     });
 
-    const closeModal = () => {
-      autoMatchModal.style.display = 'none';
-    };
-
-    btnCloseAutoModal?.addEventListener('click', closeModal);
-    btnCancelAutoModal?.addEventListener('click', closeModal);
-
-    modeRadios.forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        if (e.target.value === 'customList') {
-          customListContainer.style.display = 'block';
-        } else {
-          customListContainer.style.display = 'none';
-        }
+    if (btnFillTop60Power && customMainListText) {
+      btnFillTop60Power.addEventListener('click', () => {
+        const rec60 = getRecommendedMain60Candidates();
+        customMainListText.value = rec60.map(m => m.name).join('\n');
+        if (customListCountBadge) customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${rec60.length} / 60 คน`;
       });
-    });
+    }
 
     if (customMainListText && customListCountBadge) {
       customMainListText.addEventListener('input', () => {
         const raw = customMainListText.value;
         const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-        customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${lines.length} คน`;
+        customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${lines.length} / 60 คน`;
       });
     }
 
     btnRunAutoModal?.addEventListener('click', () => {
-      const selectedMode = document.querySelector('input[name="autoMatchMode"]:checked')?.value;
+      const raw = customMainListText ? customMainListText.value : '';
+      const parsedNames = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 
-      if (selectedMode === 'customList') {
-        const raw = customMainListText ? customMainListText.value : '';
-        const parsedNames = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-
-        if (parsedNames.length === 0) {
-          alert('กรุณาวางรายชื่อตัวละครอย่างน้อย 1 ชื่อในช่องข้อความ');
-          return;
-        }
-
-        autoOptimizeTeams(parsedNames);
-        showToast(`⚡ จัดสนามหลักตาม ${parsedNames.length} รายชื่อที่คุณกำหนดเรียบร้อยแล้ว!`, 'success');
-      } else {
-        autoOptimizeTeams(null);
-        showToast('⚡ จัดทีมให้อัตโนมัติ (คัดจาก 60 พลังสูงสุด) เรียบร้อยแล้ว!', 'success');
+      if (parsedNames.length === 0) {
+        alert('กรุณาวางหรือระบุรายชื่อตัวละครสนามหลักอย่างน้อย 1 ชื่อ');
+        return;
       }
 
-      closeModal();
+      const success = autoOptimizeTeams(parsedNames);
+      if (success !== false) {
+        showToast(`⚡ จัดสนามหลัก (${parsedNames.length} คน) และสนามรองตามเงื่อนไขกิลด์เรียบร้อยแล้ว!`, 'success');
+        closeAutoMatchModal();
+      }
     });
   }
+
+/* Dynamic Team Addition & Removal */
+function addNewTeam() {
+  const fm = fieldMeta[currentFieldIdx];
+  if (!fm) return;
+
+  // Cap Main Field at 12 teams max (60 players)
+  if (fm.isMain && fm.teamNames.length >= 12) {
+    showToast('⚠️ สนามหลักสามารถมีได้สูงสุด 12 ทีม (60 คน) เท่านั้น', 'error');
+    return;
+  }
+
+  const sortedNames = sortTeamNames(fm.teamNames);
+  let maxNum = 0;
+  sortedNames.forEach(tName => {
+    const num = parseInt(tName.replace(/\D/g, ''), 10) || 0;
+    if (num > maxNum) maxNum = num;
+  });
+
+  const nextNum = maxNum + 1;
+  const newTeamName = `ทีม ${nextNum}`;
+
+  fm.teamNames.push(newTeamName);
+  fm.capacity[newTeamName] = 5;
+
+  for (let i = 0; i < 5; i++) {
+    const key = slotKey(currentFieldIdx, newTeamName, i);
+    teamsAssignments[key] = null;
+  }
+
+  saveState();
+  const fieldTitle = fm.isMain ? "สนามหลัก" : "สนามรอง";
+  showToast(`➕ เพิ่ม "${newTeamName}" (5 คน) ใน${fieldTitle}เรียบร้อยแล้ว!`, 'success');
+}
+
+function removeSpecificTeam(targetTeamName) {
+  const fm = fieldMeta[currentFieldIdx];
+  if (!fm || !fm.teamNames || fm.teamNames.length === 0) return;
+
+  if (fm.teamNames.length <= 1) {
+    showToast('⚠️ ต้องมีอย่างน้อย 1 ทีมในสนามนี้', 'error');
+    return;
+  }
+
+  const fieldTitle = fm.isMain ? "สนามหลัก" : "สนามรอง";
+
+  if (confirm(`คุณต้องการลบ "${targetTeamName}" (พร้อมสมาชิกในทีมนี้) ออกจาก${fieldTitle}ใช่หรือไม่?`)) {
+    const cap = fm.capacity[targetTeamName] || 5;
+
+    for (let i = 0; i < cap; i++) {
+      const key = slotKey(currentFieldIdx, targetTeamName, i);
+      const a = teamsAssignments[key];
+      if (a && a.name) {
+        occupiedMap.delete(a.name.trim().toLowerCase());
+      }
+      delete teamsAssignments[key];
+      delete rowJobFilter[key];
+    }
+
+    fm.teamNames = fm.teamNames.filter(t => t !== targetTeamName);
+    delete fm.capacity[targetTeamName];
+
+    saveState();
+    showToast(`🗑️ ลบ "${targetTeamName}" ออกจาก${fieldTitle}เรียบร้อยแล้ว!`, 'info');
+  }
+}
+
+window.removeSpecificTeam = removeSpecificTeam;
 
   // Team Search Handler
   const teamSearchInput = document.getElementById('teamSearchInput');
   const btnTeamSearch = document.getElementById('btnTeamSearch');
+  const btnAddTeamBtn = document.getElementById('btnAddTeamBtn');
+  const btnRemoveTeamBtn = document.getElementById('btnRemoveTeamBtn');
+
+  if (btnAddTeamBtn) btnAddTeamBtn.addEventListener('click', addNewTeam);
+  if (btnRemoveTeamBtn) btnRemoveTeamBtn.addEventListener('click', removeLastTeam);
 
   if (teamSearchInput) {
     teamSearchInput.addEventListener('input', handleTeamSearch);

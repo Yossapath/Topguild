@@ -881,6 +881,31 @@ tr.search-row-match {
   color: #8a5a00;
 }
 
+.btn-delete-team-card {
+  background: #e53e3e;
+  border: none;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  margin-left: 4px;
+  box-shadow: 0 2px 5px rgba(229, 62, 62, 0.4);
+}
+
+.btn-delete-team-card:hover {
+  background: #c53030;
+  color: #ffffff;
+  transform: scale(1.15);
+  box-shadow: 0 3px 8px rgba(197, 48, 48, 0.6);
+}
+
 .team-table {
   width: 100%;
   border-collapse: collapse;
