@@ -230,6 +230,7 @@
         <input type="text" id="rosterSearch" placeholder="ค้นหาชื่อสมาชิก..." aria-label="ค้นหาชื่อสมาชิก">
       </div>
       <div style="display: flex; gap: 8px;">
+        <button class="btn-secondary" id="btnOpenBulkAdd" onclick="openBulkAddModal()">📝 เพิ่มกลุ่ม (Excel)</button>
         <button class="btn-primary" id="btnAddMember">➕ เพิ่มสมาชิกใหม่</button>
       </div>
     </div>
@@ -237,6 +238,7 @@
     <div class="summary-strip" id="summaryStrip"></div>
     <div class="job-grid" id="jobGrid"></div>
   </section>
+
 
   <!-- PAGE 2: TEAMS -->
   <section id="page-teams" class="page">
@@ -462,6 +464,31 @@
         </div>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- MODAL: BULK ADD MEMBER -->
+<div class="modal-backdrop" id="bulkAddModal">
+  <div class="modal-box" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3>📝 เพิ่มสมาชิกแบบกลุ่ม (Bulk Add)</h3>
+      <button class="modal-close" onclick="closeBulkAddModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding-top: 6px;">
+      <p style="font-size: 13px; color: var(--text-lo); margin-bottom: 10px;">
+        คุณสามารถ Copy ข้อมูลจาก Excel/Google Sheets มาวางได้เลย (รองรับรูปแบบ: <b>ชื่อ อาชีพ พลัง</b> คั่นด้วย Tab, ลูกน้ำ(,) หรือเว้นวรรค) หรือพิมพ์ทีละบรรทัด
+      </p>
+      <div style="background: rgba(47, 143, 214, 0.08); border: 1px dashed var(--blue-500); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 12.5px; color: var(--blue-900); display: flex; flex-direction: column; gap: 4px;">
+        <b>ตัวอย่างที่รองรับ (แต่ละบรรทัดคือ 1 คน):</b>
+        <span style="font-family: monospace;">Heinzer, Lord Knight, 35000</span>
+        <span style="font-family: monospace;">Faker	Sniper	42000</span>
+      </div>
+      <textarea id="bulkAddText" rows="10" style="width: 100%; border-radius: 10px; border: 1.5px solid var(--line); padding: 12px; font-family: var(--font-body); font-size: 13px; resize: vertical; line-height: 1.5;" placeholder="วางรายชื่อที่นี่..."></textarea>
+    </div>
+    <div class="btn-group" style="justify-content: flex-end; margin-top: 18px;">
+      <button class="btn-secondary" onclick="closeBulkAddModal()">ยกเลิก</button>
+      <button class="btn-primary" id="btnRunBulkAdd" onclick="processBulkAdd()" style="background: linear-gradient(135deg, #15a083, #1c9d8b);">🚀 ยืนยันเพิ่มสมาชิกทั้งหมด</button>
+    </div>
   </div>
 </div>
 

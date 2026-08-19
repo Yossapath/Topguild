@@ -949,6 +949,90 @@ function deleteMember(job, name, triggerSave = true) {
   }
 }
 
+function openBulkAddModal() {
+  const modal = document.getElementById('bulkAddModal');
+  if (modal) {
+    document.getElementById('bulkAddText').value = '';
+    modal.classList.add('show');
+  }
+}
+window.openBulkAddModal = openBulkAddModal;
+
+function closeBulkAddModal() {
+  const modal = document.getElementById('bulkAddModal');
+  if (modal) {
+    modal.classList.remove('show');
+  }
+}
+window.closeBulkAddModal = closeBulkAddModal;
+
+window.processBulkAdd = function() {
+  const text = document.getElementById('bulkAddText').value.trim();
+  if (!text) {
+    showToast("กรุณาวางข้อมูลรายชื่อก่อน", "warning");
+    return;
+  }
+  
+  const lines = text.split('\n');
+  let addedCount = 0;
+  let errorCount = 0;
+  let currentRosterNames = new Set();
+  
+  Object.keys(guildRoster).forEach(j => {
+    (guildRoster[j] || []).forEach(m => currentRosterNames.add(m.name.trim().toLowerCase()));
+  });
+  
+  const jobMap = {};
+  JOB_LIST.forEach(j => {
+    jobMap[j.toLowerCase()] = j;
+    jobMap[j.replace(/\s+/g, '').toLowerCase()] = j;
+  });
+  
+  lines.forEach(line => {
+    if (!line.trim()) return;
+    
+    let parts = line.split(/\t|,| {2,}/).map(p => p.trim()).filter(p => p);
+    if (parts.length < 3) {
+      parts = line.split(/\s+/).map(p => p.trim()).filter(p => p);
+    }
+    
+    if (parts.length >= 3) {
+      const name = parts[0];
+      const jobRaw = parts.slice(1, parts.length - 1).join(" ");
+      const powerRaw = parts[parts.length - 1];
+      
+      const normalizedJobRaw = jobRaw.toLowerCase().replace(/\s+/g, '');
+      const job = jobMap[normalizedJobRaw] || jobMap[jobRaw.toLowerCase()];
+      const power = parseInt(powerRaw.replace(/,/g, ''), 10);
+      
+      if (name && job && !isNaN(power)) {
+        const nameLower = name.toLowerCase();
+        if (!currentRosterNames.has(nameLower)) {
+          if (!guildRoster[job]) guildRoster[job] = [];
+          guildRoster[job].push({ name, power });
+          currentRosterNames.add(nameLower);
+          addedCount++;
+        } else {
+          errorCount++;
+        }
+      } else {
+        errorCount++;
+      }
+    } else {
+      errorCount++;
+    }
+  });
+
+  if (addedCount > 0) {
+    saveState();
+    showToast(`เพิ่มสมาชิกสำเร็จ ${addedCount} คน${errorCount > 0 ? ` (ข้ามข้อมูลผิด/ซ้ำ ${errorCount} รายการ)` : ''}`, "success");
+    console.log(`[Bulk Add] Added ${addedCount} members.`);
+    closeBulkAddModal();
+  } else {
+    showToast("ไม่พบข้อมูลที่ถูกต้อง หรือชื่อซ้ำทั้งหมด โปรดตรวจสอบรูปแบบ (ชื่อ อาชีพ พลัง)", "error");
+  }
+}
+
 window.openAutoMatchModal = function() {
   const modal = document.getElementById('autoMatchModal');
   if (modal) {
