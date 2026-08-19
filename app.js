@@ -225,14 +225,23 @@ function loadFromLocalStorage() {
     const localTeams = localStorage.getItem('guild_teams');
 
     if (localRoster) {
-      guildRoster = JSON.parse(localRoster);
+      const parsedRoster = JSON.parse(localRoster);
+      if (parsedRoster && typeof parsedRoster === 'object' && Object.keys(parsedRoster).length > 0) {
+        guildRoster = parsedRoster;
+      } else {
+        guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
+      }
     } else {
       guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
     }
 
     if (localTeams) {
       const teamsData = JSON.parse(localTeams);
-      initTeamStructure(teamsData);
+      if (Array.isArray(teamsData) && teamsData.length > 0) {
+        initTeamStructure(teamsData);
+      } else {
+        initTeamStructure(INITIAL_TEAMS);
+      }
     } else {
       initTeamStructure(INITIAL_TEAMS);
     }
