@@ -660,7 +660,7 @@ h1 {
   font-weight: 700;
   font-size: 14px;
   color: var(--job-color, var(--blue-900));
-  background: color-mix(in srgb, var(--job-color, var(--blue-500)) 12%, white);
+  background: color-mix(in srgb, var(--job-color, var(--blue-500)) 12%, var(--surface));
   padding: 2px 10px;
   border-radius: 12px;
   font-variant-numeric: tabular-nums;
@@ -689,7 +689,7 @@ h1 {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px 12px;
-  background: color-mix(in srgb, var(--job-color, var(--blue-500)) 8%, white);
+  background: color-mix(in srgb, var(--job-color, var(--blue-500)) 8%, var(--surface));
 }
 
 .job-card-head .job-name {
@@ -760,7 +760,7 @@ h1 {
 }
 
 .job-card tbody tr:hover {
-  background: color-mix(in srgb, var(--job-color, var(--blue-500)) 10%, white);
+  background: color-mix(in srgb, var(--job-color, var(--blue-500)) 10%, var(--surface));
 }
 
 .job-card td.rank {
