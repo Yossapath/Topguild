@@ -62,7 +62,7 @@ function showMainApp() {
   if (window.currentUser) {
     const uiInfo = document.getElementById('userInfoDisplay');
     if (uiInfo) {
-      uiInfo.innerHTML = `๐‘ค ${window.escapeHtml ? window.escapeHtml(window.currentUser.username) : window.currentUser.username} <span style="opacity:0.7; margin:0 6px;">|</span> เธขเธจ: ${window.currentUser.role === 'admin' ? '๐‘‘ Admin' : '๐ก๏ธ Member'}`;
+      uiInfo.innerHTML = `👤 ${window.escapeHtml ? window.escapeHtml(window.currentUser.username) : window.currentUser.username} <span style="opacity:0.7; margin:0 6px;">|</span> ยศ: ${window.currentUser.role === 'admin' ? '👑 Admin' : '🛡️ Member'}`;
     }
   }
 }
@@ -70,35 +70,51 @@ function showMainApp() {
 window.handleLogin = async function() {
   const u = document.getElementById('loginUsername').value.trim().toLowerCase();
   const p = document.getElementById('loginPassword').value;
-  if (!u || !p) return window.showToast("เธเธฃเธธเธ“เธฒเธเธฃเธญเธ Username เนเธฅเธฐ Password", "warning");
+  
+  const loginBtn = document.querySelector('#loginForm button[type="submit"]');
+  const setBtnState = (isLoading) => {
+    if (loginBtn) {
+      loginBtn.disabled = isLoading;
+      loginBtn.innerText = isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ';
+      loginBtn.style.opacity = isLoading ? '0.7' : '1';
+    }
+  };
+
+  if (!u || !p) return window.showToast("กรุณากรอก Username และ Password", "warning");
 
   if (!window.db) {
-    window.showToast("เธฃเธฐเธเธเธเธณเธฅเธฑเธเน€เธเธทเนเธญเธกเธ•เนเธญเธเธฒเธเธเนเธญเธกเธนเธฅ เธเธฃเธธเธ“เธฒเธฃเธญเธชเธฑเธเธเธฃเธนเน...", "warning");
+    window.showToast("ระบบกำลังเชื่อมต่อฐานข้อมูล กรุณารอสักครู่...", "warning");
     return;
   }
+
+  setBtnState(true);
 
   try {
     const userRef = doc(window.db, 'users', u);
     const snap = await getDoc(userRef);
     if (!snap.exists()) {
-      window.showToast("เนเธกเนเธเธเธเธนเนเนเธเนเธเธฒเธเธเธตเนเนเธเธฃเธฐเธเธ", "error");
+      window.showToast("ไม่พบผู้ใช้งานนี้ในระบบ", "error");
+      setBtnState(false);
       return;
     }
     const data = snap.data();
     if (data.password !== p) {
-      window.showToast("เธฃเธซเธฑเธชเธเนเธฒเธเนเธกเนเธ–เธนเธเธ•เนเธญเธ", "error");
+      window.showToast("รหัสผ่านไม่ถูกต้อง", "error");
+      setBtnState(false);
       return;
     }
 
     window.currentUser = { username: data.username, role: data.role || 'member', class: data.class };
     localStorage.setItem('guild_current_user', JSON.stringify(window.currentUser));
-    window.showToast(`เธขเธดเธเธ”เธตเธ•เนเธญเธเธฃเธฑเธ ${window.currentUser.username}`, "success");
+    window.showToast(`ยินดีต้อนรับ ${window.currentUser.username}`, "success");
     showMainApp();
     applyRolePermissions();
     if (typeof window.renderAll === 'function') window.renderAll();
+    setBtnState(false);
   } catch (err) {
-    window.showToast("เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธ", "error");
+    window.showToast("เกิดข้อผิดพลาดในการเข้าสู่ระบบ", "error");
     console.error(err);
+    setBtnState(false);
   }
 };
 
@@ -107,15 +123,15 @@ window.handleRegister = async function() {
   const j = document.getElementById('regJob').value;
   const p = document.getElementById('regPassword').value;
   
-  if (!u || !j || !p) return window.showToast("เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเนเธญเธกเธนเธฅเนเธซเนเธเธฃเธเธ–เนเธงเธ", "warning");
-  if (!window.db) return window.showToast("เธขเธฑเธเนเธกเนเนเธ”เนเน€เธเธทเนเธญเธกเธ•เนเธญเธเธฒเธเธเนเธญเธกเธนเธฅ", "warning");
+  if (!u || !j || !p) return window.showToast("กรุณากรอกข้อมูลให้ครบถ้วน", "warning");
+  if (!window.db) return window.showToast("ยังไม่ได้เชื่อมต่อฐานข้อมูล", "warning");
 
   const uLower = u.toLowerCase();
   try {
     const userRef = doc(window.db, 'users', uLower);
     const snap = await getDoc(userRef);
     if (snap.exists()) {
-      window.showToast("Username เธเธตเนเธ–เธนเธเนเธเนเธเธฒเธเนเธฅเนเธง", "error");
+      window.showToast("Username นี้ถูกใช้งานแล้ว", "error");
       return;
     }
     
@@ -134,15 +150,15 @@ window.handleRegister = async function() {
         if (typeof window.renderAll === 'function') window.renderAll();
     }
     
-        window.showToast("สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ", "success");
+    window.showToast("สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ", "success");
+    document.getElementById('regUsername').value = '';
+    document.getElementById('regJob').value = '';
+    document.getElementById('regPassword').value = '';
     if (typeof window.toggleAuthMode === 'function') {
       window.toggleAuthMode('login');
-      document.getElementById('regUsername').value = '';
-      document.getElementById('regJob').value = '';
-      document.getElementById('regPassword').value = '';
     }
   } catch (err) {
-    window.showToast("เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธชเธกเธฑเธเธฃเธชเธกเธฒเธเธดเธ", "error");
+    window.showToast("เกิดข้อผิดพลาดในการสมัครสมาชิก", "error");
     console.error(err);
   }
 };
@@ -201,37 +217,44 @@ async function fetchAndRenderUsers() {
   try {
     const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
     const snap = await getDocs(collection(window.db, 'users'));
-    window.allAdminUsers = [];
+    let html = '';
     snap.forEach(doc => {
       const d = doc.data();
-      d.id = doc.id;
-      window.allAdminUsers.push(d);
+      const roleColor = d.role === 'admin' ? 'var(--warn)' : 'var(--blue-500)';
+      html += `
+        <div style="padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600; color: var(--text-hi); font-size: 14px;">${window.escapeHtml ? window.escapeHtml(d.username) : d.username}</div>
+            <div style="font-size: 12px; color: var(--text-lo); margin-top: 2px;">
+              อาชีพ: ${d.class || '-'} <br>
+              ยศ: <span style="color: ${roleColor}; font-weight: 600;">${d.role === 'admin' ? 'Admin' : 'Member'}</span>
+            </div>
+          </div>
+          ${d.username.toLowerCase() !== window.currentUser.username.toLowerCase() ? 
+            `<button onclick="deleteAccount('${doc.id}')" style="background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px;">ลบ</button>` 
+            : '<span style="font-size:12px; color:var(--text-lo);">คุณ</span>'
+          }
+        </div>
+      `;
     });
-    
-    window.allAdminUsers.sort((a, b) => {
-      if (a.username.toLowerCase() === window.currentUser.username.toLowerCase()) return -1;
-      if (b.username.toLowerCase() === window.currentUser.username.toLowerCase()) return 1;
-      return a.username.localeCompare(b.username);
-    });
-
-    if (window.renderAdminUsers) window.renderAdminUsers();
+    listEl.innerHTML = html || '<div style="text-align: center; color: var(--text-lo); margin-top: 20px;">ไม่พบข้อมูล</div>';
   } catch (err) {
-    console.error("Error fetching users:", err);
-    listEl.innerHTML = '<div style="text-align: center; color: var(--danger); margin-top: 20px;">โหลดข้อมูลล้มเหลว</div>';
+    console.error(err);
+    listEl.innerHTML = '<div style="text-align: center; color: var(--danger); margin-top: 20px;">เกิดข้อผิดพลาด</div>';
   }
 }
 
 window.deleteAccount = async function(docId) {
-  if (!confirm('เธขเธทเธเธขเธฑเธเธเธฒเธฃเธฅเธเธเธฑเธเธเธตเธเธนเนเนเธเนเธเธตเน? เธเธฐเนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธเธนเนเธเธทเธเนเธ”เน')) return;
+  if (!confirm('ยืนยันการลบบัญชีผู้ใช้นี้? จะไม่สามารถกู้คืนได้')) return;
   if (!window.db) return;
   try {
     const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
     await deleteDoc(doc(window.db, 'users', docId));
-    window.showToast("เธฅเธเธเธฑเธเธเธตเธชเธณเน€เธฃเนเธ", "success");
+    window.showToast("ลบบัญชีสำเร็จ", "success");
     fetchAndRenderUsers();
   } catch (err) {
     console.error(err);
-    window.showToast("เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธฅเธ", "error");
+    window.showToast("เกิดข้อผิดพลาดในการลบ", "error");
   }
 };
 
@@ -272,12 +295,12 @@ async function saveDungeonState() {
 }
 
 window.bookDungeonQueue = function() {
-  if (!window.currentUser) return window.showToast("เธเธฃเธธเธ“เธฒเน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธ", "error");
+  if (!window.currentUser) return window.showToast("กรุณาเข้าสู่ระบบ", "error");
   const name = document.getElementById('dqName').value.trim();
   const job = document.getElementById('dqClass').value;
   const dungeon = document.getElementById('dqDungeon').value;
   
-  if (!name || !job || !dungeon) return window.showToast("เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเนเธญเธกเธนเธฅเนเธซเนเธเธฃเธเธ–เนเธงเธ", "warning");
+  if (!name || !job || !dungeon) return window.showToast("กรุณากรอกข้อมูลให้ครบถ้วน", "warning");
 
   dungeonData.queues.push({
     id: Date.now().toString(),
@@ -290,7 +313,7 @@ window.bookDungeonQueue = function() {
   
   document.getElementById('dqName').value = '';
   document.getElementById('dqClass').value = '';
-  window.showToast("เธเธญเธเธเธดเธงเธชเธณเน€เธฃเนเธ!", "success");
+  window.showToast("จองคิวสำเร็จ!", "success");
 };
 
 window.changeDungeonQueueStatus = function(id, newStatus) {
@@ -310,7 +333,6 @@ window.addDungeonTeam = function(dungeonName, capacity) {
   if (!window.currentUser || window.currentUser.role !== 'admin') return;
   dungeonData.teams.push({
     id: Date.now().toString(),
-    type: dungeonName,
     dungeonName,
     capacity,
     members: Array(capacity).fill(null)
@@ -320,7 +342,7 @@ window.addDungeonTeam = function(dungeonName, capacity) {
 
 window.deleteDungeonTeam = function(id) {
   if (!window.currentUser || window.currentUser.role !== 'admin') return;
-  if (confirm("เธเธธเธ“เธ•เนเธญเธเธเธฒเธฃเธฅเธเธ—เธตเธกเธเธตเนเนเธเนเธซเธฃเธทเธญเนเธกเน?")) {
+  if (confirm("คุณต้องการลบทีมนี้ใช่หรือไม่?")) {
     dungeonData.teams = dungeonData.teams.filter(x => x.id !== id);
     saveDungeonState();
   }
@@ -342,18 +364,20 @@ function renderDungeonPage() {
 
   const qList = document.getElementById('dqList');
   if (qList) {
-    qList.innerHTML = dungeonData.queues.map(q => {
+    const currentTab = window.currentDungeonTab || 'มายา (Maya)';
+    const filteredQueues = dungeonData.queues.filter(q => q.dungeon === currentTab);
+    qList.innerHTML = filteredQueues.map(q => {
       const sColor = q.status === 'done' ? 'var(--ok)' : (q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)');
-      const sText = q.status === 'done' ? 'เธชเธณเน€เธฃเนเธ' : (q.status === 'active' ? 'เธเธณเธฅเธฑเธเธฅเธเธ”เธฑเธ' : 'เธฃเธญเธฅเธเธ”เธฑเธ');
+      const sText = q.status === 'done' ? 'สำเร็จ' : (q.status === 'active' ? 'กำลังลงดัน' : 'รอลงดัน');
       
       let adminControls = '';
       if (isAdmin) {
         adminControls = `
           <div style="display:flex; gap: 4px; margin-top: 8px;">
-            <button class="btn-secondary" onclick="changeDungeonQueueStatus('${q.id}', 'waiting')" style="font-size:11px; padding:2px 4px;">เธฃเธญ</button>
-            <button class="btn-secondary" onclick="changeDungeonQueueStatus('${q.id}', 'active')" style="font-size:11px; padding:2px 4px;">เธเธณเธฅเธฑเธเธฅเธ</button>
-            <button class="btn-secondary" onclick="changeDungeonQueueStatus('${q.id}', 'done')" style="font-size:11px; padding:2px 4px;">เน€เธชเธฃเนเธ</button>
-            <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:11px; padding:2px 4px; color:var(--danger); border-color:var(--danger);">เธฅเธ</button>
+            <button class="btn-secondary" onclick="changeDungeonQueueStatus('${q.id}', 'waiting')" style="font-size:11px; padding:2px 4px;">รอ</button>
+            <button class="btn-secondary" onclick="changeDungeonQueueStatus('${q.id}', 'active')" style="font-size:11px; padding:2px 4px;">กำลังลง</button>
+            <button class="btn-secondary" onclick="changeDungeonQueueStatus('${q.id}', 'done')" style="font-size:11px; padding:2px 4px;">เสร็จ</button>
+            <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:11px; padding:2px 4px; color:var(--danger); border-color:var(--danger);">ลบ</button>
           </div>
         `;
       }
@@ -364,18 +388,18 @@ function renderDungeonPage() {
             <span style="font-size:11px; padding:2px 6px; border-radius:12px; background:color-mix(in srgb, ${sColor} 15%, transparent); color:${sColor}; font-weight:600;">${sText}</span>
           </div>
           <div style="font-size:12px; color:var(--text-lo); margin-top:2px;">
-            เธญเธฒเธเธตเธ: ${q.job} <br>เธ”เธฑเธเน€เธเธตเนเธขเธ: ${q.dungeon}
+            อาชีพ: ${q.job} <br>ดันเจี้ยน: ${q.dungeon}
           </div>
           ${adminControls}
         </div>
       `;
-    }).join('') || '<div style="padding:16px; text-align:center; color:var(--text-lo); font-size:13px;">เธขเธฑเธเนเธกเนเธกเธตเธเธดเธง</div>';
+    }).join('') || '<div style="padding:16px; text-align:center; color:var(--text-lo); font-size:13px;">ยังไม่มีคิว</div>';
   }
 
   const tArea = document.getElementById('dungeonTeamsArea');
   if (tArea) {
     tArea.innerHTML = dungeonData.teams
-      .filter(t => t.type === (window.currentDungeonTab || 'เธกเธฒเธขเธฒ (Maya)'))
+      .filter(t => t.type === (window.currentDungeonTab || 'มายา (Maya)'))
       .map(t => {
       let mHtml = '';
       for (let i=0; i<t.capacity; i++) {
@@ -384,14 +408,14 @@ function renderDungeonPage() {
           mHtml += `
             <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
               <span style="width:20px; text-align:right; font-size:12px; color:var(--text-lo);">${i+1}.</span>
-              <input type="text" list="rosterDatalist" value="${window.escapeHtml ? window.escapeHtml(mv) : mv}" onchange="updateDungeonTeamMember('${t.id}', ${i}, this.value)" class="form-control" style="padding:4px 8px; font-size:13px; height:28px;" placeholder="เธเธทเนเธญเธเธเธฅเธเธ”เธฑเธ">
+              <input type="text" list="rosterDatalist" value="${window.escapeHtml ? window.escapeHtml(mv) : mv}" onchange="updateDungeonTeamMember('${t.id}', ${i}, this.value)" class="form-control" style="padding:4px 8px; font-size:13px; height:28px;" placeholder="ชื่อคนลงดัน">
             </div>
           `;
         } else {
           mHtml += `
             <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
               <span style="width:20px; text-align:right; font-size:12px; color:var(--text-lo);">${i+1}.</span>
-              <span style="font-size:13px; color:var(--text-hi);">${mv ? (window.escapeHtml ? window.escapeHtml(mv) : mv) : '<i style="color:var(--text-lo)">- เธงเนเธฒเธ -</i>'}</span>
+              <span style="font-size:13px; color:var(--text-hi);">${mv ? (window.escapeHtml ? window.escapeHtml(mv) : mv) : '<i style="color:var(--text-lo)">- ว่าง -</i>'}</span>
             </div>
           `;
         }
@@ -400,8 +424,8 @@ function renderDungeonPage() {
       return `
         <div class="team-card" style="box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
           <div class="team-card-head" style="display:flex; justify-content:space-between; align-items:center;">
-            <h4 style="margin:0; font-size:15px; color:var(--blue-700);">๐—ก๏ธ ${t.dungeonName}</h4>
-            ${isAdmin ? `<button class="btn-delete-team-card" onclick="deleteDungeonTeam('${t.id}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer;">โ•</button>` : ''}
+            <h4 style="margin:0; font-size:15px; color:var(--blue-700);">🗡️ ${t.dungeonName}</h4>
+            ${isAdmin ? `<button class="btn-delete-team-card" onclick="deleteDungeonTeam('${t.id}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer;">✕</button>` : ''}
           </div>
           <div style="padding: 12px;">
             ${mHtml}
@@ -456,13 +480,13 @@ async function saveAttendanceState() {
 window.createAttendanceDate = function() {
   if (!window.currentUser || window.currentUser.role !== 'admin') return;
   const today = new Date().toISOString().split('T')[0];
-  const dateStr = prompt("เธฃเธฐเธเธธเธงเธฑเธเธ—เธตเนเธชเธณเธซเธฃเธฑเธเธเธฒเธฃเน€เธเนเธเธเธทเนเธญ (YYYY-MM-DD):", today);
+  const dateStr = prompt("ระบุวันที่สำหรับการเช็คชื่อ (YYYY-MM-DD):", today);
   if (!dateStr) return;
   
   if (!attendanceData.dates[dateStr]) {
     attendanceData.dates[dateStr] = {};
     saveAttendanceState();
-    window.showToast(`เธชเธฃเนเธฒเธเธงเธฑเธเธ—เธตเน ${dateStr} เน€เธฃเธตเธขเธเธฃเนเธญเธขเนเธฅเนเธง`, "success");
+    window.showToast(`สร้างวันที่ ${dateStr} เรียบร้อยแล้ว`, "success");
     
     setTimeout(() => {
       const select = document.getElementById('attendanceDateSelect');
@@ -472,7 +496,7 @@ window.createAttendanceDate = function() {
       }
     }, 500);
   } else {
-    window.showToast("เธงเธฑเธเธ—เธตเนเธเธตเนเธ–เธนเธเธชเธฃเนเธฒเธเนเธงเนเนเธฅเนเธง", "warning");
+    window.showToast("วันที่นี้ถูกสร้างไว้แล้ว", "warning");
   }
 };
 
@@ -484,9 +508,9 @@ function renderAttendanceOptions() {
   const dates = Object.keys(attendanceData.dates).sort((a, b) => b.localeCompare(a));
   
   if (dates.length === 0) {
-    select.innerHTML = '<option value="">-- เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅ --</option>';
+    select.innerHTML = '<option value="">-- ไม่มีข้อมูล --</option>';
   } else {
-    select.innerHTML = '<option value="">-- เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธงเธฑเธเธ—เธตเน --</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
+    select.innerHTML = '<option value="">-- กรุณาเลือกวันที่ --</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
     if (dates.includes(currentVal)) {
       select.value = currentVal;
     }
@@ -502,7 +526,7 @@ window.renderAttendanceTable = function() {
   
   const selectedDate = select.value;
   if (!selectedDate) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 24px; color: var(--text-lo);">เธเธฃเธธเธ“เธฒเน€เธฅเธทเธญเธเธซเธฃเธทเธญเธชเธฃเนเธฒเธเธงเธฑเธเธ—เธตเนเน€เธเนเธเธเธทเนเธญ</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 24px; color: var(--text-lo);">กรุณาเลือกหรือสร้างวันที่เช็คชื่อ</td></tr>';
     return;
   }
   
@@ -527,7 +551,7 @@ window.renderAttendanceTable = function() {
   }
   
   if (allMembers.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 24px; color: var(--text-lo);">เนเธกเนเธเธเธฃเธฒเธขเธเธทเนเธญเนเธเธฃเธฐเธเธเธเธดเธฅเธ”เน</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 24px; color: var(--text-lo);">ไม่พบรายชื่อในระบบกิลด์</td></tr>';
     return;
   }
 
@@ -542,23 +566,23 @@ window.renderAttendanceTable = function() {
         <div style="display: flex; justify-content: center; gap: 8px;">
           <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
             <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', 'attended')" ${status === 'attended' ? 'checked' : ''}>
-            <span style="color: var(--ok); font-weight: 600; font-size: 13px;">๐ข เน€เธเนเธฒเธฃเนเธงเธก</span>
+            <span style="color: var(--ok); font-weight: 600; font-size: 13px;">🟢 เข้าร่วม</span>
           </label>
           <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
             <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', 'leave')" ${status === 'leave' ? 'checked' : ''}>
-            <span style="color: var(--warn); font-weight: 600; font-size: 13px;">๐ก เธฅเธฒ</span>
+            <span style="color: var(--warn); font-weight: 600; font-size: 13px;">🟡 ลา</span>
           </label>
           <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
             <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', 'absent')" ${status === 'absent' ? 'checked' : ''}>
-            <span style="color: var(--danger); font-weight: 600; font-size: 13px;">๐”ด เธเธฒเธ”</span>
+            <span style="color: var(--danger); font-weight: 600; font-size: 13px;">🔴 ขาด</span>
           </label>
         </div>
       `;
     } else {
-      let badge = '<span style="color: var(--text-lo);">- เธขเธฑเธเนเธกเนเน€เธเนเธเธเธทเนเธญ -</span>';
-      if (status === 'attended') badge = '<span style="color: var(--ok); font-weight: 600;">๐ข เน€เธเนเธฒเธฃเนเธงเธก</span>';
-      else if (status === 'leave') badge = '<span style="color: var(--warn); font-weight: 600;">๐ก เธฅเธฒ</span>';
-      else if (status === 'absent') badge = '<span style="color: var(--danger); font-weight: 600;">๐”ด เธเธฒเธ”</span>';
+      let badge = '<span style="color: var(--text-lo);">- ยังไม่เช็คชื่อ -</span>';
+      if (status === 'attended') badge = '<span style="color: var(--ok); font-weight: 600;">🟢 เข้าร่วม</span>';
+      else if (status === 'leave') badge = '<span style="color: var(--warn); font-weight: 600;">🟡 ลา</span>';
+      else if (status === 'absent') badge = '<span style="color: var(--danger); font-weight: 600;">🔴 ขาด</span>';
       
       statusUI = `<div style="text-align: center;">${badge}</div>`;
     }
@@ -583,7 +607,7 @@ window.updateAttendanceStatus = function(dateStr, name, status) {
 };
 
 window.setupAttendanceFirebase = setupAttendanceFirebase;
-let currentDungeonTab = 'เธกเธฒเธขเธฒ (Maya)';
+let currentDungeonTab = 'มายา (Maya)';
 
 window.switchDungeonTab = function(type) {
   currentDungeonTab = type;
@@ -603,7 +627,7 @@ window.switchDungeonTab = function(type) {
 
   window.renderDungeonPage();
 };
-window.currentDungeonTab = 'เธกเธฒเธขเธฒ (Maya)';
+window.currentDungeonTab = 'มายา (Maya)';
 
 window.switchDungeonTab = function(type) {
   window.currentDungeonTab = type;
@@ -621,140 +645,4 @@ window.switchDungeonTab = function(type) {
   });
 
   window.renderDungeonPage();
-};
-
-window.allAdminUsers = [];
-
-window.renderAdminUsers = function() {
-  const listEl = document.getElementById('adminUsersList');
-  if (!listEl) return;
-  const searchInput = document.getElementById('adminUsersSearch');
-  const searchText = searchInput ? searchInput.value.trim().toLowerCase() : '';
-  
-  let html = '';
-  window.allAdminUsers.forEach(d => {
-    if (searchText && !d.username.toLowerCase().includes(searchText)) return;
-    
-    const roleColor = d.role === 'admin' ? 'var(--warn)' : 'var(--blue-500)';
-    
-    let roleSelectHtml = '';
-    if (d.username.toLowerCase() !== window.currentUser.username.toLowerCase()) {
-      roleSelectHtml = `
-        <select onchange="changeUserRole('${d.id}', this.value)" style="font-size: 11px; padding: 2px; border-radius: 4px; border: 1px solid var(--line); margin-left: 4px; background: var(--bg-soft); color: var(--text-hi);">
-          <option value="admin" ${d.role === 'admin' ? 'selected' : ''}>Admin</option>
-          <option value="member" ${d.role !== 'admin' ? 'selected' : ''}>Member</option>
-        </select>
-      `;
-    } else {
-      roleSelectHtml = `<span style="color: ${roleColor}; font-weight: 600; margin-left: 4px;">Admin</span>`;
-    }
-
-    html += `
-      <div style="padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: white;">
-        <div>
-          <div style="font-weight: 600; color: var(--text-hi); font-size: 14px;">${window.escapeHtml ? window.escapeHtml(d.username) : d.username}</div>
-          <div style="font-size: 12px; color: var(--text-lo); margin-top: 2px;">
-            อาชีพ: ${d.class || '-'} <br>
-            Role: ${roleSelectHtml}
-          </div>
-        </div>
-        ${d.username.toLowerCase() !== window.currentUser.username.toLowerCase() ? 
-          `<button onclick="deleteAccount('${d.id}')" style="background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px;">ลบ</button>` 
-          : '<span style="font-size:12px; color:var(--text-lo);">คุณ</span>'
-        }
-      </div>
-    `;
-  });
-  
-  listEl.innerHTML = html || '<div style="text-align: center; color: var(--text-lo); margin-top: 20px;">ไม่พบข้อมูล</div>';
-};
-
-window.changeUserRole = async function(docId, newRole) {
-  if (!window.db || !window.currentUser || window.currentUser.role !== 'admin') return;
-  try {
-    const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-    await updateDoc(doc(window.db, 'users', docId), { role: newRole });
-    window.showToast("อัปเดต Role สำเร็จ", "success");
-    
-    // Update local data
-    const user = window.allAdminUsers.find(u => u.id === docId);
-    if (user) user.role = newRole;
-    window.renderAdminUsers();
-  } catch (err) {
-    window.showToast("อัปเดต Role ไม่สำเร็จ", "error");
-    console.error(err);
-  }
-};
-
-window.updateUserClass = async function(usernameLower, newClass) {
-  if (!window.db) return;
-  try {
-    const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-    await updateDoc(doc(window.db, 'users', usernameLower), { class: newClass });
-    // Update local data
-    if (window.allAdminUsers) {
-      const user = window.allAdminUsers.find(u => u.username.toLowerCase() === usernameLower);
-      if (user) {
-        user.class = newClass;
-        if (window.renderAdminUsers) window.renderAdminUsers();
-      }
-    }
-  } catch (err) {
-    console.error("Error updating user class:", err);
-  }
-};
-
-
-window.handleLogin = async function() {
-  const u = document.getElementById('loginUsername').value.trim().toLowerCase();
-  const p = document.getElementById('loginPassword').value;
-  
-  const loginBtn = document.querySelector('#loginForm button[type="submit"]');
-  const setBtnState = (isLoading) => {
-    if (loginBtn) {
-      loginBtn.disabled = isLoading;
-      loginBtn.innerText = isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ';
-      loginBtn.style.opacity = isLoading ? '0.7' : '1';
-    }
-  };
-
-  if (!u || !p) return window.showToast("กรุณากรอก Username และ Password", "warning");
-
-  if (!window.db) {
-    window.showToast("ระบบกำลังเชื่อมต่อฐานข้อมูล กรุณารอสักครู่...", "warning");
-    return;
-  }
-
-  setBtnState(true);
-
-  try {
-    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-    const userRef = doc(window.db, 'users', u);
-    const snap = await getDoc(userRef);
-    
-    if (!snap.exists()) {
-      window.showToast("ไม่พบผู้ใช้งานนี้ในระบบ", "error");
-      setBtnState(false);
-      return;
-    }
-    
-    const data = snap.data();
-    if (data.password !== p) {
-      window.showToast("รหัสผ่านไม่ถูกต้อง", "error");
-      setBtnState(false);
-      return;
-    }
-
-    window.currentUser = { username: data.username, role: data.role || 'member', class: data.class };
-    localStorage.setItem('guild_current_user', JSON.stringify(window.currentUser));
-    window.showToast(`ยินดีต้อนรับ ${window.currentUser.username}`, "success");
-    if (typeof window.showMainApp === 'function') window.showMainApp();
-    if (typeof window.applyRolePermissions === 'function') window.applyRolePermissions();
-    if (typeof window.renderAll === 'function') window.renderAll();
-    setBtnState(false);
-  } catch (err) {
-    window.showToast("เกิดข้อผิดพลาดในการเข้าสู่ระบบ", "error");
-    console.error(err);
-    setBtnState(false);
-  }
 };
