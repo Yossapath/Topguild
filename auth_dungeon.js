@@ -538,7 +538,9 @@ window.renderAttendanceTable = function() {
   
   const selectedDate = select.value;
   if (!selectedDate) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 24px; color: var(--text-lo);">กรุณาเลือกหรือสร้างวันที่เช็คชื่อ</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-lo);">กรุณาเลือกหรือสร้างวันที่เช็คชื่อ</td></tr>';
+    const summaryDiv = document.getElementById('attendanceSummary');
+    if (summaryDiv) summaryDiv.innerHTML = '';
     return;
   }
   
@@ -549,28 +551,40 @@ window.renderAttendanceTable = function() {
   if (window.guildRoster) {
     Object.values(window.guildRoster).forEach(arr => {
       arr.forEach(m => {
-        allMembers.push(m.name);
+        allMembers.push(m);
       });
     });
   }
   
-  allMembers.sort((a, b) => a.localeCompare(b));
+  allMembers.sort((a, b) => (b.power || 0) - (a.power || 0));
   
   const searchInput = document.getElementById('attendanceSearch');
   const searchText = searchInput ? searchInput.value.trim().toLowerCase() : '';
   if (searchText) {
-    allMembers = allMembers.filter(name => name.toLowerCase().includes(searchText));
+    allMembers = allMembers.filter(m => m.name.toLowerCase().includes(searchText));
   }
   
   if (allMembers.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 24px; color: var(--text-lo);">ไม่พบรายชื่อในระบบกิลด์</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-lo);">ไม่พบรายชื่อในระบบกิลด์</td></tr>';
+    const summaryDiv = document.getElementById('attendanceSummary');
+    if (summaryDiv) summaryDiv.innerHTML = '';
     return;
   }
 
   let html = '';
-  allMembers.forEach((name, idx) => {
+  let countAttended = 0;
+  let countLeave = 0;
+  let countAbsent = 0;
+  let countNone = 0;
+  allMembers.forEach((m, idx) => {
+    const name = m.name;
     const status = records[name] || 'none'; 
     const escapedName = window.escapeHtml ? window.escapeHtml(name) : name;
+    
+    if (status === 'attended') countAttended++;
+    else if (status === 'leave') countLeave++;
+    else if (status === 'absent') countAbsent++;
+    else countNone++;
     
     let statusUI = '';
     if (isAdmin) {
@@ -603,10 +617,34 @@ window.renderAttendanceTable = function() {
       <tr style="border-bottom: 1px solid var(--line);">
         <td style="padding: 10px 16px; color: var(--text-lo);">${idx + 1}</td>
         <td style="padding: 10px 16px; font-weight: 600; color: var(--text-hi);">${escapedName}</td>
+        <td style="padding: 10px 16px; text-align: center; color: var(--text-hi); font-size: 13px;">${m.job || '-'}</td>
+        <td style="padding: 10px 16px; text-align: center; color: var(--text-hi); font-size: 13px;">${m.power ? Number(m.power).toLocaleString('en-US') : '-'}</td>
         <td style="padding: 10px 16px;">${statusUI}</td>
       </tr>
     `;
   });
+  
+  const summaryDiv = document.getElementById('attendanceSummary');
+  if (summaryDiv) {
+    summaryDiv.innerHTML = `
+      <div style="background: var(--bg-soft); padding: 8px 16px; border-radius: 8px; border-left: 4px solid var(--ok); flex: 1; display: flex; flex-direction: column; align-items: center;">
+        <span style="font-size: 12px; color: var(--text-lo); font-weight: 600;">เข้าร่วม (Attended)</span>
+        <span style="font-size: 18px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);">${countAttended}</span>
+      </div>
+      <div style="background: var(--bg-soft); padding: 8px 16px; border-radius: 8px; border-left: 4px solid var(--warn); flex: 1; display: flex; flex-direction: column; align-items: center;">
+        <span style="font-size: 12px; color: var(--text-lo); font-weight: 600;">ลา (Leave)</span>
+        <span style="font-size: 18px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);">${countLeave}</span>
+      </div>
+      <div style="background: var(--bg-soft); padding: 8px 16px; border-radius: 8px; border-left: 4px solid var(--danger); flex: 1; display: flex; flex-direction: column; align-items: center;">
+        <span style="font-size: 12px; color: var(--text-lo); font-weight: 600;">ขาด (Absent)</span>
+        <span style="font-size: 18px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);">${countAbsent}</span>
+      </div>
+      <div style="background: var(--bg-soft); padding: 8px 16px; border-radius: 8px; border-left: 4px solid var(--line); flex: 1; display: flex; flex-direction: column; align-items: center;">
+        <span style="font-size: 12px; color: var(--text-lo); font-weight: 600;">ยังไม่เช็คชื่อ</span>
+        <span style="font-size: 18px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);">${countNone}</span>
+      </div>
+    `;
+  }
   
   tbody.innerHTML = html;
 };
