@@ -684,32 +684,6 @@
 </div>
 
 <!-- MODAL: AUTO OPTIMIZE SETTINGS -->
-<div class="modal-backdrop" id="autoMatchModal">
-  <div class="modal-box" style="max-width: 580px;">
-    <div class="modal-header">
-      <h3>⚡ กำหนดรายชื่อสนามหลัก (60 คน) เพื่อจัดทีม</h3>
-      <button class="modal-close" id="btnCloseAutoMatchModal" onclick="closeAutoMatchModal()">✕</button>
-    </div>
-    <div class="modal-body" style="padding-top: 6px;">
-      <p style="font-size: 13px; color: var(--text-lo); margin-bottom: 10px;">
-        ระบุหรือวางรายชื่อสมาชิก 60 คนสำหรับสนามหลัก (บรรทัดละ 1 ชื่อ) ระบบจะจัดสนามหลักตามรายชื่อนี้ และนำสมาชิกคนที่เหลือทั้งหมดไปจัดลงสนามรองตามกฎกิลด์ให้อัตโนมัติ
-      </p>
-      <div style="background: rgba(47, 143, 214, 0.08); border: 1px dashed var(--blue-500); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 12.5px; color: var(--blue-900); font-weight: 600; display: flex; align-items: center; gap: 6px;">
-        <span>✨ <b>คำแนะนำ:</b> จำนวนที่ดึงอัตโนมัติ จะคัดเลือกมี Priest 12 คนสำหรับสนามหลักให้อัตโนมัติ</span>
-      </div>
-      <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 13px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);" id="customListCountBadge">ตรวจพบรายชื่อ: 0 / 60 คน</span>
-        <button type="button" class="btn-secondary" id="btnFillTop60Power" style="font-size: 12px; padding: 5px 12px;">✨ ดึง 60 พลังสูงสุดมาวางให้ก่อน</button>
-      </div>
-      <textarea id="customMainListText" rows="10" style="width: 100%; border-radius: 10px; border: 1.5px solid var(--line); padding: 12px; font-family: var(--font-body); font-size: 13px; resize: vertical; line-height: 1.5;" placeholder="วางหรือพิมพ์รายชื่อสมาชิกสนามหลักที่นี่ (บรรทัดละ 1 ชื่อ)&#10;ตัวอย่าง:&#10;Heinzer&#10;XxerrosS&#10;OTANI"></textarea>
-    </div>
-    <div class="btn-group" style="justify-content: flex-end; margin-top: 18px;">
-      <button class="btn-secondary" id="btnCancelAutoMatchModal" onclick="closeAutoMatchModal()">ยกเลิก</button>
-      <button class="btn-primary" id="btnRunAutoMatchModal" style="background: linear-gradient(135deg, #15a083, #1c9d8b);">🚀 ประมวลผลและจัดทีมทันที</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL: USER GUIDE & TIPS -->
 <div class="modal-backdrop" id="guideModal">
   <div class="modal-box" style="max-width: 650px;">

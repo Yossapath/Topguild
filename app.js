@@ -1060,6 +1060,13 @@ window.openAutoMatchModal = function() {
   const modal = document.getElementById('autoMatchModal');
   if (modal) {
     modal.classList.add('show');
+    const customMainListText = document.getElementById('customMainListText');
+    const customListCountBadge = document.getElementById('customListCountBadge');
+    if (customMainListText && !customMainListText.value.trim()) {
+      const rec60 = getRecommendedMain60Candidates();
+      customMainListText.value = rec60.map(m => m.name).join('\n');
+      if (customListCountBadge) customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${rec60.length} / 60 คน`;
+    }
   }
 };
 
@@ -1500,34 +1507,24 @@ function getRecommendedMain60Candidates() {
   const customMainListText = document.getElementById('customMainListText');
   const customListCountBadge = document.getElementById('customListCountBadge');
 
-  if (btnAutoOptimize && autoMatchModal) {
-    btnAutoOptimize.addEventListener('click', () => {
-      openAutoMatchModal();
-      // Pre-fill with recommended 60 candidates (including top 12 Priests)
-      if (customMainListText && !customMainListText.value.trim()) {
-        const rec60 = getRecommendedMain60Candidates();
-        customMainListText.value = rec60.map(m => m.name).join('\n');
-        if (customListCountBadge) customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${rec60.length} / 60 คน`;
-      }
+  if (btnFillTop60Power && customMainListText) {
+    btnFillTop60Power.addEventListener('click', () => {
+      const rec60 = getRecommendedMain60Candidates();
+      customMainListText.value = rec60.map(m => m.name).join('\n');
+      if (customListCountBadge) customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${rec60.length} / 60 คน`;
     });
+  }
 
-    if (btnFillTop60Power && customMainListText) {
-      btnFillTop60Power.addEventListener('click', () => {
-        const rec60 = getRecommendedMain60Candidates();
-        customMainListText.value = rec60.map(m => m.name).join('\n');
-        if (customListCountBadge) customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${rec60.length} / 60 คน`;
-      });
-    }
+  if (customMainListText && customListCountBadge) {
+    customMainListText.addEventListener('input', () => {
+      const raw = customMainListText.value;
+      const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${lines.length} / 60 คน`;
+    });
+  }
 
-    if (customMainListText && customListCountBadge) {
-      customMainListText.addEventListener('input', () => {
-        const raw = customMainListText.value;
-        const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-        customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${lines.length} / 60 คน`;
-      });
-    }
-
-    btnRunAutoModal?.addEventListener('click', () => {
+  if (btnRunAutoModal) {
+    btnRunAutoModal.addEventListener('click', () => {
       const raw = customMainListText ? customMainListText.value : '';
       const parsedNames = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 
