@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // ====== AUTHENTICATION & ROLE SYSTEM ======
 // ==========================================
 
@@ -310,6 +310,7 @@ window.addDungeonTeam = function(dungeonName, capacity) {
   if (!window.currentUser || window.currentUser.role !== 'admin') return;
   dungeonData.teams.push({
     id: Date.now().toString(),
+    type: dungeonName,
     dungeonName,
     capacity,
     members: Array(capacity).fill(null)
@@ -703,3 +704,57 @@ window.updateUserClass = async function(usernameLower, newClass) {
   }
 };
 
+
+window.handleLogin = async function() {
+  const u = document.getElementById('loginUsername').value.trim().toLowerCase();
+  const p = document.getElementById('loginPassword').value;
+  
+  const loginBtn = document.querySelector('#loginForm button[type="submit"]');
+  const setBtnState = (isLoading) => {
+    if (loginBtn) {
+      loginBtn.disabled = isLoading;
+      loginBtn.innerText = isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ';
+      loginBtn.style.opacity = isLoading ? '0.7' : '1';
+    }
+  };
+
+  if (!u || !p) return window.showToast("กรุณากรอก Username และ Password", "warning");
+
+  if (!window.db) {
+    window.showToast("ระบบกำลังเชื่อมต่อฐานข้อมูล กรุณารอสักครู่...", "warning");
+    return;
+  }
+
+  setBtnState(true);
+
+  try {
+    const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+    const userRef = doc(window.db, 'users', u);
+    const snap = await getDoc(userRef);
+    
+    if (!snap.exists()) {
+      window.showToast("ไม่พบผู้ใช้งานนี้ในระบบ", "error");
+      setBtnState(false);
+      return;
+    }
+    
+    const data = snap.data();
+    if (data.password !== p) {
+      window.showToast("รหัสผ่านไม่ถูกต้อง", "error");
+      setBtnState(false);
+      return;
+    }
+
+    window.currentUser = { username: data.username, role: data.role || 'member', class: data.class };
+    localStorage.setItem('guild_current_user', JSON.stringify(window.currentUser));
+    window.showToast(`ยินดีต้อนรับ ${window.currentUser.username}`, "success");
+    if (typeof window.showMainApp === 'function') window.showMainApp();
+    if (typeof window.applyRolePermissions === 'function') window.applyRolePermissions();
+    if (typeof window.renderAll === 'function') window.renderAll();
+    setBtnState(false);
+  } catch (err) {
+    window.showToast("เกิดข้อผิดพลาดในการเข้าสู่ระบบ", "error");
+    console.error(err);
+    setBtnState(false);
+  }
+};
