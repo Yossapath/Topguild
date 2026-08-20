@@ -176,6 +176,7 @@
     window.applyTheme = applyTheme;
     window.toggleTheme = toggleTheme;
     window.setJobStyle = setJobStyle;
+    window.toggleAuthMode = toggleAuthMode;
     window.openAutoMatchModal = openAutoMatchModal;
     window.closeAutoMatchModal = closeAutoMatchModal;
     window.openGuideModal = openGuideModal;
@@ -200,8 +201,12 @@
 <body>
 
 <!-- AUTHENTICATION PAGE -->
-<div id="authWrap" style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #e3f2fd, #bbdefb);">
+<div id="authWrap" style="display: flex; justify-content: center; align-items: center; min-height: 100vh; width: 100vw; background: linear-gradient(135deg, #e3f2fd, #bbdefb); position: fixed; top: 0; left: 0; z-index: 10000; box-sizing: border-box;">
   <div style="background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px; margin: 20px;">
+    
+    <div style="text-align: center; margin-bottom: 28px;">
+      <h2 style="margin: 0; color: #1e3a8a; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">Row Topguild</h2>
+    </div>
     <!-- Login Form -->
     <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
       <div class="form-group" style="margin-bottom: 20px;">

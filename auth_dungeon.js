@@ -134,9 +134,12 @@ window.handleRegister = async function() {
         if (typeof window.renderAll === 'function') window.renderAll();
     }
     
-    window.showToast("เธชเธกเธฑเธเธฃเธชเธกเธฒเธเธดเธเธชเธณเน€เธฃเนเธ! เธเธฃเธธเธ“เธฒเน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธ", "success");
+        window.showToast("สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ", "success");
     if (typeof window.toggleAuthMode === 'function') {
       window.toggleAuthMode('login');
+      document.getElementById('regUsername').value = '';
+      document.getElementById('regJob').value = '';
+      document.getElementById('regPassword').value = '';
     }
   } catch (err) {
     window.showToast("เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธชเธกเธฑเธเธฃเธชเธกเธฒเธเธดเธ", "error");
@@ -699,3 +702,4 @@ window.updateUserClass = async function(usernameLower, newClass) {
     console.error("Error updating user class:", err);
   }
 };
+
