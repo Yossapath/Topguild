@@ -161,8 +161,10 @@ function applyRolePermissions() {
   const btnAdminCreateAtt = document.getElementById('btnAdminCreateAttendance');
   if (btnAdminCreateAtt) btnAdminCreateAtt.style.display = isAdmin ? 'block' : 'none';
 
-  const btnAutoOpt = document.getElementById('btnAutoOptimizeTeams');
-  if (btnAutoOpt) btnAutoOpt.style.display = isAdmin ? 'block' : 'none';
+  const btnAutoOptMain = document.getElementById('btnAutoOptimizeMain');
+  if (btnAutoOptMain) btnAutoOptMain.style.display = isAdmin ? 'block' : 'none';
+  const btnAutoOptSub = document.getElementById('btnAutoOptimizeSub');
+  if (btnAutoOptSub) btnAutoOptSub.style.display = isAdmin ? 'block' : 'none';
 
   const tabSettings = document.getElementById('tabSettings');
   if (tabSettings) tabSettings.style.display = isAdmin ? 'block' : 'none';
@@ -375,7 +377,9 @@ function renderDungeonPage() {
 
   const tArea = document.getElementById('dungeonTeamsArea');
   if (tArea) {
-    tArea.innerHTML = dungeonData.teams.map(t => {
+    tArea.innerHTML = dungeonData.teams
+      .filter(t => t.type === (window.currentDungeonTab || 'มายา (Maya)'))
+      .map(t => {
       let mHtml = '';
       for (let i=0; i<t.capacity; i++) {
         const mv = t.members[i] || '';
@@ -383,7 +387,7 @@ function renderDungeonPage() {
           mHtml += `
             <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
               <span style="width:20px; text-align:right; font-size:12px; color:var(--text-lo);">${i+1}.</span>
-              <input type="text" value="${window.escapeHtml ? window.escapeHtml(mv) : mv}" onchange="updateDungeonTeamMember('${t.id}', ${i}, this.value)" class="form-control" style="padding:4px 8px; font-size:13px; height:28px;" placeholder="ชื่อคนลงดัน">
+              <input type="text" list="rosterDatalist" value="${window.escapeHtml ? window.escapeHtml(mv) : mv}" onchange="updateDungeonTeamMember('${t.id}', ${i}, this.value)" class="form-control" style="padding:4px 8px; font-size:13px; height:28px;" placeholder="ชื่อคนลงดัน">
             </div>
           `;
         } else {
@@ -519,6 +523,12 @@ window.renderAttendanceTable = function() {
   
   allMembers.sort((a, b) => a.localeCompare(b));
   
+  const searchInput = document.getElementById('attendanceSearch');
+  const searchText = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  if (searchText) {
+    allMembers = allMembers.filter(name => name.toLowerCase().includes(searchText));
+  }
+  
   if (allMembers.length === 0) {
     tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 24px; color: var(--text-lo);">ไม่พบรายชื่อในระบบกิลด์</td></tr>';
     return;
@@ -576,3 +586,42 @@ window.updateAttendanceStatus = function(dateStr, name, status) {
 };
 
 window.setupAttendanceFirebase = setupAttendanceFirebase;
+let currentDungeonTab = 'มายา (Maya)';
+
+window.switchDungeonTab = function(type) {
+  currentDungeonTab = type;
+  
+  // Update Tab UI
+  document.querySelectorAll('.dungeon-tab').forEach(btn => {
+    if (btn.dataset.type === type) {
+      btn.classList.add('active');
+      btn.style.background = '#2563eb';
+      btn.style.color = 'white';
+    } else {
+      btn.classList.remove('active');
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--text-lo)';
+    }
+  });
+
+  window.renderDungeonPage();
+};
+window.currentDungeonTab = 'มายา (Maya)';
+
+window.switchDungeonTab = function(type) {
+  window.currentDungeonTab = type;
+  
+  document.querySelectorAll('.dungeon-tab').forEach(btn => {
+    if (btn.dataset.type === type) {
+      btn.classList.add('active');
+      btn.style.background = '#2563eb';
+      btn.style.color = 'white';
+    } else {
+      btn.classList.remove('active');
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--text-lo)';
+    }
+  });
+
+  window.renderDungeonPage();
+};

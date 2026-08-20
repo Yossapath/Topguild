@@ -352,6 +352,11 @@ function getRosterTotalCount(rosterObj) {
 /* RENDERERS */
 
 function renderRoster() {
+  const masterList = getMasterMemberList();
+  const datalist = document.getElementById('rosterDatalist');
+  if (datalist) {
+    datalist.innerHTML = masterList.map(m => `<option value="${escapeHtml(m.name)}">${escapeHtml(m.job)} (Power: ${m.power || 0})</option>`).join('');
+  }
   const summaryStrip = document.getElementById('summaryStrip');
   const jobGrid = document.getElementById('jobGrid');
   if (!summaryStrip || !jobGrid) return;
@@ -1063,12 +1068,45 @@ window.closeAutoMatchModal = function() {
 };
 
 /* Custom Guild Team Optimization Algorithm */
-function autoOptimizeTeams(customMainNames = null) {
+function autoOptimizeTeams(customMainNames = null, mode = 'both') {
   const masterList = getMasterMemberList();
 
-  teamsAssignments = {};
-  occupiedMap.clear();
-  const assignedSet = new Set();
+  if (mode === 'both') {
+    teamsAssignments = {};
+    occupiedMap.clear();
+  } else if (mode === 'main') {
+    const mainFm = fieldMeta[0];
+    if (mainFm) {
+      mainFm.teamNames.forEach(teamName => {
+        const cap = mainFm.capacity[teamName] || 5;
+        for (let i = 0; i < cap; i++) {
+          const key = slotKey(0, teamName, i);
+          if (teamsAssignments[key]) {
+            occupiedMap.delete(teamsAssignments[key].name.trim().toLowerCase());
+            delete teamsAssignments[key];
+            delete rowJobFilter[key];
+          }
+        }
+      });
+    }
+  } else if (mode === 'sub') {
+    const subFm = fieldMeta[1];
+    if (subFm) {
+      subFm.teamNames.forEach(teamName => {
+        const cap = subFm.capacity[teamName] || 5;
+        for (let i = 0; i < cap; i++) {
+          const key = slotKey(1, teamName, i);
+          if (teamsAssignments[key]) {
+            occupiedMap.delete(teamsAssignments[key].name.trim().toLowerCase());
+            delete teamsAssignments[key];
+            delete rowJobFilter[key];
+          }
+        }
+      });
+    }
+  }
+
+  const assignedSet = new Set(occupiedMap.keys());
 
   let mainCandidates = [];
 
@@ -1100,6 +1138,7 @@ function autoOptimizeTeams(customMainNames = null) {
   }
 
   /* --- 1. MAIN FIELD OPTIMIZATION (Field 0) --- */
+  if (mode === 'both' || mode === 'main') {
   const mainFm = fieldMeta[0];
   if (mainFm) {
     const mainTeamNames = sortTeamNames(mainFm.teamNames);
@@ -1167,7 +1206,10 @@ function autoOptimizeTeams(customMainNames = null) {
     });
   }
 
+  } // End of Main Field
+  
   /* --- 2. SUB FIELD OPTIMIZATION (Field 1) --- */
+  if (mode === 'both' || mode === 'sub') {
   const subFm = fieldMeta[1];
   if (subFm) {
     const subTeamNames = sortTeamNames(subFm.teamNames);
@@ -1216,6 +1258,7 @@ function autoOptimizeTeams(customMainNames = null) {
       }
     });
   }
+  } // End of Sub Field
 
   saveState();
 }
@@ -1490,13 +1533,22 @@ function getRecommendedMain60Candidates() {
         return;
       }
 
-      const success = autoOptimizeTeams(parsedNames);
+      const success = autoOptimizeTeams(parsedNames, 'main');
       if (success !== false) {
-        showToast(`⚡ จัดสนามหลัก (${parsedNames.length} คน) และสนามรองตามเงื่อนไขกิลด์เรียบร้อยแล้ว!`, 'success');
+        showToast(`⚡ จัดสนามหลัก (${parsedNames.length} คน) เรียบร้อยแล้ว!`, 'success');
         closeAutoMatchModal();
+        renderAll();
       }
     });
   }
+
+window.runAutoOptimizeSub = function() {
+  const success = autoOptimizeTeams(null, 'sub');
+  if (success !== false) {
+    showToast(`⚡ จัดสนามรองเรียบร้อยแล้ว!`, 'success');
+    renderAll();
+  }
+};
 
 /* Dynamic Team Addition & Removal */
 function addNewTeam() {
