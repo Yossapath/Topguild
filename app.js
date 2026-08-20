@@ -109,6 +109,8 @@ let isFirebaseActive = false;
 let unsubRosterListener = null;
 let unsubTeamsListener = null;
 
+let currentUser = null; // { username, role, class }
+
 /* Helper Utilities */
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -250,6 +252,7 @@ async function setupFirebase(configObj) {
 
     const firebaseApp = initializeApp(configObj);
     db = getFirestore(firebaseApp);
+    window.db = db;
     isFirebaseActive = true;
 
     const rosterDocRef = doc(db, 'guild_system', 'roster');
@@ -280,6 +283,10 @@ async function setupFirebase(configObj) {
     ]);
 
     updateStatusUI('online', 'เชื่อมต่อ Firebase Cloud Database (' + configObj.projectId + ') Active 🟢');
+
+    if (window.ensureDefaultAdmin) window.ensureDefaultAdmin();
+    if (window.checkAuth) window.checkAuth();
+    if (window.setupDungeonFirebase) window.setupDungeonFirebase();
 
     const rosterData = toRoster(rSnap);
     const teamsData  = toTeams(tSnap);
@@ -858,7 +865,11 @@ function openMemberModal(name = '', job = '', power = '') {
   
   const deleteBtn = document.getElementById('btnDeleteMemberModal');
   if (deleteBtn) {
-    deleteBtn.style.display = name ? 'block' : 'none';
+    if (currentUser && currentUser.role !== 'admin') {
+      deleteBtn.style.display = 'none';
+    } else {
+      deleteBtn.style.display = name ? 'block' : 'none';
+    }
   }
   
   document.getElementById('memberModal').classList.add('show');
@@ -1686,8 +1697,12 @@ function initApp() {
     });
   }
 
-  const btnClear = document.getElementById('btnClearData');
-  if (btnClear) btnClear.addEventListener('click', handleClearAllData);
+  const btnClearAll = document.getElementById('btnClearAllData');
+  if (btnClearAll) btnClearAll.addEventListener('click', handleClearAllData);
+
+  // Initialize UI state before auth finishes
+  document.getElementById('authWrap').style.display = 'block';
+  document.getElementById('appWrap').style.display = 'none';
 }
 
 // Guarantee execution for ES Module scripts regardless of document.readyState
@@ -1907,3 +1922,6 @@ window.addNewTeam = addNewTeam;
 window.removeLastTeam = removeLastTeam;
 window.handleTeamSearch = handleTeamSearch;
 window.warpToFoundTeam = warpToFoundTeam;
+window.showToast = showToast;
+window.renderAll = renderAll;
+window.escapeHtml = escapeHtml;
