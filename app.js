@@ -946,6 +946,9 @@ function saveMemberFromModal(origName, name, job, power, fieldPref = 'any') {
 
   closeMemberModal();
   saveState(); 
+  if (window.updateUserClass) {
+    window.updateUserClass(newNameLower, job);
+  }
   showToast(`บันทึกสมาชิก "${name}" สำเร็จ`, "success");
   console.log(`[Member DB Log] Update Name: ${name}, fieldPref: ${fieldPref}`);
 }
