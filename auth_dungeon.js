@@ -333,6 +333,7 @@ window.addDungeonTeam = function(dungeonName, capacity) {
   if (!window.currentUser || window.currentUser.role !== 'admin') return;
   dungeonData.teams.push({
     id: Date.now().toString(),
+    type: window.currentDungeonTab || 'มายา (Maya)',
     dungeonName,
     capacity,
     members: Array(capacity).fill(null)
@@ -396,40 +397,51 @@ function renderDungeonPage() {
     }).join('') || '<div style="padding:16px; text-align:center; color:var(--text-lo); font-size:13px;">ยังไม่มีคิว</div>';
   }
 
+  function getMemberInfo(name) {
+    if (!window.guildRoster || !name) return { job: '-', power: '' };
+    for (const job in window.guildRoster) {
+      const found = window.guildRoster[job].find(m => m.name.toLowerCase() === name.toLowerCase());
+      if (found) return { job, power: found.power };
+    }
+    return { job: '-', power: '' };
+  }
+
   const tArea = document.getElementById('dungeonTeamsArea');
   if (tArea) {
     tArea.innerHTML = dungeonData.teams
       .filter(t => t.type === (window.currentDungeonTab || 'มายา (Maya)'))
       .map(t => {
       let mHtml = '';
+      let totalPower = 0;
       for (let i=0; i<t.capacity; i++) {
         const mv = t.members[i] || '';
-        if (isAdmin) {
-          mHtml += `
-            <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
-              <span style="width:20px; text-align:right; font-size:12px; color:var(--text-lo);">${i+1}.</span>
-              <input type="text" list="rosterDatalist" value="${window.escapeHtml ? window.escapeHtml(mv) : mv}" onchange="updateDungeonTeamMember('${t.id}', ${i}, this.value)" class="form-control" style="padding:4px 8px; font-size:13px; height:28px;" placeholder="ชื่อคนลงดัน">
-            </div>
-          `;
-        } else {
-          mHtml += `
-            <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
-              <span style="width:20px; text-align:right; font-size:12px; color:var(--text-lo);">${i+1}.</span>
-              <span style="font-size:13px; color:var(--text-hi);">${mv ? (window.escapeHtml ? window.escapeHtml(mv) : mv) : '<i style="color:var(--text-lo)">- ว่าง -</i>'}</span>
-            </div>
-          `;
-        }
+        const info = getMemberInfo(mv);
+        if (info.power) totalPower += Number(info.power);
+        const mvEscaped = window.escapeHtml ? window.escapeHtml(mv) : mv;
+        
+        mHtml += `
+          <tr>
+            <td class="cell-rank">${i+1}</td>
+            <td>${isAdmin ? `<input type="text" list="rosterDatalist" value="${mvEscaped}" onchange="updateDungeonTeamMember('${t.id}', ${i}, this.value)" class="cell-input name-input" placeholder="ชื่อคนลงดัน" style="border:none; background:transparent; width:100%; height:100%;">` : `<span style="font-size:13px; padding-left:6px;">${mvEscaped || '<i style="color:var(--text-lo)">- ว่าง -</i>'}</span>`}</td>
+            <td style="text-align:center; font-size:13px; color:var(--text-hi); font-weight:500;">${info.job}</td>
+            <td style="text-align:center; font-size:13px; color:var(--text-hi); font-weight:500;">${info.power ? Number(info.power).toLocaleString('en-US') : '-'}</td>
+          </tr>
+        `;
       }
       
       return `
-        <div class="team-card" style="box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <div class="team-card">
           <div class="team-card-head" style="display:flex; justify-content:space-between; align-items:center;">
-            <h4 style="margin:0; font-size:15px; color:var(--blue-700);">🗡️ ${t.dungeonName}</h4>
-            ${isAdmin ? `<button class="btn-delete-team-card" onclick="deleteDungeonTeam('${t.id}')" style="background:transparent; border:none; color:var(--danger); cursor:pointer;">✕</button>` : ''}
+            <div class="team-title-group">
+              <span>🗡️ ${t.dungeonName}</span>
+              <span class="team-power-sum">⚡ ${totalPower.toLocaleString('en-US')}</span>
+            </div>
+            ${isAdmin ? `<button class="btn-delete-dungeon-team" onclick="deleteDungeonTeam('${t.id}')" style="background:transparent; border:none; color:white; cursor:pointer;" title="ลบทีม">✕</button>` : ''}
           </div>
-          <div style="padding: 12px;">
-            ${mHtml}
-          </div>
+          <table class="team-table">
+            <thead><tr><th style="width:18px;"></th><th>ชื่อ</th><th style="text-align:center;">อาชีพ</th><th style="text-align:center;">ค่าพลัง</th></tr></thead>
+            <tbody>${mHtml}</tbody>
+          </table>
         </div>
       `;
     }).join('');
@@ -609,24 +621,6 @@ window.updateAttendanceStatus = function(dateStr, name, status) {
 window.setupAttendanceFirebase = setupAttendanceFirebase;
 let currentDungeonTab = 'มายา (Maya)';
 
-window.switchDungeonTab = function(type) {
-  currentDungeonTab = type;
-  
-  // Update Tab UI
-  document.querySelectorAll('.dungeon-tab').forEach(btn => {
-    if (btn.dataset.type === type) {
-      btn.classList.add('active');
-      btn.style.background = '#2563eb';
-      btn.style.color = 'white';
-    } else {
-      btn.classList.remove('active');
-      btn.style.background = 'transparent';
-      btn.style.color = 'var(--text-lo)';
-    }
-  });
-
-  window.renderDungeonPage();
-};
 window.currentDungeonTab = 'มายา (Maya)';
 
 window.switchDungeonTab = function(type) {
@@ -643,6 +637,12 @@ window.switchDungeonTab = function(type) {
       btn.style.color = 'var(--text-lo)';
     }
   });
+
+  const btnCreate = document.getElementById('btnCreateDungeonTeam');
+  if (btnCreate) {
+    const shortName = type.split(' ')[0]; // e.g., 'มายา' from 'มายา (Maya)'
+    btnCreate.innerText = '+ สร้างทีม' + shortName;
+  }
 
   window.renderDungeonPage();
 };
