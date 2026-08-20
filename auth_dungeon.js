@@ -126,6 +126,14 @@ window.handleRegister = async function() {
       role: 'member'
     });
     
+    // Auto-add to Roster
+    if (window.guildRoster && window.saveState) {
+        if (!window.guildRoster[j]) window.guildRoster[j] = [];
+        window.guildRoster[j].push({ name: u, power: 0, fieldPref: 'any' });
+        window.saveState();
+        if (typeof window.renderAll === 'function') window.renderAll();
+    }
+    
     window.showToast("สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ", "success");
     if (typeof window.toggleAuthMode === 'function') {
       window.toggleAuthMode('login');
@@ -147,6 +155,12 @@ window.handleLogout = function() {
 function applyRolePermissions() {
   const isAdmin = window.currentUser && window.currentUser.role === 'admin';
   
+  const btnAdminUsers = document.getElementById('btnAdminUsers');
+  if (btnAdminUsers) btnAdminUsers.style.display = isAdmin ? 'block' : 'none';
+  
+  const btnAdminCreateAtt = document.getElementById('btnAdminCreateAttendance');
+  if (btnAdminCreateAtt) btnAdminCreateAtt.style.display = isAdmin ? 'block' : 'none';
+
   const btnAutoOpt = document.getElementById('btnAutoOptimizeTeams');
   if (btnAutoOpt) btnAutoOpt.style.display = isAdmin ? 'block' : 'none';
 
@@ -160,6 +174,68 @@ function applyRolePermissions() {
   const rmTeamBtn = document.getElementById('btnRemoveTeamBtn');
   if (rmTeamBtn) rmTeamBtn.style.display = isAdmin ? 'block' : 'none';
 }
+
+window.openAdminUsersSidebar = async function() {
+  document.getElementById('adminUsersSidebar').style.left = '0';
+  document.getElementById('adminUsersOverlay').style.display = 'block';
+  setTimeout(() => document.getElementById('adminUsersOverlay').style.opacity = '1', 10);
+  await fetchAndRenderUsers();
+};
+
+window.closeAdminUsersSidebar = function() {
+  document.getElementById('adminUsersSidebar').style.left = '-320px';
+  document.getElementById('adminUsersOverlay').style.opacity = '0';
+  setTimeout(() => document.getElementById('adminUsersOverlay').style.display = 'none', 300);
+};
+
+async function fetchAndRenderUsers() {
+  if (!window.db || !window.currentUser || window.currentUser.role !== 'admin') return;
+  const listEl = document.getElementById('adminUsersList');
+  listEl.innerHTML = '<div style="text-align: center; color: var(--text-lo); margin-top: 20px;">กำลังโหลด...</div>';
+  
+  try {
+    const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+    const snap = await getDocs(collection(window.db, 'users'));
+    let html = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const roleColor = d.role === 'admin' ? 'var(--warn)' : 'var(--blue-500)';
+      html += `
+        <div style="padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600; color: var(--text-hi); font-size: 14px;">${window.escapeHtml ? window.escapeHtml(d.username) : d.username}</div>
+            <div style="font-size: 12px; color: var(--text-lo); margin-top: 2px;">
+              อาชีพ: ${d.class || '-'} <br>
+              ยศ: <span style="color: ${roleColor}; font-weight: 600;">${d.role === 'admin' ? 'Admin' : 'Member'}</span>
+            </div>
+          </div>
+          ${d.username.toLowerCase() !== window.currentUser.username.toLowerCase() ? 
+            `<button onclick="deleteAccount('${doc.id}')" style="background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px;">ลบ</button>` 
+            : '<span style="font-size:12px; color:var(--text-lo);">คุณ</span>'
+          }
+        </div>
+      `;
+    });
+    listEl.innerHTML = html || '<div style="text-align: center; color: var(--text-lo); margin-top: 20px;">ไม่พบข้อมูล</div>';
+  } catch (err) {
+    console.error(err);
+    listEl.innerHTML = '<div style="text-align: center; color: var(--danger); margin-top: 20px;">เกิดข้อผิดพลาด</div>';
+  }
+}
+
+window.deleteAccount = async function(docId) {
+  if (!confirm('ยืนยันการลบบัญชีผู้ใช้นี้? จะไม่สามารถกู้คืนได้')) return;
+  if (!window.db) return;
+  try {
+    const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+    await deleteDoc(doc(window.db, 'users', docId));
+    window.showToast("ลบบัญชีสำเร็จ", "success");
+    fetchAndRenderUsers();
+  } catch (err) {
+    console.error(err);
+    window.showToast("เกิดข้อผิดพลาดในการลบ", "error");
+  }
+};
 
 
 // ==========================================
@@ -339,3 +415,164 @@ function renderDungeonPage() {
 window.ensureDefaultAdmin = ensureDefaultAdmin;
 window.checkAuth = checkAuth;
 window.setupDungeonFirebase = setupDungeonFirebase;
+// ==========================================
+// ====== ATTENDANCE SYSTEM ======
+// ==========================================
+
+let attendanceData = { dates: {} };
+let unsubAttendanceListener = null;
+
+async function setupAttendanceFirebase() {
+  if (!window.db) return;
+  try {
+    const { doc, getDoc, setDoc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+    const attRef = doc(window.db, 'guild_system', 'attendance');
+    
+    const snap = await getDoc(attRef);
+    if (!snap.exists()) {
+      await setDoc(attRef, { dates: {} });
+    }
+
+    unsubAttendanceListener = onSnapshot(attRef, (snapshot) => {
+      if (snapshot.exists()) {
+        attendanceData = snapshot.data();
+        if (!attendanceData.dates) attendanceData.dates = {};
+        renderAttendanceOptions();
+      }
+    });
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+async function saveAttendanceState() {
+  if (!window.db) return;
+  const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+  const attRef = doc(window.db, 'guild_system', 'attendance');
+  await setDoc(attRef, attendanceData);
+}
+
+window.createAttendanceDate = function() {
+  if (!window.currentUser || window.currentUser.role !== 'admin') return;
+  const today = new Date().toISOString().split('T')[0];
+  const dateStr = prompt("ระบุวันที่สำหรับการเช็คชื่อ (YYYY-MM-DD):", today);
+  if (!dateStr) return;
+  
+  if (!attendanceData.dates[dateStr]) {
+    attendanceData.dates[dateStr] = {};
+    saveAttendanceState();
+    window.showToast(`สร้างวันที่ ${dateStr} เรียบร้อยแล้ว`, "success");
+    
+    setTimeout(() => {
+      const select = document.getElementById('attendanceDateSelect');
+      if (select) {
+        select.value = dateStr;
+        window.renderAttendanceTable();
+      }
+    }, 500);
+  } else {
+    window.showToast("วันที่นี้ถูกสร้างไว้แล้ว", "warning");
+  }
+};
+
+function renderAttendanceOptions() {
+  const select = document.getElementById('attendanceDateSelect');
+  if (!select) return;
+  
+  const currentVal = select.value;
+  const dates = Object.keys(attendanceData.dates).sort((a, b) => b.localeCompare(a));
+  
+  if (dates.length === 0) {
+    select.innerHTML = '<option value="">-- ไม่มีข้อมูล --</option>';
+  } else {
+    select.innerHTML = '<option value="">-- กรุณาเลือกวันที่ --</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
+    if (dates.includes(currentVal)) {
+      select.value = currentVal;
+    }
+  }
+  
+  window.renderAttendanceTable();
+}
+
+window.renderAttendanceTable = function() {
+  const select = document.getElementById('attendanceDateSelect');
+  const tbody = document.getElementById('attendanceTbody');
+  if (!select || !tbody) return;
+  
+  const selectedDate = select.value;
+  if (!selectedDate) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 24px; color: var(--text-lo);">กรุณาเลือกหรือสร้างวันที่เช็คชื่อ</td></tr>';
+    return;
+  }
+  
+  const isAdmin = window.currentUser && window.currentUser.role === 'admin';
+  const records = attendanceData.dates[selectedDate] || {};
+  
+  let allMembers = [];
+  if (window.guildRoster) {
+    Object.values(window.guildRoster).forEach(arr => {
+      arr.forEach(m => {
+        allMembers.push(m.name);
+      });
+    });
+  }
+  
+  allMembers.sort((a, b) => a.localeCompare(b));
+  
+  if (allMembers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 24px; color: var(--text-lo);">ไม่พบรายชื่อในระบบกิลด์</td></tr>';
+    return;
+  }
+
+  let html = '';
+  allMembers.forEach((name, idx) => {
+    const status = records[name] || 'none'; 
+    const escapedName = window.escapeHtml ? window.escapeHtml(name) : name;
+    
+    let statusUI = '';
+    if (isAdmin) {
+      statusUI = `
+        <div style="display: flex; justify-content: center; gap: 8px;">
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', 'attended')" ${status === 'attended' ? 'checked' : ''}>
+            <span style="color: var(--ok); font-weight: 600; font-size: 13px;">🟢 เข้าร่วม</span>
+          </label>
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', 'leave')" ${status === 'leave' ? 'checked' : ''}>
+            <span style="color: var(--warn); font-weight: 600; font-size: 13px;">🟡 ลา</span>
+          </label>
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', 'absent')" ${status === 'absent' ? 'checked' : ''}>
+            <span style="color: var(--danger); font-weight: 600; font-size: 13px;">🔴 ขาด</span>
+          </label>
+        </div>
+      `;
+    } else {
+      let badge = '<span style="color: var(--text-lo);">- ยังไม่เช็คชื่อ -</span>';
+      if (status === 'attended') badge = '<span style="color: var(--ok); font-weight: 600;">🟢 เข้าร่วม</span>';
+      else if (status === 'leave') badge = '<span style="color: var(--warn); font-weight: 600;">🟡 ลา</span>';
+      else if (status === 'absent') badge = '<span style="color: var(--danger); font-weight: 600;">🔴 ขาด</span>';
+      
+      statusUI = `<div style="text-align: center;">${badge}</div>`;
+    }
+    
+    html += `
+      <tr style="border-bottom: 1px solid var(--line);">
+        <td style="padding: 10px 16px; color: var(--text-lo);">${idx + 1}</td>
+        <td style="padding: 10px 16px; font-weight: 600; color: var(--text-hi);">${escapedName}</td>
+        <td style="padding: 10px 16px;">${statusUI}</td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+};
+
+window.updateAttendanceStatus = function(dateStr, name, status) {
+  if (!window.currentUser || window.currentUser.role !== 'admin') return;
+  if (!attendanceData.dates[dateStr]) attendanceData.dates[dateStr] = {};
+  attendanceData.dates[dateStr][name] = status;
+  saveAttendanceState();
+};
+
+window.setupAttendanceFirebase = setupAttendanceFirebase;

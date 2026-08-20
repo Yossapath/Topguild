@@ -287,6 +287,7 @@ async function setupFirebase(configObj) {
     if (window.ensureDefaultAdmin) window.ensureDefaultAdmin();
     if (window.checkAuth) window.checkAuth();
     if (window.setupDungeonFirebase) window.setupDungeonFirebase();
+    if (window.setupAttendanceFirebase) window.setupAttendanceFirebase();
 
     const rosterData = toRoster(rSnap);
     const teamsData  = toTeams(tSnap);
@@ -417,7 +418,7 @@ function renderRoster() {
         <td><b>${escapeHtml(m.name)}</b></td>
         <td class="power num-col">${m.power != null ? m.power.toLocaleString('en-US') : '-'}</td>
         <td class="actions" style="text-align:center;">
-          <button class="btn-secondary edit-btn" style="padding:3px 10px;font-size:12px;border-radius:6px;" data-job="${escapeHtml(job)}" data-name="${escapeHtml(m.name)}" data-power="${m.power || ''}">แก้ไข</button>
+          <button class="btn-secondary edit-btn" style="padding:3px 10px;font-size:12px;border-radius:6px;" data-job="${escapeHtml(job)}" data-name="${escapeHtml(m.name)}" data-power="${m.power || ''}" data-fieldpref="${m.fieldPref || 'any'}">แก้ไข</button>
         </td>
       </tr>`).join('');
 
@@ -438,7 +439,7 @@ function renderRoster() {
   jobGrid.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const d = e.currentTarget.dataset;
-      openMemberModal(d.name, d.job, d.power);
+      openMemberModal(d.name, d.job, d.power, d.fieldpref);
     });
   });
 }
@@ -856,11 +857,15 @@ function attachRowListeners() {
 }
 
 /* Member CRUD Logic */
-function openMemberModal(name = '', job = '', power = '') {
+function openMemberModal(name = '', job = '', power = '', fieldPref = 'any') {
   document.getElementById('editOriginalName').value = name;
   document.getElementById('modalMemberName').value = name;
   document.getElementById('modalMemberJob').value = job;
   document.getElementById('modalMemberPower').value = power;
+  
+  const fPrefEl = document.getElementById('modalMemberFieldPref');
+  if (fPrefEl) fPrefEl.value = fieldPref;
+  
   document.getElementById('modalTitle').textContent = name ? 'แก้ไขข้อมูลสมาชิก' : 'เพิ่มสมาชิกใหม่';
   
   const deleteBtn = document.getElementById('btnDeleteMemberModal');
@@ -879,7 +884,7 @@ function closeMemberModal() {
   document.getElementById('memberModal').classList.remove('show');
 }
 
-function saveMemberFromModal(origName, name, job, power) {
+function saveMemberFromModal(origName, name, job, power, fieldPref = 'any') {
   const newNameLower = name.trim().toLowerCase();
   const origNameLower = origName ? origName.trim().toLowerCase() : null;
   
@@ -907,14 +912,13 @@ function saveMemberFromModal(origName, name, job, power) {
     const existingTeamData = teamsAssignments[slot];
     if (existingTeamData) {
       if (existingTeamData.job !== job) {
-        // เปลี่ยนอาชีพ -> นำออกจากทีม (เพื่อป้องกันปัญหาการคำนวณกฏของทีม)
         teamsAssignments[slot] = null;
         occupiedMap.delete(origNameLower);
         showToast(`ระบบนำ ${origName} ออกจากทีมชั่วคราว เนื่องจากการเปลี่ยนอาชีพ`, "warning");
       } else {
-        // เปลี่ยนแค่ชื่อหรือค่าพลัง -> อัปเดตในทีมให้เลย
         teamsAssignments[slot].name = name;
         teamsAssignments[slot].power = power;
+        // Don't update fieldPref in teamsAssignment since it's transient
         if (origNameLower !== newNameLower) {
           occupiedMap.delete(origNameLower);
           occupiedMap.set(newNameLower, slot);
@@ -933,12 +937,12 @@ function saveMemberFromModal(origName, name, job, power) {
 
   // 4. เพิ่มข้อมูลลงอาชีพที่ถูกต้อง
   if (!guildRoster[job]) guildRoster[job] = [];
-  guildRoster[job].push({ name, power });
+  guildRoster[job].push({ name, power, fieldPref });
 
   closeMemberModal();
-  saveState(); // ฟังก์ชันนี้จะเซฟลง Firebase อัตโนมัติ (เป็น Database Log ในตัว)
+  saveState(); 
   showToast(`บันทึกสมาชิก "${name}" สำเร็จ`, "success");
-  console.log(`[Member DB Log] ${origName ? 'Update' : 'Add'} - Name: ${name}, Job: ${job}, Power: ${power}`);
+  console.log(`[Member DB Log] Update Name: ${name}, fieldPref: ${fieldPref}`);
 }
 
 function deleteMember(job, name, triggerSave = true) {
@@ -1411,17 +1415,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function getRecommendedMain60Candidates() {
   const masterList = getMasterMemberList();
-  const allPriests = masterList.filter(m => m.job === 'Priest').sort((a, b) => (b.power || 0) - (a.power || 0));
-  const top12Priests = allPriests.slice(0, 12);
-  const top12PriestNames = new Set(top12Priests.map(p => p.name.trim().toLowerCase()));
+  // Filter out those locked to sub field
+  const eligible = masterList.filter(m => m.fieldPref !== 'sub');
+  
+  // 1. Get everyone locked to 'main'
+  const mainLocked = eligible.filter(m => m.fieldPref === 'main').sort((a, b) => (b.power || 0) - (a.power || 0));
+  const mainLockedNames = new Set(mainLocked.map(p => p.name.trim().toLowerCase()));
 
-  const remainingMembers = masterList.filter(m => !top12PriestNames.has(m.name.trim().toLowerCase())).sort((a, b) => (b.power || 0) - (a.power || 0));
-  const neededOthers = Math.max(0, 60 - top12Priests.length);
-  const topOthers = remainingMembers.slice(0, neededOthers);
+  // 2. We still need up to 12 priests in total (including those in mainLocked)
+  const lockedPriestCount = mainLocked.filter(m => m.job === 'Priest').length;
+  const neededPriests = Math.max(0, 12 - lockedPriestCount);
+  
+  const remainingPriests = eligible.filter(m => m.job === 'Priest' && !mainLockedNames.has(m.name.trim().toLowerCase()))
+                                   .sort((a, b) => (b.power || 0) - (a.power || 0));
+  
+  const topRemainingPriests = remainingPriests.slice(0, neededPriests);
+  const selectedPriestNames = new Set(topRemainingPriests.map(p => p.name.trim().toLowerCase()));
 
-  const combined = [...top12Priests, ...topOthers];
-  combined.sort((a, b) => (b.power || 0) - (a.power || 0));
-  return combined;
+  // 3. Fill the rest of the 60 slots with highest power 'any' players
+  const neededOthers = Math.max(0, 60 - mainLocked.length - topRemainingPriests.length);
+  const remainingOthers = eligible.filter(m => !mainLockedNames.has(m.name.trim().toLowerCase()) && !selectedPriestNames.has(m.name.trim().toLowerCase()))
+                                  .sort((a, b) => (b.power || 0) - (a.power || 0));
+                                  
+  const topOthers = remainingOthers.slice(0, neededOthers);
+
+  const combined = [...mainLocked, ...topRemainingPriests, ...topOthers];
+  // Note: if mainLocked > 60, it will exceed 60. We should trim to 60 just in case.
+  const final60 = combined.slice(0, 60).sort((a, b) => (b.power || 0) - (a.power || 0));
+  
+  return final60;
 }
 
   // Auto Match Modal Controls
@@ -1638,9 +1660,11 @@ function initApp() {
       const name = document.getElementById('modalMemberName').value.trim();
       const job = document.getElementById('modalMemberJob').value;
       const power = document.getElementById('modalMemberPower').value === '' ? null : Number(document.getElementById('modalMemberPower').value);
+      const fieldPrefEl = document.getElementById('modalMemberFieldPref');
+      const fieldPref = fieldPrefEl ? fieldPrefEl.value : 'any';
       
       if (name && job) {
-        saveMemberFromModal(origName, name, job, power);
+        saveMemberFromModal(origName, name, job, power, fieldPref);
       }
     });
   }
@@ -1925,3 +1949,4 @@ window.warpToFoundTeam = warpToFoundTeam;
 window.showToast = showToast;
 window.renderAll = renderAll;
 window.escapeHtml = escapeHtml;
+window.saveState = saveState;
