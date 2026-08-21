@@ -368,7 +368,7 @@
     <button type="button" class="main-tab-btn" data-page="page-attendance" onclick="switchTab('page-attendance')">เช็คชื่อวอ</button>
     <button type="button" class="main-tab-btn" data-page="page-leave" onclick="switchTab('page-leave')">📝 แจ้งลาวอ</button>
     <button type="button" class="main-tab-btn" data-page="page-settings" onclick="switchTab('page-settings')" id="tabSettings">📦 จัดการข้อมูล</button>
-    <button type="button" class="main-tab-btn" data-page="page-logs" onclick="switchTab('page-logs'); window.renderLogPage && window.renderLogPage('logs')" id="tabLogs" style="display:none;">📋 ประวัติระบบ</button>
+    <button type="button" class="main-tab-btn" data-page="page-logs" onclick="switchTab('page-logs'); window.renderLogPage && window.renderLogPage('logs')" id="tabLogs" style="display:none;">ประวัติระบบ</button>
   </nav>
 
   <section id="page-roster" class="page active">
@@ -617,25 +617,27 @@
   </section>
 
   <section id="page-logs" class="page">
-  <div style="max-width:960px; margin:0 auto; padding:16px 0;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
-      <div>
-        <h2 style="margin:0; font-family:var(--font-display); font-size:22px; color:var(--text-hi);">📋 ประวัติระบบ (System Log)</h2>
-        <p style="margin:4px 0 0; color:var(--text-lo); font-size:13px;">บันทึกการกระทำทุกอย่างในระบบดันเจี้ยน — เฉพาะ Admin เท่านั้น</p>
+    <div style="max-width:960px; margin:0 auto; padding:16px 0;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+        <div style="flex:1; min-width:300px;">
+          <h2 style="margin:0; font-family:var(--font-display); font-size:22px; color:var(--text-hi);">ประวัติระบบ (System Log)</h2>
+          <p style="margin:4px 0 12px; color:var(--text-lo); font-size:13px;">บันทึกการกระทำในระบบดันเจี้ยนและการลาวอ — สามารถค้นหาและกู้คืนได้</p>
+          <input type="text" id="logSearchInput" placeholder="ค้นหารายชื่อ, ดันเจี้ยน หรือการกระทำ..." style="width:100%; max-width:400px; padding:10px 14px; border:1px solid var(--line); border-radius:8px; font-family:var(--font-display);" oninput="if(window.renderLogPage) window.renderLogPage(window._currentLogTab || 'dungeon');">
+        </div>
+        <button onclick="window.renderLogPage && window.renderLogPage(window._currentLogTab || 'dungeon')" style="background:var(--blue-500);color:white;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-display);">รีเฟรชข้อมูล</button>
       </div>
-      <button onclick="window.renderLogPage && window.renderLogPage(window._currentLogTab || 'logs')" style="background:var(--blue-500);color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-display);">🔄 รีเฟรช</button>
+      <!-- Sub Tabs -->
+      <div style="display:flex;border-bottom:2px solid var(--line);margin-bottom:20px;gap:0;">
+        <button onclick="window.renderLogPage && window.renderLogPage('dungeon')" id="logPageTabDungeon" style="padding:12px 24px;border:none;border-bottom:3px solid var(--blue-500);background:transparent;font-weight:700;color:var(--blue-500);cursor:pointer;font-family:var(--font-display);font-size:14px;">ประวัติดันเจี้ยน</button>
+        <button onclick="window.renderLogPage && window.renderLogPage('leave')" id="logPageTabLeave" style="padding:12px 24px;border:none;border-bottom:3px solid transparent;background:transparent;font-weight:600;color:var(--text-lo);cursor:pointer;font-family:var(--font-display);font-size:14px;">ประวัติการแจ้งลา</button>
+        <button onclick="window.renderLogPage && window.renderLogPage('backups')" id="logPageTabBackups" style="padding:12px 24px;border:none;border-bottom:3px solid transparent;background:transparent;font-weight:600;color:var(--text-lo);cursor:pointer;font-family:var(--font-display);font-size:14px;">ประวัติ Backup</button>
+      </div>
+      <!-- Body -->
+      <div id="logPageBody" style="min-height:300px;">
+        <div style="text-align:center;padding:60px;color:var(--text-lo);">กำลังโหลดข้อมูล...</div>
+      </div>
     </div>
-    <!-- Sub Tabs -->
-    <div style="display:flex;border-bottom:2px solid var(--line);margin-bottom:20px;gap:0;">
-      <button onclick="window.renderLogPage && window.renderLogPage('logs')" id="logPageTabLogs" style="padding:12px 24px;border:none;border-bottom:3px solid var(--blue-500);background:transparent;font-weight:700;color:var(--blue-500);cursor:pointer;font-family:var(--font-display);font-size:14px;">📋 Log ทั้งหมด</button>
-      <button onclick="window.renderLogPage && window.renderLogPage('backups')" id="logPageTabBackups" style="padding:12px 24px;border:none;border-bottom:3px solid transparent;background:transparent;font-weight:600;color:var(--text-lo);cursor:pointer;font-family:var(--font-display);font-size:14px;">💾 Backup ข้อมูล</button>
-    </div>
-    <!-- Body -->
-    <div id="logPageBody" style="min-height:300px;">
-      <div style="text-align:center;padding:60px;color:var(--text-lo);">⏳ กดปุ่ม "รีเฟรช" หรือสลับแท็บเพื่อโหลดข้อมูล...</div>
-    </div>
-  </div>
-</section>
+  </section>
 
 <section id="page-settings" class="page">
     <div class="settings-card">
