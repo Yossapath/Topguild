@@ -948,6 +948,78 @@ window.switchDungeonTab = function(type) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+
+  const dqNameInput = document.getElementById('dqName');
+  const dqNameDropdown = document.getElementById('dqNameDropdown');
+  
+  if (dqNameInput && dqNameDropdown) {
+    let allMembers = [];
+    
+    function populateDropdown(filterText = '') {
+      if (!window.guildRoster) return;
+      allMembers = [];
+      Object.keys(window.guildRoster).forEach(job => {
+        window.guildRoster[job].forEach(m => {
+          allMembers.push({ name: m.name, job: job, power: m.power || 0 });
+        });
+      });
+      
+      allMembers.sort((a,b) => b.power - a.power);
+      
+      let filtered = allMembers;
+      if (filterText) {
+        const lower = filterText.toLowerCase();
+        filtered = allMembers.filter(m => m.name.toLowerCase().includes(lower));
+      }
+      
+      if (filtered.length === 0) {
+        dqNameDropdown.innerHTML = '<div style="padding: 10px; text-align:center; color:var(--text-lo); font-size: 13px;">ไม่พบชื่อตัวละคร</div>';
+        return;
+      }
+      
+      dqNameDropdown.innerHTML = filtered.map(m => 
+        `<div class="custom-dropdown-item" data-name="${window.escapeHtml ? window.escapeHtml(m.name) : m.name}" data-job="${m.job}">
+          <strong style="color:var(--blue-700);">${window.escapeHtml ? window.escapeHtml(m.name) : m.name}</strong> 
+          <span style="opacity:0.7; font-size:12px;">- ${m.job} (${m.power})</span>
+        </div>`
+      ).join('');
+      
+      // Bind clicks
+      dqNameDropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
+        item.addEventListener('mousedown', (e) => { // mousedown fires before blur
+          e.preventDefault(); 
+          dqNameInput.value = item.getAttribute('data-name');
+          const job = item.getAttribute('data-job');
+          const dqClass = document.getElementById('dqClass');
+          if (dqClass) dqClass.value = job;
+          dqNameDropdown.style.display = 'none';
+        });
+      });
+    }
+    
+    dqNameInput.addEventListener('focus', () => {
+      populateDropdown(dqNameInput.value.trim());
+      dqNameDropdown.style.display = 'block';
+    });
+    
+    dqNameInput.addEventListener('input', (e) => {
+      populateDropdown(e.target.value.trim());
+      dqNameDropdown.style.display = 'block';
+      
+      // Auto match job if typing exact name
+      const val = e.target.value.trim().toLowerCase();
+      const exactMatch = allMembers.find(m => m.name.toLowerCase() === val);
+      if (exactMatch) {
+        const dqClass = document.getElementById('dqClass');
+        if (dqClass) dqClass.value = exactMatch.job;
+      }
+    });
+    
+    dqNameInput.addEventListener('blur', () => {
+      setTimeout(() => { dqNameDropdown.style.display = 'none'; }, 150);
+    });
+  }
+
   const dqNameInput = document.getElementById('dqName');
   if (dqNameInput) {
     dqNameInput.addEventListener('change', (e) => {

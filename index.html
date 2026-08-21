@@ -197,7 +197,14 @@
       setJobStyle(savedStyle);
     });
   </script>
-</head>
+
+  <style>
+    .custom-dropdown-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--line); font-size: 13.5px; color: var(--text-hi); font-family: var(--font-ui); transition: background 0.1s; }
+    .custom-dropdown-item:hover { background: var(--bg-soft); }
+    .custom-dropdown-item:last-child { border-bottom: none; }
+    .custom-dropdown-item.selected { background: rgba(47,143,214,0.1); border-left: 3px solid var(--blue-500); }
+  </style>
+  </head>
 <body>
 
 <!-- AUTHENTICATION PAGE -->
@@ -389,9 +396,11 @@
         </div>
         <div style="padding: 12px; background: var(--surface); border-bottom: 1px solid var(--line);">
           <div class="form-group">
-            <select id="dqName" class="form-control" style="margin-bottom: 8px;">
-              <option value="" disabled selected>-- เลือกชื่อตัวละคร --</option>
-            </select>
+            <div style="position: relative;">
+              <input type="text" id="dqName" class="form-control" placeholder="🔍 พิมพ์ชื่อ หรือคลิกเพื่อเลือก..." autocomplete="off" style="margin-bottom: 8px; cursor: text;">
+              <div id="dqNameDropdown" class="custom-dropdown" style="display:none; position:absolute; top: 38px; left:0; right:0; max-height:220px; overflow-y:auto; background:var(--surface); border:1px solid var(--blue-500); border-radius:8px; z-index:9999; box-shadow:0 6px 16px rgba(0,0,0,0.12);">
+              </div>
+            </div>
             <select id="dqClass" class="form-control" style="margin-bottom: 8px;">
               <option value="" disabled selected>-- เลือกอาชีพ --</option>
               <option value="Lord Knight">Lord Knight</option>
