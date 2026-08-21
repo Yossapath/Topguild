@@ -349,7 +349,7 @@ function renderDungeonPage() {
 
           let sColor, sText;
           if (inTeamIndex !== -1) {
-            sColor = '#ffffff'; // White
+            sColor = 'var(--blue-500)';
             sText = 'อยู่ในทีม ' + inTeamIndex;
           } else {
             sColor = q.status === 'done' ? 'var(--ok)' : (q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)');
