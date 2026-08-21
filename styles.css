@@ -389,8 +389,9 @@ h1 {
   padding: 6px;
   border-radius: 12px;
   border: 1px solid var(--line);
-  max-width: 600px;
+  max-width: 750px;
   box-shadow: 0 2px 10px rgba(20,88,143,0.06);
+  flex-wrap: nowrap;
 }
 
 .main-tab-btn {
@@ -409,6 +410,7 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .main-tab-btn.active {
