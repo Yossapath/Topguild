@@ -637,9 +637,7 @@ function nameSelectHtml(key, job) {
 }
 
 function renderTeams() {
-  buildFieldTabs();
-  buildJobChips();
-
+  const isAdmin = window.currentUser && window.currentUser.role === 'admin';
   const fm = fieldMeta[currentFieldIdx];
   const teamsGrid = document.getElementById('teamsGrid');
   if (!fm || !teamsGrid) return;
@@ -675,17 +673,17 @@ function renderTeams() {
         <tr class="${rowClass}">
           <td class="cell-rank">${i + 1}</td>
           <td>
-            <select class="cell-input name-input ${a && a.name ? '' : 'empty'}" data-slot="${key}">
+            <select class="cell-input name-input ${a && a.name ? '' : 'empty'}" data-slot="${key}" ${isAdmin ? '' : 'disabled'}>
               ${nameSelectHtml(key, job)}
             </select>
           </td>
           <td>
-            <select class="cell-input job-input ${job ? '' : 'empty'}" data-slot="${key}" style="--job-color:${job ? colorOf(job) : ''}">
+            <select class="cell-input job-input ${job ? '' : 'empty'}" data-slot="${key}" style="--job-color:${job ? colorOf(job) : ''}" ${isAdmin ? '' : 'disabled'}>
               ${jobSelectHtml(key, job)}
             </select>
           </td>
           <td><input class="cell-input power-input" type="number" data-slot="${key}" value="${a && a.power != null ? a.power : ''}" placeholder="-"></td>
-          <td class="cell-action"><button class="clear-btn" data-slot="${key}" title="ล้างช่องนี้">✕</button></td>
+          <td class="cell-action">${isAdmin ? `<button class="clear-btn" data-slot="${key}" title="ล้างช่องนี้">✕</button>` : ''}</td>
         </tr>`);
     }
 
@@ -734,7 +732,6 @@ function renderTeams() {
   }
 
   // Toggle Action Buttons depending on field index and admin role
-  const isAdmin = window.currentUser && window.currentUser.role === 'admin';
   const btnMain = document.getElementById('btnAutoOptimizeMain');
   const btnSub = document.getElementById('btnAutoOptimizeSub');
   
