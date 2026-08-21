@@ -749,7 +749,7 @@ function renderTeams() {
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span class="status-badge ${badgeClass}">${badgeText}</span>
-            <button type="button" class="btn-delete-team-card" onclick="removeSpecificTeam('${escapeHtml(teamName)}')" data-team="${escapeHtml(teamName)}" title="ลบ${escapeHtml(teamName)}">✕</button>
+            <button type="button" class="btn-delete-team-card"  data-team="${escapeHtml(teamName)}" title="ลบ${escapeHtml(teamName)}">✕</button>
           </div>
         </div>
         <table class="team-table">
@@ -1816,29 +1816,6 @@ function initApp() {
   if (btnImport) btnImport.addEventListener('click', handleImportJSON);
 
   const importInput = document.getElementById('importFileInput');
-  if (importInput) {
-    importInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const parsed = JSON.parse(evt.target.result);
-          if (parsed.roster && parsed.teams) {
-            guildRoster = parsed.roster;
-            initTeamStructure(parsed.teams);
-            saveState();
-            showToast("นำเข้าข้อมูลจากไฟล์ Backup สำเร็จ", "success");
-          } else {
-            showToast("โครงสร้างไฟล์ JSON ไม่ถูกต้อง", "error");
-          }
-        } catch (err) {
-          showToast("อ่านไฟล์ JSON ไม่สำเร็จ: " + err.message, "error");
-        }
-      };
-      reader.readAsText(file);
-    });
-  }
 
   const btnClearAll = document.getElementById('btnClearAllData');
   if (btnClearAll) btnClearAll.addEventListener('click', handleClearAllData);

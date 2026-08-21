@@ -262,6 +262,8 @@ window.deleteAccount = async function(docId) {
 // ====== DUNGEON SYSTEM ======
 // ==========================================
 let dungeonData = { queues: [], teams: [] };
+    window.dungeonData = dungeonData;
+window.dungeonData = dungeonData;
 let unsubDungeonListener = null;
 
 async function setupDungeonFirebase() {
@@ -277,6 +279,7 @@ async function setupDungeonFirebase() {
     unsubDungeonListener = onSnapshot(dungRef, (snapshot) => {
       if (snapshot.exists()) {
         dungeonData = snapshot.data();
+          window.dungeonData = dungeonData;
         if (!dungeonData.queues) dungeonData.queues = [];
         if (!dungeonData.teams) dungeonData.teams = [];
         renderDungeonPage();
@@ -288,9 +291,10 @@ async function setupDungeonFirebase() {
 }
 
 async function saveDungeonState() {
-  if (!window.db) return;
-  const dungRef = doc(window.db, 'guild_system', 'dungeons');
-  await setDoc(dungRef, dungeonData);
+    if (!window.db) return;
+    const dungRef = doc(window.db, 'guild_system', 'dungeons');
+    window.dungeonData = dungeonData;
+    await setDoc(dungRef, dungeonData);
 }
 
 window.bookDungeonQueue = function() {
@@ -541,6 +545,26 @@ function dungeonJobSelectHtml(currentJob) {
   });
   return out;
 }
+
+
+window.currentDungeonTab = window.currentDungeonTab || 'มายา (Maya)';
+
+window.switchDungeonTab = function(tabName) {
+  window.currentDungeonTab = tabName;
+  // Sync the dqDungeon dropdown
+  const dq = document.getElementById('dqDungeon');
+  if (dq) {
+    Array.from(dq.options).forEach(opt => {
+      if (opt.value === tabName) dq.value = opt.value;
+    });
+  }
+  // Highlight tabs
+  document.querySelectorAll('.dungeon-tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.getAttribute('data-tab') === tabName) btn.classList.add('active');
+  });
+  renderDungeonPage();
+};
 
 function renderDungeonPage() {
   const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
@@ -846,7 +870,7 @@ window.deleteAttendanceDate = function() {
 
 
 window.renderAttendanceTable = function() {
-  const tbody = document.getElementById('attTbody');
+  const tbody = document.getElementById('attendanceTbody');
   if (!tbody) return;
   const select = document.getElementById('attendanceDateSelect');
   if (!select) return;
@@ -878,7 +902,7 @@ window.renderAttendanceTable = function() {
   
   allMembers.sort((a,b) => b.power - a.power);
   
-  const searchInput = document.getElementById('attSearch');
+  const searchInput = document.getElementById('attendanceSearch');
   const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
   
   let html = '';
@@ -966,434 +990,7 @@ window.renderAttendanceStats = function() {
     });
   });
   
-  const action = inputEl.getAttribute('data-action');
-  if (action === 'mainField') {
-    const slotKey = inputEl.getAttribute('data-slot');
-    const requiredJob = window.rowJobFilter ? window.rowJobFilter[slotKey] : '';
-    
-    allMembers = allMembers.filter(m => {
-      // 1. Filter by selected job for this row (if any)
-      if (requiredJob && m.job !== requiredJob) return false;
-      
-      // 2. Filter out already occupied members
-      const lowerName = m.name.toLowerCase();
-      if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
-        // Allow them if they are occupying THIS exact slot
-        if (window.occupiedMap.get(lowerName) !== slotKey) return false;
-      }
-      return true;
-    });
-  }
-  
-  if (action === 'dungeonTeam' && typeof dungeonData !== 'undefined') {
-    const currentTab = window.currentDungeonTab;
-    const inUseNames = new Set();
-    dungeonData.teams.forEach(t => {
-      if (t.type === currentTab) {
-        t.members.forEach((m, idx) => {
-          if (m && m.name) {
-             // Don't filter out if it's the exact slot we are editing
-             const teamId = inputEl.getAttribute('data-team-id');
-             const slotIdx = parseInt(inputEl.getAttribute('data-slot-idx'));
-             if (t.id === teamId && idx === slotIdx) return;
-             inUseNames.add(m.name.toLowerCase());
-          }
-        });
-      }
-    });
-    allMembers = allMembers.filter(m => !inUseNames.has(m.name.toLowerCase()));
-  }
-  
-  const val = filterText.toLowerCase();
-      const filtered = allMembers.filter(m => m.name.toLowerCase().includes(val));
-      
-      if (filtered.length === 0) {
-        leaveNameDropdown.innerHTML = '<div style="padding: 10px; text-align:center; color:var(--text-lo); font-size: 13px;">ไม่พบชื่อตัวละคร</div>';
-        return;
-      }
-      
-      leaveNameDropdown.innerHTML = filtered.map(m => 
-        `<div class="custom-dropdown-item" data-name="${window.escapeHtml ? window.escapeHtml(m.name) : m.name}" data-job="${m.job}">
-          <strong style="color:var(--blue-700);">${window.escapeHtml ? window.escapeHtml(m.name) : m.name}</strong> 
-          <span style="opacity:0.7; font-size:12px;">- ${m.job}</span>
-        </div>`
-      ).join('');
-      
-      leaveNameDropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
-        item.addEventListener('mousedown', (e) => {
-          e.preventDefault(); 
-          leaveNameInput.value = item.getAttribute('data-name');
-          const leaveJob = document.getElementById('leaveJob');
-          if (leaveJob) leaveJob.value = item.getAttribute('data-job');
-          leaveNameDropdown.style.display = 'none';
-        });
-      });
-    }
-    
-    leaveNameInput.addEventListener('focus', () => {
-      populateLeaveDropdown(leaveNameInput.value.trim());
-      leaveNameDropdown.style.display = 'block';
-    });
-    
-    leaveNameInput.addEventListener('input', (e) => {
-      populateLeaveDropdown(e.target.value.trim());
-      leaveNameDropdown.style.display = 'block';
-      
-      const val = e.target.value.trim().toLowerCase();
-      let exactJob = '';
-      Object.keys(window.guildRoster || {}).forEach(job => {
-        (window.guildRoster[job]||[]).forEach(m => {
-          if (m.name.toLowerCase() === val) exactJob = job;
-        });
-      });
-      if (exactJob) {
-        const leaveJob = document.getElementById('leaveJob');
-        if (leaveJob) leaveJob.value = exactJob;
-      }
-    });
-    
-    leaveNameInput.addEventListener('blur', () => {
-      setTimeout(() => { leaveNameDropdown.style.display = 'none'; }, 150);
-    });
-  }
-
-  // Old dqName dropdown removed
-
-
-
-  const saved = localStorage.getItem('guild_current_user');
-  if (saved) {
-    try {
-      window.currentUser = JSON.parse(saved);
-      if (typeof showMainApp === 'function') showMainApp();
-      if (typeof applyRolePermissions === 'function') applyRolePermissions();
-    } catch(e) {}
-  }
-});
-
-
-window.updateAccountRole = async function(docId, newRole) {
-  if (!confirm(`ยืนยันการเปลี่ยน Role เป็น ${newRole}?`)) {
-    fetchAndRenderUsers();
-    return;
-  }
-  if (!window.db) return;
-  try {
-    const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-    await updateDoc(doc(window.db, 'users', docId), { role: newRole });
-    window.showToast("เปลี่ยน Role สำเร็จ", "success");
-    fetchAndRenderUsers();
-  } catch (err) {
-    console.error(err);
-    window.showToast("เกิดข้อผิดพลาดในการเปลี่ยน Role", "error");
-  }
-};
-
-﻿// --- LEAVE SYSTEM ---
-let leaveData = { list: [] };
-let unsubLeaveListener = null;
-
-async function setupLeaveFirebase() {
-  if (!window.db) return;
-  try {
-    const leaveRef = doc(window.db, 'guild_system', 'leaves');
-    const snap = await getDoc(leaveRef);
-    if (!snap.exists()) {
-      await setDoc(leaveRef, { list: [] });
-    }
-
-    unsubLeaveListener = onSnapshot(leaveRef, (snapshot) => {
-      if (snapshot.exists()) {
-        leaveData = snapshot.data();
-        if (!leaveData.list) leaveData.list = [];
-        renderLeaveList();
-      }
-    });
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-async function saveLeaveState() {
-  if (!window.db) return;
-  const leaveRef = doc(window.db, 'guild_system', 'leaves');
-  await setDoc(leaveRef, leaveData);
-}
-
-// Ensure the form gets populated with the current user's name/job
-setInterval(() => {
-  const nameEl = document.getElementById('leaveName');
-  const jobEl = document.getElementById('leaveJob');
-  if (nameEl && window.currentUser && window.currentUser.username) {
-    nameEl.value = window.currentUser.username;
-    
-    // Attempt to auto-fill job if not filled yet
-    if (!jobEl.value && window.guildRoster) {
-      Object.keys(window.guildRoster).forEach(job => {
-        const found = window.guildRoster[job].find(m => m.name.toLowerCase() === window.currentUser.username.toLowerCase());
-        if (found) {
-           jobEl.value = job;
-        }
-      });
-    }
-  }
-}, 1000);
-
-window.submitLeave = function() {
-  const nameEl = document.getElementById('leaveName');
-  const jobEl = document.getElementById('leaveJob');
-  const dayEl = document.getElementById('leaveDay');
-  const dateEl = document.getElementById('leaveDate');
-  
-  if (!nameEl.value || !dayEl.value || !dateEl.value) {
-    window.showToast("กรุณากรอกข้อมูลให้ครบทุกช่อง (รอระบบโหลดชื่อสักครู่)", "error");
-    return;
-  }
-  
-  const leaveObj = {
-    id: Date.now().toString(),
-    name: nameEl.value.trim(),
-    job: jobEl.value || '-',
-    dayStr: dayEl.value,
-    dateStr: dateEl.value // YYYY-MM-DD
-  };
-  
-  leaveData.list.push(leaveObj);
-  saveLeaveState();
-  
-  dayEl.value = '';
-  dateEl.value = '';
-  window.showToast("บันทึกการแจ้งลาเรียบร้อย", "success");
-};
-
-window.deleteLeave = function(id) {
-  if (confirm("ต้องการยกเลิกการแจ้งลานี้ใช่หรือไม่?")) {
-    leaveData.list = leaveData.list.filter(L => L.id !== id);
-    saveLeaveState();
-  }
-};
-
-function renderLeaveList() {
-  const tbody = document.getElementById('leaveListTbody');
-  if (!tbody) return;
-  
-  let html = '';
-  const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
-  const myName = window.currentUser ? window.currentUser.username : '';
-  
-  const sortedList = [...leaveData.list].sort((a,b) => a.dateStr.localeCompare(b.dateStr));
-  
-  sortedList.forEach(L => {
-    const isMine = myName && L.name.toLowerCase() === myName.toLowerCase();
-    const canDelete = isAdmin || isMine;
-    
-    let dayTh = '';
-    if (L.dayStr === 'Tuesday_1') dayTh = 'อังคาร รอบ 1 (21:30-21:55)';
-    else if (L.dayStr === 'Tuesday_2') dayTh = 'อังคาร รอบ 2 (22:00-22:25)';
-    else if (L.dayStr === 'Thursday_1') dayTh = 'พฤหัสบดี (22:00-22:25)';
-    else if (L.dayStr === 'Sunday_1') dayTh = 'อาทิตย์ (21:00-22:00)';
-    else dayTh = L.dayStr;
-    
-    html += `
-      <tr style="border-bottom: 1px solid var(--line);">
-        <td style="padding: 10px;">${L.dateStr}</td>
-        <td style="padding: 10px;">${dayTh}</td>
-        <td style="padding: 10px; font-weight:600; color:var(--text-hi);">${window.escapeHtml ? window.escapeHtml(L.name) : L.name}</td>
-        <td style="padding: 10px; color:var(--text-lo);">${L.job}</td>
-        <td style="padding: 10px; text-align:center;">
-          ${canDelete ? `<button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteLeave('${L.id}')">${isMine ? 'ยกเลิกการลา' : 'ลบ'}</button>` : '-'}
-        </td>
-      </tr>
-    `;
-  });
-  
-  if (html === '') {
-    html = `<tr><td colspan="5" style="text-align:center; padding: 20px; color:var(--text-lo);">ยังไม่มีรายการแจ้งลา</td></tr>`;
-  }
-  
-  tbody.innerHTML = html;
-}
-
-// --- AUTO ATTENDANCE GENERATOR ---
-function getDatesOfCurrentWeek() {
-  const now = new Date();
-  const currentDay = now.getDay(); 
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
-  
-  const formatIso = (d) => {
-    const yr = d.getFullYear();
-    const mo = String(d.getMonth()+1).padStart(2,'0');
-    const da = String(d.getDate()).padStart(2,'0');
-    return `${yr}-${mo}-${da}`;
-  };
-  
-  const tue = new Date(monday); tue.setDate(monday.getDate() + 1); 
-  const thu = new Date(monday); thu.setDate(monday.getDate() + 3); 
-  const sun = new Date(monday); sun.setDate(monday.getDate() + 6); 
-  
-  return {
-    tuesday: formatIso(tue),
-    thursday: formatIso(thu),
-    sunday: formatIso(sun)
-  };
-}
-
-window.autoGenerateAttendance = function() {
-  if (!confirm("ระบบจะสร้างตารางเช็คชื่อของ อังคาร(รอบ 1,2), พฤหัส(รอบ1), อาทิตย์(รอบ1) ของสัปดาห์นี้\nและจะอัปเดตคนลาให้อัตโนมัติ ต้องการดำเนินการหรือไม่?")) {
-    return;
-  }
-  
-  const weekDates = getDatesOfCurrentWeek();
-  const datesToCreate = [
-    { date: weekDates.tuesday + " (อังคาร รอบ 1)", baseDate: weekDates.tuesday, leaveMatch: 'Tuesday_1' },
-    { date: weekDates.tuesday + " (อังคาร รอบ 2)", baseDate: weekDates.tuesday, leaveMatch: 'Tuesday_2' },
-    { date: weekDates.thursday + " (พฤหัส รอบ 1)", baseDate: weekDates.thursday, leaveMatch: 'Thursday_1' },
-    { date: weekDates.sunday + " (อาทิตย์ รอบ 1)", baseDate: weekDates.sunday, leaveMatch: 'Sunday_1' }
-  ];
-  
-  let changed = false;
-  
-  datesToCreate.forEach(target => {
-    // 1. Create table if not exists
-    if (!attendanceData.dates[target.date]) {
-      attendanceData.dates[target.date] = {};
-      changed = true;
-    }
-    
-    // 2. Auto-apply leaves for this exact date & round
-    const matchingLeaves = leaveData.list.filter(L => L.dateStr === target.baseDate && L.dayStr === target.leaveMatch);
-    matchingLeaves.forEach(L => {
-      if (window.guildRoster) {
-        let foundKey = null;
-        Object.keys(window.guildRoster).forEach(job => {
-          (window.guildRoster[job] || []).forEach(m => {
-            if (m.name.toLowerCase() === L.name.toLowerCase()) {
-              foundKey = m.name;
-            }
-          });
-        });
-        
-        if (foundKey) {
-          if (attendanceData.dates[target.date][foundKey] !== 'attended') {
-             attendanceData.dates[target.date][foundKey] = 'leave';
-             changed = true;
-          }
-        }
-      }
-    });
-  });
-  
-  if (changed) {
-    if (typeof saveAttendanceState === 'function') saveAttendanceState();
-    if (typeof renderAttendanceOptions === 'function') renderAttendanceOptions();
-    window.showToast("ออโต้สร้างตารางสำเร็จ และอัปเดตใบลาเรียบร้อย!", "success");
-  } else {
-    window.showToast("ตารางและข้อมูลลาเป็นเวอร์ชันล่าสุดแล้ว", "info");
-  }
-};
-
-window.setupLeaveFirebase = setupLeaveFirebase;
-
-window.activeAutocompleteInput = null;
-
-function showGlobalDropdown(inputEl, filterText = '') {
-  try {
-  if (!window.guildRoster) return;
-  const dropdown = document.getElementById('globalMemberDropdown');
-  if (!dropdown) return;
-  
-  let allMembers = [];
-  Object.keys(window.guildRoster).forEach(job => {
-    window.guildRoster[job].forEach(m => {
-      allMembers.push({ name: m.name, job: job, power: m.power || 0 });
-    });
-  });
-  
-  const action = inputEl.getAttribute('data-action');
-  
-  // Apply specific filters
-  if (action === 'mainField') {
-    const slotKey = inputEl.getAttribute('data-slot');
-    const requiredJob = window.rowJobFilter ? window.rowJobFilter[slotKey] : '';
-    
-    allMembers = allMembers.filter(m => {
-      if (requiredJob && m.job !== requiredJob) return false;
-      const lowerName = m.name.toLowerCase();
-      if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
-        if (window.occupiedMap.get(lowerName) !== slotKey) return false;
-      }
-      return true;
-    });
-  } else if (action === 'dungeonTeam' && typeof window.dungeonData !== 'undefined') {
-    const currentTab = window.currentDungeonTab;
-    const teamId = inputEl.getAttribute('data-team-id');
-    const slotIdx = parseInt(inputEl.getAttribute('data-slot-idx'));
-    const inUseNames = new Set();
-    
-    window.dungeonData.teams.forEach(t => {
-      if (t.type === currentTab) {
-        t.members.forEach((m, idx) => {
-          if (m && m.name) {
-             if (t.id === teamId && idx === slotIdx) return; // Allow current occupant
-             inUseNames.add(m.name.toLowerCase());
-          }
-        });
-      }
-    });
-    allMembers = allMembers.filter(m => !inUseNames.has(m.name.toLowerCase()));
-  }
-  
-  const val = filterText.toLowerCase();
-  const filtered = allMembers.filter(m => m.name.toLowerCase().includes(val));
-  
-  if (filtered.length === 0) {
-    dropdown.innerHTML = '<div style="padding: 10px; text-align:center; color:var(--text-lo); font-size: 13px;">ไม่พบชื่อตัวละคร</div>';
-  } else {
-    dropdown.innerHTML = filtered.map(m => 
-      `<div class="custom-dropdown-item" data-name="${window.escapeHtml ? window.escapeHtml(m.name) : m.name}" data-job="${m.job}" data-power="${m.power}">
-        <strong style="color:var(--blue-700);">${window.escapeHtml ? window.escapeHtml(m.name) : m.name}</strong> 
-        <span style="opacity:0.7; font-size:12px;">- ${m.job} (${m.power})</span>
-      </div>`
-    ).join('');
-    
-    dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
-      item.addEventListener('mousedown', (e) => {
-        e.preventDefault(); 
-        if (window.activeAutocompleteInput) {
-          const newName = item.getAttribute('data-name');
-          window.activeAutocompleteInput.value = newName;
-          
-          const action = window.activeAutocompleteInput.getAttribute('data-action');
-          if (action === 'mainField') {
-             const slot = window.activeAutocompleteInput.getAttribute('data-slot');
-             if (typeof handleNameChange === 'function') handleNameChange(slot, newName);
-          } else if (action === 'dungeonTeam') {
-             const teamId = window.activeAutocompleteInput.getAttribute('data-team-id');
-             const slotIdx = window.activeAutocompleteInput.getAttribute('data-slot-idx');
-             if (typeof updateDungeonTeamName === 'function') updateDungeonTeamName(teamId, parseInt(slotIdx), newName);
-          } else if (action === 'leaveForm') {
-             const job = item.getAttribute('data-job');
-             const leaveJob = document.getElementById('leaveJob');
-             if (leaveJob) leaveJob.value = job;
-          } else if (action === 'dungeonQueue') {
-             const job = item.getAttribute('data-job');
-             const dqClass = document.getElementById('dqClass');
-             if (dqClass) dqClass.value = job;
-          }
-        }
-        dropdown.style.display = 'none';
-      });
-    });
-  }
-  
-  const rect = inputEl.getBoundingClientRect();
-  dropdown.style.top = (rect.bottom + window.scrollY) + 'px';
-  dropdown.style.left = (rect.left + window.scrollX) + 'px';
-  dropdown.style.width = Math.max(200, rect.width) + 'px';
-  dropdown.style.display = 'block';
-  window.activeAutocompleteInput = inputEl;
-  } catch(e) {
+   catch(e) {
     console.error('Dropdown Error:', e);
   }
 }
