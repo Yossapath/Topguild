@@ -1088,7 +1088,7 @@ window.renderAttendanceTable = function() {
            <option value="none" ${!status || status === 'none' ? 'selected' : ''}>--- เว้นว่าง ---</option>
            <option value="attended" ${status === 'attended' ? 'selected' : ''}>เข้าร่วม</option>
            <option value="absent" ${status === 'absent' ? 'selected' : ''}>ขาด</option>
-           <option value="leave" ${status === 'leave' ? 'selected' : ''}>🟡 ลา</option>
+           <option value="leave" ${status === 'leave' ? 'selected' : ''}>ลา</option>
          </select>
        </td>
      </tr>`;
@@ -1102,10 +1102,13 @@ window.renderAttendanceTable = function() {
   const summaryDiv = document.getElementById('attendanceSummary');
   if (summaryDiv) {
     summaryDiv.innerHTML = `
-      <div style="display:flex; justify-content:space-between; margin-bottom: 10px; background:var(--bg-soft); padding: 10px; border-radius: 8px;">
+      <div style="display:flex; justify-content:space-around; align-items:center; margin-bottom: 10px; background:var(--bg-soft); padding: 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 15px; font-weight: 600;">
         <span style="color:var(--text-hi);">ทั้งหมด: ${totalCount} คน</span>
+        <span style="color:var(--line);">|</span>
         <span style="color:var(--ok);">มา: ${joinedCount} คน</span>
-        <span style="color:var(--warn);">🟡 ลา: ${leaveCount} คน</span>
+        <span style="color:var(--line);">|</span>
+        <span style="color:var(--warn);">ลา: ${leaveCount} คน</span>
+        <span style="color:var(--line);">|</span>
         <span style="color:var(--danger);">ขาด: ${absentCount} คน</span>
       </div>
     `;
@@ -1196,9 +1199,13 @@ document.addEventListener('focusout', (e) => {
 });
 
 // Update window scroll to hide dropdown
-window.addEventListener('scroll', () => {
+window.addEventListener('scroll', (e) => {
   const dropdown = document.getElementById('globalMemberDropdown');
-  if (dropdown && dropdown.style.display === 'block') dropdown.style.display = 'none';
+  if (dropdown && dropdown.style.display === 'block') {
+    if (!dropdown.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  }
 }, true);
 
 
