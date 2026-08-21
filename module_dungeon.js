@@ -512,8 +512,8 @@ window.onDungeonSlotDrop = function(event, teamId, slotIdx) {
 };
 
 // Global Exports
-window.ensureDefaultAdmin = ensureDefaultAdmin;
-window.checkAuth = checkAuth;
+
+
 window.setupDungeonFirebase = setupDungeonFirebase;
 window.renderDungeonPage = renderDungeonPage;
 // ==========================================
