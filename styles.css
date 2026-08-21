@@ -158,7 +158,7 @@
 [data-theme="dark"] .team-search-input,
 [data-theme="dark"] .form-control {
   background-color: #0a0a0d !important;
-  color: #94a3b8 !important;
+  color: #f8fafc !important;
   border-color: #1a1a22 !important;
 }
 
@@ -1430,10 +1430,11 @@ select.name-input.empty {
   padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  font-family: monospace;
-  font-size: 12.5px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
   background: var(--bg-soft);
-  color: var(--text-hi);
+  color: var(--blue-900);
   transition: all 0.2s ease;
 }
 
@@ -1447,6 +1448,9 @@ select.name-input.empty {
 textarea.form-control {
   min-height: 140px;
   resize: vertical;
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 400;
 }
 
 .help-text {
