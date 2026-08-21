@@ -200,8 +200,8 @@ function applyRolePermissions() {
   const btnAdminUsers = document.getElementById('btnAdminUsers');
   if (btnAdminUsers) btnAdminUsers.style.display = isAdmin ? 'block' : 'none';
 
-  const btnAdminLogs = document.getElementById('btnAdminLogs');
-  if (btnAdminLogs) btnAdminLogs.style.display = isAdmin ? 'inline-block' : 'none';
+  const tabLogs = document.getElementById('tabLogs');
+  if (tabLogs) tabLogs.style.display = isAdmin ? 'inline-block' : 'none';
 
   const btnAdminCreateAtt = document.getElementById('btnAdminCreateAttendance');
   if (btnAdminCreateAtt) btnAdminCreateAtt.style.display = isAdmin ? 'block' : 'none';
