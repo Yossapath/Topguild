@@ -144,10 +144,20 @@ window.handleRegister = async function() {
     
     // Auto-add to Roster
     if (window.guildRoster && window.saveState) {
-        if (!window.guildRoster[j]) window.guildRoster[j] = [];
-        window.guildRoster[j].push({ name: u, power: 0, fieldPref: 'any' });
-        window.saveState();
-        if (typeof window.renderAll === 'function') window.renderAll();
+        let found = false;
+        Object.keys(window.guildRoster).forEach(jobKey => {
+            const existing = (window.guildRoster[jobKey] || []).find(m => m.name.toLowerCase() === u.toLowerCase());
+            if (existing) {
+                found = true;
+            }
+        });
+        
+        if (!found) {
+            if (!window.guildRoster[j]) window.guildRoster[j] = [];
+            window.guildRoster[j].push({ name: u, power: 0, fieldPref: 'any' });
+            window.saveState();
+            if (typeof window.renderAll === 'function') window.renderAll();
+        }
     }
     
     window.showToast("สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ", "success");
@@ -485,6 +495,7 @@ function renderDungeonPage() {
               <strong style="color:var(--text-hi); font-size:14px;">${escapedName}</strong>
               <span style="font-size:11px; color:var(--text-lo); margin-left:6px;">${q.job}</span>
               ${q.power ? `<span style="font-size:11px; color:var(--text-lo);">⚡${Number(q.power).toLocaleString('en-US')}</span>` : ''}
+              ${q.timestamp ? `<div style="font-size: 10.5px; color: var(--text-lo); margin-top: 5px; display: flex; align-items: center; gap: 4px;"><span style="opacity: 0.6;">🕒</span> ${new Date(q.timestamp).toLocaleString('th-TH', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})} น.</div>` : ''}
             </div>
             <span style="font-size:11px; padding:2px 6px; border-radius:12px; background:color-mix(in srgb, ${sColor} 15%, transparent); color:${sColor}; font-weight:600;">${sText}</span>
           </div>
