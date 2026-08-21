@@ -62,7 +62,7 @@ function showMainApp() {
   if (window.currentUser) {
     const uiInfo = document.getElementById('userInfoDisplay');
     if (uiInfo) {
-      uiInfo.innerHTML = `👤 ${window.escapeHtml ? window.escapeHtml(window.currentUser.username) : window.currentUser.username} <span style="opacity:0.7; margin:0 6px;">|</span> Role: ${window.currentUser.role === 'admin' ? '<span style="color: #f59e0b; font-weight: 700;">👑 Admin</span>' : '🛡️ Member'}`;
+      uiInfo.innerHTML = `👤 ${window.escapeHtml ? window.escapeHtml(window.currentUser.username) : window.currentUser.username} <span style="opacity:0.7; margin:0 6px;">|</span> Role: ${(window.currentUser.role || '').toLowerCase() === 'admin' ? '<span style="color: #f59e0b; font-weight: 700;">👑 Admin</span>' : '🛡️ Member'}`;
     }
   }
 }
