@@ -86,6 +86,7 @@ const JOB_COLORS = {
   "Gunslinger": "#894517",
   "Druid": "#41b388"
 };
+window.JOB_COLORS = JOB_COLORS;
 
 const JOB_LIST = [
   "Lord Knight", "Paladin", "High Wizard", "Sniper", 
@@ -1443,28 +1444,12 @@ function handleTeamSearch() {
 }
 
 function renderAll() {
+  window.guildRoster = guildRoster;
   renderRoster();
   renderTeams();
 }
 
-/* Event Listeners Initialization */
-document.addEventListener('DOMContentLoaded', () => {
-  // Main Tab Navigation
-  document.querySelectorAll('.main-tab-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const pageId = e.currentTarget.dataset.page;
-      if (pageId && typeof switchTab === 'function') {
-        switchTab(pageId);
-      }
-    });
-  });
 
-  // Config Toggle Button in Top Bar
-  const btnConfig = document.getElementById('btnConfigToggle');
-  if (btnConfig) {
-    btnConfig.addEventListener('click', openSettingsPage);
-  }
-});
 
 function getRecommendedMain60Candidates() {
   const masterList = getMasterMemberList();
@@ -1499,48 +1484,7 @@ function getRecommendedMain60Candidates() {
   return final60;
 }
 
-  // Auto Match Modal Controls
-  const btnAutoOptimize = document.getElementById('btnAutoOptimizeTeams');
-  const autoMatchModal = document.getElementById('autoMatchModal');
-  const btnRunAutoModal = document.getElementById('btnRunAutoMatchModal');
-  const btnFillTop60Power = document.getElementById('btnFillTop60Power');
-  const customMainListText = document.getElementById('customMainListText');
-  const customListCountBadge = document.getElementById('customListCountBadge');
 
-  if (btnFillTop60Power && customMainListText) {
-    btnFillTop60Power.addEventListener('click', () => {
-      const rec60 = getRecommendedMain60Candidates();
-      customMainListText.value = rec60.map(m => m.name).join('\n');
-      if (customListCountBadge) customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${rec60.length} / 60 คน`;
-    });
-  }
-
-  if (customMainListText && customListCountBadge) {
-    customMainListText.addEventListener('input', () => {
-      const raw = customMainListText.value;
-      const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-      customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${lines.length} / 60 คน`;
-    });
-  }
-
-  if (btnRunAutoModal) {
-    btnRunAutoModal.addEventListener('click', () => {
-      const raw = customMainListText ? customMainListText.value : '';
-      const parsedNames = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-
-      if (parsedNames.length === 0) {
-        alert('กรุณาวางหรือระบุรายชื่อตัวละครสนามหลักอย่างน้อย 1 ชื่อ');
-        return;
-      }
-
-      const success = autoOptimizeTeams(parsedNames, 'main');
-      if (success !== false) {
-        showToast(`⚡ จัดสนามหลัก (${parsedNames.length} คน) เรียบร้อยแล้ว!`, 'success');
-        closeAutoMatchModal();
-        renderAll();
-      }
-    });
-  }
 
 window.runAutoOptimizeSub = function() {
   const success = autoOptimizeTeams(null, 'sub');
@@ -1614,6 +1558,14 @@ function removeSpecificTeam(targetTeamName) {
     saveState();
     showToast(`🗑️ ลบ "${targetTeamName}" ออกจาก${fieldTitle}เรียบร้อยแล้ว!`, 'info');
   }
+}
+
+function removeLastTeam() {
+  const fm = fieldMeta[currentFieldIdx];
+  if (!fm || !fm.teamNames || fm.teamNames.length === 0) return;
+  const sortedNames = sortTeamNames(fm.teamNames);
+  const lastTeamName = sortedNames[sortedNames.length - 1];
+  removeSpecificTeam(lastTeamName);
 }
 
 window.removeSpecificTeam = removeSpecificTeam;
@@ -1717,6 +1669,47 @@ function initApp() {
       
       if (name && job) {
         saveMemberFromModal(origName, name, job, power, fieldPref);
+      }
+    });
+  }
+
+  // Auto Match Modal Controls
+  const btnRunAutoModal = document.getElementById('btnRunAutoMatchModal');
+  const btnFillTop60Power = document.getElementById('btnFillTop60Power');
+  const customMainListText = document.getElementById('customMainListText');
+  const customListCountBadge = document.getElementById('customListCountBadge');
+
+  if (btnFillTop60Power && customMainListText) {
+    btnFillTop60Power.addEventListener('click', () => {
+      const rec60 = getRecommendedMain60Candidates();
+      customMainListText.value = rec60.map(m => m.name).join('\n');
+      if (customListCountBadge) customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${rec60.length} / 60 คน`;
+    });
+  }
+
+  if (customMainListText && customListCountBadge) {
+    customMainListText.addEventListener('input', () => {
+      const raw = customMainListText.value;
+      const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      customListCountBadge.textContent = `ตรวจพบรายชื่อ: ${lines.length} / 60 คน`;
+    });
+  }
+
+  if (btnRunAutoModal) {
+    btnRunAutoModal.addEventListener('click', () => {
+      const raw = customMainListText ? customMainListText.value : '';
+      const parsedNames = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+
+      if (parsedNames.length === 0) {
+        alert('กรุณาวางหรือระบุรายชื่อตัวละครสนามหลักอย่างน้อย 1 ชื่อ');
+        return;
+      }
+
+      const success = autoOptimizeTeams(parsedNames, 'main');
+      if (success !== false) {
+        showToast(`⚡ จัดสนามหลัก (${parsedNames.length} คน) เรียบร้อยแล้ว!`, 'success');
+        closeAutoMatchModal();
+        renderAll();
       }
     });
   }

@@ -302,9 +302,16 @@ window.bookDungeonQueue = function() {
   
   if (!name || !job || !dungeon) return window.showToast("กรุณากรอกข้อมูลให้ครบถ้วน", "warning");
 
+  // Get power from roster
+  let power = 0;
+  if (window.guildRoster && window.guildRoster[job]) {
+    const found = window.guildRoster[job].find(m => m.name.toLowerCase() === name.toLowerCase());
+    if (found) power = found.power || 0;
+  }
+
   dungeonData.queues.push({
     id: Date.now().toString(),
-    name, job, dungeon,
+    name, job, dungeon, power,
     status: 'waiting',
     timestamp: Date.now()
   });
@@ -331,6 +338,7 @@ window.deleteDungeonQueue = function(id) {
 
 window.addDungeonTeam = function(dungeonName, capacity) {
   if (!window.currentUser || window.currentUser.role !== 'admin') return;
+  const teamNum = dungeonData.teams.filter(t => t.type === window.currentDungeonTab).length + 1;
   dungeonData.teams.push({
     id: Date.now().toString(),
     type: window.currentDungeonTab || 'มายา (Maya)',
@@ -349,13 +357,34 @@ window.deleteDungeonTeam = function(id) {
   }
 };
 
-window.updateDungeonTeamMember = function(teamId, memberIndex, nameVal) {
+// Store member as object { name, job, power } or null
+window.updateDungeonTeamMember = function(teamId, slotIdx, nameVal) {
   if (!window.currentUser || window.currentUser.role !== 'admin') return;
   const t = dungeonData.teams.find(x => x.id === teamId);
-  if (t) {
-    t.members[memberIndex] = nameVal || null;
-    saveDungeonState();
+  if (!t) return;
+
+  if (!nameVal || !nameVal.trim()) {
+    t.members[slotIdx] = null;
+  } else {
+    const name = nameVal.trim();
+    // Auto-lookup job & power from roster
+    let job = '';
+    let power = null;
+    if (window.guildRoster) {
+      for (const j in window.guildRoster) {
+        const found = (window.guildRoster[j] || []).find(m => m.name.toLowerCase() === name.toLowerCase());
+        if (found) { job = j; power = found.power; break; }
+      }
+    }
+    t.members[slotIdx] = { name, job, power };
   }
+  saveDungeonState();
+};
+
+window.clearDungeonSlot = function(teamId, slotIdx) {
+  if (!window.currentUser || window.currentUser.role !== 'admin') return;
+  const t = dungeonData.teams.find(x => x.id === teamId);
+  if (t) { t.members[slotIdx] = null; saveDungeonState(); }
 };
 
 function renderDungeonPage() {
@@ -363,13 +392,16 @@ function renderDungeonPage() {
   const dc = document.getElementById('dungeonAdminControls');
   if (dc) dc.style.display = isAdmin ? 'flex' : 'none';
 
+  const currentTab = window.currentDungeonTab || 'มายา (Maya)';
+
+  // ---- QUEUE PANEL ----
   const qList = document.getElementById('dqList');
   if (qList) {
-    const currentTab = window.currentDungeonTab || 'มายา (Maya)';
     const filteredQueues = dungeonData.queues.filter(q => q.dungeon === currentTab);
     qList.innerHTML = filteredQueues.map(q => {
       const sColor = q.status === 'done' ? 'var(--ok)' : (q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)');
       const sText = q.status === 'done' ? 'สำเร็จ' : (q.status === 'active' ? 'กำลังลงดัน' : 'รอลงดัน');
+      const escapedName = window.escapeHtml ? window.escapeHtml(q.name) : q.name;
       
       let adminControls = '';
       if (isAdmin) {
@@ -382,14 +414,21 @@ function renderDungeonPage() {
           </div>
         `;
       }
+
+      // Draggable queue item (drag to team slot)
+      const dragAttr = isAdmin ? `draggable="true" data-queue-name="${escapedName}" data-queue-job="${window.escapeHtml ? window.escapeHtml(q.job) : q.job}" data-queue-power="${q.power || 0}"` : '';
+      const dragStyle = isAdmin ? 'cursor:grab;' : '';
+
       return `
-        <div style="padding: 10px; border-bottom: 1px solid var(--line); display:flex; flex-direction:column;">
-          <div style="display:flex; justify-content:space-between;">
-            <strong style="color:var(--text-hi); font-size:14px;">${window.escapeHtml ? window.escapeHtml(q.name) : q.name}</strong>
+        <div ${dragAttr} style="padding: 10px; border-bottom: 1px solid var(--line); display:flex; flex-direction:column; ${dragStyle}"
+          ondragstart="window.onDungeonQueueDragStart(event)">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong style="color:var(--text-hi); font-size:14px;">${escapedName}</strong>
+              <span style="font-size:11px; color:var(--text-lo); margin-left:6px;">${q.job}</span>
+              ${q.power ? `<span style="font-size:11px; color:var(--text-lo);">⚡${Number(q.power).toLocaleString('en-US')}</span>` : ''}
+            </div>
             <span style="font-size:11px; padding:2px 6px; border-radius:12px; background:color-mix(in srgb, ${sColor} 15%, transparent); color:${sColor}; font-weight:600;">${sText}</span>
-          </div>
-          <div style="font-size:12px; color:var(--text-lo); margin-top:2px;">
-            อาชีพ: ${q.job} <br>ดันเจี้ยน: ${q.dungeon}
           </div>
           ${adminControls}
         </div>
@@ -397,61 +436,145 @@ function renderDungeonPage() {
     }).join('') || '<div style="padding:16px; text-align:center; color:var(--text-lo); font-size:13px;">ยังไม่มีคิว</div>';
   }
 
-  function getMemberInfo(name) {
-    if (!window.guildRoster || !name) return { job: '-', power: '' };
-    for (const job in window.guildRoster) {
-      const found = window.guildRoster[job].find(m => m.name.toLowerCase() === name.toLowerCase());
-      if (found) return { job, power: found.power };
-    }
-    return { job: '-', power: '' };
+  // ---- TEAMS AREA ----
+  const tArea = document.getElementById('dungeonTeamsArea');
+  if (!tArea) return;
+
+  // Build roster name list for datalist
+  let allRosterNames = [];
+  if (window.guildRoster) {
+    Object.values(window.guildRoster).forEach(arr => arr.forEach(m => allRosterNames.push(m.name)));
   }
 
-  const tArea = document.getElementById('dungeonTeamsArea');
-  if (tArea) {
-    tArea.innerHTML = dungeonData.teams
-      .filter(t => t.type === (window.currentDungeonTab || 'มายา (Maya)'))
-      .map(t => {
-      let mHtml = '';
-      let totalPower = 0;
-      for (let i=0; i<t.capacity; i++) {
-        const mv = t.members[i] || '';
-        const info = getMemberInfo(mv);
-        if (info.power) totalPower += Number(info.power);
-        const mvEscaped = window.escapeHtml ? window.escapeHtml(mv) : mv;
-        
+  const teamsForTab = dungeonData.teams.filter(t => t.type === currentTab);
+
+  if (teamsForTab.length === 0) {
+    tArea.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-lo);">
+      ${isAdmin ? 'ยังไม่มีทีม กดปุ่มด้านบนเพื่อสร้างทีม' : 'ยังไม่มีทีมในดันเจี้ยนนี้'}
+    </div>`;
+    return;
+  }
+
+  tArea.innerHTML = teamsForTab.map(t => {
+    let mHtml = '';
+    let totalPower = 0;
+    let filledCount = 0;
+
+    for (let i = 0; i < t.capacity; i++) {
+      const member = t.members[i]; // now { name, job, power } or null (or legacy string)
+      // Handle legacy string format
+      const memberName = member ? (typeof member === 'string' ? member : (member.name || '')) : '';
+      let memberJob = member ? (typeof member === 'string' ? '' : (member.job || '')) : '';
+      let memberPower = member ? (typeof member === 'string' ? null : (member.power || null)) : null;
+
+      // If legacy string, try to look up from roster
+      if (memberName && !memberJob && window.guildRoster) {
+        for (const j in window.guildRoster) {
+          const found = (window.guildRoster[j] || []).find(m => m.name.toLowerCase() === memberName.toLowerCase());
+          if (found) { memberJob = j; memberPower = found.power; break; }
+        }
+      }
+
+      if (memberName) { filledCount++; if (memberPower) totalPower += Number(memberPower); }
+
+      const escapedName = window.escapeHtml ? window.escapeHtml(memberName) : memberName;
+      const jobColor = memberJob && window.JOB_COLORS ? window.JOB_COLORS[memberJob] || '#8fa8bd' : '#8fa8bd';
+
+      if (isAdmin) {
+        mHtml += `
+          <tr data-team-id="${t.id}" data-slot="${i}"
+            ondragover="event.preventDefault(); this.style.background='var(--blue-100)';"
+            ondragleave="this.style.background='';"
+            ondrop="window.onDungeonSlotDrop(event, '${t.id}', ${i}); this.style.background='';">
+            <td class="cell-rank">${i + 1}</td>
+            <td>
+              <input type="text" list="rosterDatalist"
+                value="${escapedName}"
+                onchange="updateDungeonTeamMember('${t.id}', ${i}, this.value)"
+                class="cell-input name-input ${memberName ? '' : 'empty'}"
+                placeholder="— เลือกชื่อ —"
+                style="border:none; background:transparent; width:100%; height:100%;">
+            </td>
+            <td style="text-align:center; font-size:13px; font-weight:600; color:${jobColor};">
+              ${memberJob || '<span style="color:var(--text-lo)">-</span>'}
+            </td>
+            <td style="text-align:center; font-size:13px; color:var(--text-hi);">
+              ${memberPower != null ? Number(memberPower).toLocaleString('en-US') : '-'}
+            </td>
+            <td class="cell-action">
+              <button class="clear-btn" onclick="clearDungeonSlot('${t.id}', ${i})" title="ล้างช่องนี้">✕</button>
+            </td>
+          </tr>
+        `;
+      } else {
         mHtml += `
           <tr>
-            <td class="cell-rank">${i+1}</td>
-            <td>${isAdmin ? `<input type="text" list="rosterDatalist" value="${mvEscaped}" onchange="updateDungeonTeamMember('${t.id}', ${i}, this.value)" class="cell-input name-input" placeholder="ชื่อคนลงดัน" style="border:none; background:transparent; width:100%; height:100%;">` : `<span style="font-size:13px; padding-left:6px;">${mvEscaped || '<i style="color:var(--text-lo)">- ว่าง -</i>'}</span>`}</td>
-            <td style="text-align:center; font-size:13px; color:var(--text-hi); font-weight:500;">${info.job}</td>
-            <td style="text-align:center; font-size:13px; color:var(--text-hi); font-weight:500;">${info.power ? Number(info.power).toLocaleString('en-US') : '-'}</td>
+            <td class="cell-rank">${i + 1}</td>
+            <td style="padding-left:8px; font-size:13px; color:var(--text-hi);">
+              ${memberName ? escapedName : '<i style="color:var(--text-lo)">- ว่าง -</i>'}
+            </td>
+            <td style="text-align:center; font-size:13px; font-weight:600; color:${jobColor};">${memberJob || '-'}</td>
+            <td style="text-align:center; font-size:13px; color:var(--text-hi);">${memberPower != null ? Number(memberPower).toLocaleString('en-US') : '-'}</td>
+            <td></td>
           </tr>
         `;
       }
-      
-      return `
-        <div class="team-card">
-          <div class="team-card-head" style="display:flex; justify-content:space-between; align-items:center;">
-            <div class="team-title-group">
-              <span>🗡️ ${t.dungeonName}</span>
-              <span class="team-power-sum">⚡ ${totalPower.toLocaleString('en-US')}</span>
-            </div>
+    }
+
+    const pct = filledCount / t.capacity;
+    const badgeClass = pct === 1 ? 'ok' : (pct > 0.5 ? 'warn' : '');
+    const badgeText = filledCount === t.capacity ? `ครบ ${filledCount}/${t.capacity}` : `ขาด ${t.capacity - filledCount} คน`;
+
+    return `
+      <div class="team-card">
+        <div class="team-card-head" style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="team-title-group">
+            <span>🗡️ ${t.dungeonName}</span>
+            <span class="team-power-sum">⚡ ${totalPower.toLocaleString('en-US')}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="status-badge ${badgeClass}">${badgeText}</span>
             ${isAdmin ? `<button class="btn-delete-dungeon-team" onclick="deleteDungeonTeam('${t.id}')" style="background:transparent; border:none; color:white; cursor:pointer;" title="ลบทีม">✕</button>` : ''}
           </div>
-          <table class="team-table">
-            <thead><tr><th style="width:18px;"></th><th>ชื่อ</th><th style="text-align:center;">อาชีพ</th><th style="text-align:center;">ค่าพลัง</th></tr></thead>
-            <tbody>${mHtml}</tbody>
-          </table>
         </div>
-      `;
-    }).join('');
-  }
+        <table class="team-table">
+          <thead><tr><th style="width:18px;"></th><th>ชื่อ</th><th style="text-align:center;">อาชีพ</th><th style="text-align:center;">ค่าพลัง</th><th style="width:26px;"></th></tr></thead>
+          <tbody>${mHtml}</tbody>
+        </table>
+      </div>
+    `;
+  }).join('');
 }
+
+// Drag-and-drop: drag from queue panel → drop into team slot
+window.onDungeonQueueDragStart = function(event) {
+  const el = event.currentTarget;
+  const data = {
+    name: el.dataset.queueName || '',
+    job: el.dataset.queueJob || '',
+    power: el.dataset.queuePower || ''
+  };
+  event.dataTransfer.setData('text/plain', JSON.stringify(data));
+};
+
+window.onDungeonSlotDrop = function(event, teamId, slotIdx) {
+  event.preventDefault();
+  try {
+    const data = JSON.parse(event.dataTransfer.getData('text/plain'));
+    if (!data.name) return;
+    const t = dungeonData.teams.find(x => x.id === teamId);
+    if (t) {
+      t.members[slotIdx] = { name: data.name, job: data.job, power: data.power ? Number(data.power) : null };
+      saveDungeonState();
+    }
+  } catch(e) { console.error(e); }
+};
 
 // Global Exports
 window.ensureDefaultAdmin = ensureDefaultAdmin;
 window.checkAuth = checkAuth;
 window.setupDungeonFirebase = setupDungeonFirebase;
+window.renderDungeonPage = renderDungeonPage;
 // ==========================================
 // ====== ATTENDANCE SYSTEM ======
 // ==========================================
@@ -462,7 +585,6 @@ let unsubAttendanceListener = null;
 async function setupAttendanceFirebase() {
   if (!window.db) return;
   try {
-    const { doc, getDoc, setDoc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
     const attRef = doc(window.db, 'guild_system', 'attendance');
     
     const snap = await getDoc(attRef);
@@ -484,7 +606,6 @@ async function setupAttendanceFirebase() {
 
 async function saveAttendanceState() {
   if (!window.db) return;
-  const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
   const attRef = doc(window.db, 'guild_system', 'attendance');
   await setDoc(attRef, attendanceData);
 }
@@ -549,9 +670,9 @@ window.renderAttendanceTable = function() {
   
   let allMembers = [];
   if (window.guildRoster) {
-    Object.values(window.guildRoster).forEach(arr => {
-      arr.forEach(m => {
-        allMembers.push(m);
+    Object.keys(window.guildRoster).forEach(job => {
+      (window.guildRoster[job] || []).forEach(m => {
+        allMembers.push({ name: m.name, job, power: m.power });
       });
     });
   }
@@ -576,10 +697,16 @@ window.renderAttendanceTable = function() {
   let countLeave = 0;
   let countAbsent = 0;
   let countNone = 0;
+  
+  // Store names for event delegation
+  const memberNames = allMembers.map(m => m.name);
+  
   allMembers.forEach((m, idx) => {
     const name = m.name;
     const status = records[name] || 'none'; 
     const escapedName = window.escapeHtml ? window.escapeHtml(name) : name;
+    // Safe name for use in inline JS attributes (escape single quotes)
+    const safeName = name.replace(/'/g, "\\'").replace(/\\/g, "\\\\");
     
     if (status === 'attended') countAttended++;
     else if (status === 'leave') countLeave++;
@@ -591,15 +718,15 @@ window.renderAttendanceTable = function() {
       statusUI = `
         <div style="display: flex; justify-content: center; gap: 8px;">
           <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
-            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', 'attended')" ${status === 'attended' ? 'checked' : ''}>
+            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${safeName}', 'attended')" ${status === 'attended' ? 'checked' : ''}>
             <span style="color: var(--ok); font-weight: 600; font-size: 13px;">🟢 เข้าร่วม</span>
           </label>
           <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
-            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', 'leave')" ${status === 'leave' ? 'checked' : ''}>
+            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${safeName}', 'leave')" ${status === 'leave' ? 'checked' : ''}>
             <span style="color: var(--warn); font-weight: 600; font-size: 13px;">🟡 ลา</span>
           </label>
           <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
-            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', 'absent')" ${status === 'absent' ? 'checked' : ''}>
+            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${safeName}', 'absent')" ${status === 'absent' ? 'checked' : ''}>
             <span style="color: var(--danger); font-weight: 600; font-size: 13px;">🔴 ขาด</span>
           </label>
         </div>
@@ -613,11 +740,13 @@ window.renderAttendanceTable = function() {
       statusUI = `<div style="text-align: center;">${badge}</div>`;
     }
     
+    const jobColor = m.job && window.JOB_COLORS ? window.JOB_COLORS[m.job] || '#8fa8bd' : '#8fa8bd';
+    
     html += `
       <tr style="border-bottom: 1px solid var(--line);">
         <td style="padding: 10px 16px; color: var(--text-lo);">${idx + 1}</td>
         <td style="padding: 10px 16px; font-weight: 600; color: var(--text-hi);">${escapedName}</td>
-        <td style="padding: 10px 16px; text-align: center; color: var(--text-hi); font-size: 13px;">${m.job || '-'}</td>
+        <td style="padding: 10px 16px; text-align: center; font-size: 13px; font-weight: 600; color: ${jobColor};">${m.job || '-'}</td>
         <td style="padding: 10px 16px; text-align: center; color: var(--text-hi); font-size: 13px;">${m.power ? Number(m.power).toLocaleString('en-US') : '-'}</td>
         <td style="padding: 10px 16px;">${statusUI}</td>
       </tr>
@@ -657,7 +786,6 @@ window.updateAttendanceStatus = function(dateStr, name, status) {
 };
 
 window.setupAttendanceFirebase = setupAttendanceFirebase;
-let currentDungeonTab = 'มายา (Maya)';
 
 window.currentDungeonTab = 'มายา (Maya)';
 
