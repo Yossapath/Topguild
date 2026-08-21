@@ -196,25 +196,7 @@ function renderLeaveList() {
 // ====== ACCOUNT ROLE MANAGEMENT ======
 // ==========================================
 
-window.updateAccountRole = async function(docId, newRole) {
-  if (!window.db || !window.currentUser || !window.isUserAdmin()) {
-    return window.showToast('ไม่มีสิทธิ์เปลี่ยน Role', 'error');
-  }
-  try {
-    const { doc: fDoc, setDoc: fSetDoc, getDoc: fGetDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-    const ref = fDoc(window.db, 'users', docId);
-    const snap = await fGetDoc(ref);
-    if (!snap.exists()) return;
-    const data = snap.data();
-    data.role = newRole;
-    await fSetDoc(ref, data);
-    window.showToast('เปลี่ยน Role สำเร็จ', 'success');
-    if (typeof window.fetchAndRenderUsers === 'function') window.fetchAndRenderUsers();
-  } catch(e) {
-    console.error(e);
-    window.showToast('เกิดข้อผิดพลาด', 'error');
-  }
-};
+
 
 // Fix scrollbar clicking stealing focus and closing dropdown
 document.addEventListener('DOMContentLoaded', () => {
