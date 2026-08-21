@@ -174,7 +174,7 @@ window.handleLogout = function() {
 };
 
 function applyRolePermissions() {
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
   
   const btnAdminUsers = document.getElementById('btnAdminUsers');
   if (btnAdminUsers) btnAdminUsers.style.display = isAdmin ? 'block' : 'none';
@@ -492,7 +492,7 @@ window.memberJoinTeam = function(teamId) {
 
 window.addDungeonTeam = function(dungeonName, capacity) {
   if (!window.currentUser) return;
-  const isAdmin = (window.currentUser.role || '').toLowerCase() === 'admin';
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
   if (!isAdmin && window.currentDungeonTab !== 'มายา (Maya)') {
      return window.showToast("เฉพาะ Admin ที่สร้างทีมดันเจี้ยนอื่นได้", "error");
   }
@@ -639,7 +639,7 @@ window.switchDungeonTab = function(tabName) {
 };
 
 function renderDungeonPage() {
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
   const currentTab = window.currentDungeonTab || 'มายา (Maya)';
 
   // Update create team button
@@ -1038,7 +1038,7 @@ window.renderAttendanceTable = function() {
   }
   
   const btnDelete = document.getElementById('btnDeleteAttendanceDate');
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
   if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
   
   const dayData = attendanceData.dates[selectedDate] || {};
@@ -1392,7 +1392,7 @@ window.submitLeave = async function() {
   }
 
   // Validate user can only submit leave for themselves (by matching name from roster)
-  const isAdmin = (window.currentUser.role || '').toLowerCase() === 'admin';
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
   if (!isAdmin) {
     // Check if name matches current user's character
     let myCharName = '';
@@ -1435,7 +1435,7 @@ window.submitLeave = async function() {
 
 window.cancelLeave = async function(leaveId) {
   if (!window.currentUser) return window.showToast('กรุณาเข้าสู่ระบบ', 'error');
-  const isAdmin = (window.currentUser.role || '').toLowerCase() === 'admin';
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
   const entry = leaveData.find(l => l.id === leaveId);
   if (!entry) return;
 
@@ -1454,7 +1454,7 @@ function renderLeaveList() {
   const tbody = document.getElementById('leaveListTbody');
   if (!tbody) return;
 
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
 
   // Sort by date desc
   const sorted = [...leaveData].sort((a,b) => b.timestamp - a.timestamp);

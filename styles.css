@@ -1674,3 +1674,89 @@ footer {
     max-width: 100%;
   }
 }
+
+
+/* Modern Button Styles for Top Bar */
+.btn-solid-blue {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: var(--font-display, 'Prompt', sans-serif) !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  padding: 8px 16px !important;
+  text-decoration: none !important;
+  background: var(--blue-600, #2563eb) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+.btn-solid-blue:hover {
+  background: var(--blue-700, #1d4ed8) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-switch {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: var(--font-display, 'Prompt', sans-serif) !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  border-radius: 16px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  padding: 6px 16px !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  color: var(--blue-600, #2563eb) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.btn-switch.active {
+  background: var(--blue-600, #2563eb) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+#btnLogout {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: var(--font-display, 'Prompt', sans-serif) !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  padding: 8px 16px !important;
+  text-decoration: none !important;
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+#btnLogout:hover {
+  background: #dc2626 !important;
+}
+
+/* Header Tabs Border */
+.main-tabs {
+  border: 1px solid var(--blue-300, #93c5fd);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  background: #ffffff;
+  padding: 4px;
+}
+.main-tab-btn {
+  border-radius: 8px !important;
+  margin: 0 2px;
+}
+[data-theme="dark"] .main-tabs {
+  border-color: var(--blue-700, #1d4ed8);
+  background: var(--surface);
+}

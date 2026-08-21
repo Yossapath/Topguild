@@ -28,18 +28,16 @@
       var bSolid = document.getElementById('btnStyleSolid');
       var bOutline = document.getElementById('btnStyleOutline');
       if (bSolid && bOutline) {
+        bSolid.style = ""; bOutline.style = ""; // Clear inline styles
         if (style === 'outline') {
-          bSolid.style.background = 'transparent';
-          bSolid.style.color = 'var(--text-lo)';
-          bOutline.style.background = 'var(--blue-700)';
-          bOutline.style.color = '#ffffff';
+          bOutline.classList.add('active');
+          bSolid.classList.remove('active');
         } else {
-          bSolid.style.background = 'var(--blue-700)';
-          bSolid.style.color = '#ffffff';
-          bOutline.style.background = 'transparent';
-          bOutline.style.color = 'var(--text-lo)';
+          bSolid.classList.add('active');
+          bOutline.classList.remove('active');
         }
       }
+    }
     }
 
     function openAutoMatchModal() {
@@ -318,7 +316,7 @@
       <span class="status-indicator online" id="dbStatusDot"></span>
       <span class="db-status-text" id="dbStatusText">สถานะฐานข้อมูล: <b>เชื่อมต่อ Firebase Cloud Database (topguild-eeb40) Active 🟢</b></span>
     </div>
-    <button type="button" class="btn-config-toggle btn-blue-theme" id="btnAdminUsers" onclick="openAdminUsersSidebar()" style="display: none;">จัดการผู้ใช้</button>
+    <button type="button" class="btn-solid-blue" id="btnAdminUsers" onclick="openAdminUsersSidebar()" style="display: none;">จัดการผู้ใช้</button>
     
   </div>
 
@@ -327,9 +325,9 @@
     <div id="userInfoDisplay" style="margin-right: auto; font-weight: 600; color: var(--blue-700); background: var(--blue-100); padding: 4px 12px; border-radius: 16px; font-size: 13px;">
       <!-- Username and Role will be injected here -->
     </div>
-    <div style="display: flex; background: var(--bg-soft); border: 1.5px solid var(--line); border-radius: 20px; padding: 2px;" title="เลือกรูปแบบการแสดงผลช่องอาชีพ">
-      <button type="button" class="btn-blue-theme-outline" id="btnStyleSolid" onclick="setJobStyle('solid')" >สีพื้นหลัง</button>
-      <button type="button" class="btn-blue-theme-outline" id="btnStyleOutline" onclick="setJobStyle('outline')" >สีตัวหนังสือ</button>
+    <div style="display: flex; background: #ffffff; border: 1px solid #d1d5db; border-radius: 20px; padding: 2px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);" class="switch-container" title="เลือกรูปแบบการแสดงผลช่องอาชีพ">
+      <button type="button" class="btn-switch" id="btnStyleSolid" onclick="setJobStyle('solid')" >สีพื้นหลัง</button>
+      <button type="button" class="btn-switch" id="btnStyleOutline" onclick="setJobStyle('outline')" >สีตัวหนังสือ</button>
     </div>
     <button type="button" class="btn-solid-blue" id="btnThemeToggle" onclick="toggleTheme()" >ธีมมืด</button>
     <button type="button" class="btn-solid-blue" id="btnOpenGuideModal" onclick="openGuideModal()" >คู่มือ</button>
@@ -802,8 +800,8 @@
 <div id="adminUsersOverlay" onclick="closeAdminUsersSidebar()" style="position: fixed; top: 0; left: 0; width: 100vw; min-height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; opacity: 0; transition: opacity 0.3s ease;"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="auth_dungeon.js?v=5.0"></script>
-<script type="module" src="app.js?v=5.0"></script>
+<script type="module" src="auth_dungeon.js?v=5.1"></script>
+<script type="module" src="app.js?v=5.1"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>
 
