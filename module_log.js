@@ -6,7 +6,8 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
 // ==========================================
 
 (async function initLogModule() {
-  try {
+  document.getElementById('debugLog').innerText = '[3] เข้าสู่ try block...';
+      try {
     // ---- WRITE LOG ----
     window.writeSystemLog = async function(category, action, targetName, dungeonName, detailText, rollbackData = null) {
       if (!window.db) return;
@@ -137,8 +138,9 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
         }
       });
 
-      body.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-lo);">กำลังเชื่อมต่อกับ Database...</div>';
+      body.innerHTML = '<div id="debugLog" style="text-align:center;padding:60px;color:var(--text-lo);">[1] เริ่มทำงาน renderLogPage...</div>';
 
+      document.getElementById('debugLog').innerText = '[2] ตรวจสอบ window.db...';
       if (!window.db) {
          body.innerHTML = '<div style="text-align:center;padding:60px;color:var(--danger);">เกิดข้อผิดพลาด: ฐานข้อมูลยังไม่พร้อมใช้งาน (รอสักครู่แล้วกดรีเฟรช)</div>';
          return;
@@ -146,9 +148,11 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
 
       try {
         if (tab === 'dungeon' || tab === 'leave') {
+          document.getElementById('debugLog').innerText = '[4] เริ่มดึงข้อมูลจาก Firebase (getDocs)...';
           // Fetch from unified guild_system_logs
           const q = query(collection(window.db, 'guild_system_logs'), orderBy('timestamp', 'desc'), limit(500));
           const snap = await getDocs(q);
+          document.getElementById('debugLog').innerText = '[5] ได้รับข้อมูลจาก Firebase แล้ว กำลังประมวลผล...';
           
           let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
@@ -260,8 +264,8 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
           `;
         }
       } catch(e) {
-        let msg = e.message;
-        if (msg.includes('Missing or insufficient permissions')) {
+        let msg = e && e.message ? e.message : String(e);
+        if (typeof msg === 'string' && msg.includes('Missing or insufficient permissions')) {
           msg = 'Firebase ปฏิเสธการเข้าถึง (Permission Denied) กรุณาตรวจสอบ Security Rules';
         }
         body.innerHTML = `<div style="text-align:center;padding:60px;color:var(--danger);"><b>โหลดข้อมูลล้มเหลว:</b><br><br>${msg}</div>`;
