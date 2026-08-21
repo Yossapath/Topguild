@@ -209,6 +209,7 @@ window.updateAccountRole = async function(docId, newRole) {
     data.role = newRole;
     await fSetDoc(ref, data);
     window.showToast('เปลี่ยน Role สำเร็จ', 'success');
+    if (typeof window.fetchAndRenderUsers === 'function') window.fetchAndRenderUsers();
   } catch(e) {
     console.error(e);
     window.showToast('เกิดข้อผิดพลาด', 'error');

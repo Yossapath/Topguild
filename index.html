@@ -785,7 +785,7 @@
 
 
 <!-- Sidebar: Admin Users -->
-<div id="adminUsersSidebar" style="position: fixed; top: 0; left: -320px; width: 320px; min-height: 100vh; background: var(--surface); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 9999; transition: left 0.3s ease; display: flex; flex-direction: column;">
+<div id="adminUsersSidebar" style="position: fixed; top: 0; left: -320px; width: 320px; height: 100vh; max-height: 100vh; background: var(--surface); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 9999; transition: left 0.3s ease; display: flex; flex-direction: column;">
   <div style="padding: 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: #8b5cf6; color: white;">
     <h3 style="margin: 0; font-family: var(--font-display); font-size: 16px;">จัดการบัญชีผู้ใช้</h3>
     <button onclick="closeAdminUsersSidebar()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
@@ -802,14 +802,14 @@
 
 <!-- Firebase SDK v10 (CDN Module) -->
 <!-- Module: Auth, Login, Shared Utilities -->
-  <script type="module" src="module_auth.js?v=6.2"></script>
+  <script type="module" src="module_auth.js?v=6.3"></script>
   <!-- Module: Dungeon (isolated - bug here won't affect other pages) -->
-  <script type="module" src="module_dungeon.js?v=6.2"></script>
+  <script type="module" src="module_dungeon.js?v=6.3"></script>
   <!-- Module: Attendance (isolated) -->
-  <script type="module" src="module_attendance.js?v=6.2"></script>
+  <script type="module" src="module_attendance.js?v=6.3"></script>
   <!-- Module: Leave (isolated) -->
-  <script type="module" src="module_leave.js?v=6.2"></script>
-<script type="module" src="app.js?v=6.2"></script>
+  <script type="module" src="module_leave.js?v=6.3"></script>
+<script type="module" src="app.js?v=6.3"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>
 

@@ -349,7 +349,7 @@ function renderDungeonPage() {
 
           let sColor, sText;
           if (inTeamIndex !== -1) {
-            sColor = '#8b5cf6'; // Purple
+            sColor = '#ffffff'; // White
             sText = 'อยู่ในทีม ' + inTeamIndex;
           } else {
             sColor = q.status === 'done' ? 'var(--ok)' : (q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)');
@@ -460,7 +460,7 @@ function renderDungeonPage() {
     return `<div class="team-card" style="width:100%;">
       <div class="team-card-head" style="display:flex;justify-content:space-between;align-items:center;padding:12px;">
         <div class="team-title-group">
-          <span style="font-size:16px;">${window.escapeHtml ? window.escapeHtml(t.dungeonName || t.type) : (t.dungeonName || t.type)} <span style="color:var(--text-lo); font-size:14px; font-weight:normal; margin-left:8px;">(ทีมที่ ${teamIdx + 1})</span></span>
+          <span style="font-size:16px;">${window.escapeHtml ? window.escapeHtml(t.dungeonName || t.type) : (t.dungeonName || t.type)} <span style="color:white; font-size:14px; font-weight:normal; margin-left:8px;">(ทีมที่ ${teamIdx + 1})</span></span>
           <span class="team-power-sum" style="font-size:14px;">${totalPower.toLocaleString('en-US')}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">

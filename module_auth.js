@@ -207,7 +207,7 @@ window.openAdminUsersSidebar = async function() {
   document.getElementById('adminUsersSidebar').style.left = '0';
   document.getElementById('adminUsersOverlay').style.display = 'block';
   setTimeout(() => document.getElementById('adminUsersOverlay').style.opacity = '1', 10);
-  await fetchAndRenderUsers();
+  await window.fetchAndRenderUsers();
 };
 
 window.closeAdminUsersSidebar = function() {
@@ -289,7 +289,7 @@ let cachedAdminUsers = [];
   };
 
   
-async function fetchAndRenderUsers() {
+window.fetchAndRenderUsers = async function() {
     if (!window.db || !window.currentUser || !window.isUserAdmin()) return;
     const listEl = document.getElementById('adminUsersList');
     listEl.innerHTML = '<div style="text-align: center; color: var(--text-lo); margin-top: 20px;">กำลังโหลด...</div>';
@@ -324,7 +324,7 @@ window.deleteAccount = async function(docId) {
     const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
     await deleteDoc(doc(window.db, 'users', docId));
     window.showToast("ลบบัญชีสำเร็จ", "success");
-    fetchAndRenderUsers();
+    window.fetchAndRenderUsers();
   } catch (err) {
     console.error(err);
     window.showToast("เกิดข้อผิดพลาดในการลบ", "error");
