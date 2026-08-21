@@ -278,7 +278,6 @@ let cachedAdminUsers = [];
       console.error(err);
       listEl.innerHTML = '<div style="text-align: center; color: var(--danger); margin-top: 20px;">เกิดข้อผิดพลาด</div>';
     }
-  }
 }
 
 window.deleteAccount = async function(docId) {
