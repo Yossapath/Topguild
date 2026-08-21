@@ -62,7 +62,7 @@ function showMainApp() {
   if (window.currentUser) {
     const uiInfo = document.getElementById('userInfoDisplay');
     if (uiInfo) {
-      uiInfo.innerHTML = `👤 ${window.escapeHtml ? window.escapeHtml(window.currentUser.username) : window.currentUser.username} <span style="opacity:0.7; margin:0 6px;">|</span> Role: ${window.currentUser.role === 'admin' ? '👑 Admin' : '🛡️ Member'}`;
+      uiInfo.innerHTML = `👤 ${window.escapeHtml ? window.escapeHtml(window.currentUser.username) : window.currentUser.username} <span style="opacity:0.7; margin:0 6px;">|</span> Role: ${window.currentUser.role === 'admin' ? '<span style="color: #f59e0b; font-weight: 700;">👑 Admin</span>' : '🛡️ Member'}`;
     }
   }
 }
@@ -215,7 +215,7 @@ async function fetchAndRenderUsers() {
     let html = '';
     snap.forEach(doc => {
       const d = doc.data();
-      const roleColor = d.role === 'admin' ? 'var(--warn)' : 'var(--blue-500)';
+      const roleColor = d.role === 'admin' ? '#f59e0b' : 'var(--blue-500)';
       html += `
         <div style="padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
           <div>
@@ -573,7 +573,7 @@ function renderDungeonPage() {
     const badgeText = filledCount === t.capacity ? `ครบ ${filledCount}/${t.capacity}` : `ขาด ${t.capacity - filledCount} คน`;
 
     return `
-      <div class="team-card" style="min-width: 420px; max-width: 100%;">
+      <div class="team-card" style="width: 100%;">
         <div class="team-card-head" style="display:flex; justify-content:space-between; align-items:center; padding:12px;">
           <div class="team-title-group">
             <span style="font-size:16px;">🗡️ ${t.dungeonName}</span>
