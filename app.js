@@ -927,19 +927,19 @@ function handleClearSlot(key) {
 }
 
 function attachRowListeners() {
-  document.querySelectorAll('.job-input').forEach(sel => {
+  document.querySelectorAll('#teamsGrid .job-input').forEach(sel => {
     sel.addEventListener('change', e => handleJobFilterChange(e.target.dataset.slot, e.target.value));
   });
-  document.querySelectorAll('.name-input').forEach(sel => {
+  document.querySelectorAll('#teamsGrid .name-input').forEach(sel => {
     sel.addEventListener('change', e => handleNameChange(e.target.dataset.slot, e.target.value));
   });
-  document.querySelectorAll('.power-input').forEach(inp => {
+  document.querySelectorAll('#teamsGrid .power-input').forEach(inp => {
     inp.addEventListener('change', e => handlePowerChange(e.target.dataset.slot, e.target.value));
   });
-  document.querySelectorAll('.clear-btn').forEach(btn => {
+  document.querySelectorAll('#teamsGrid .clear-btn').forEach(btn => {
     btn.addEventListener('click', e => handleClearSlot(e.currentTarget.dataset.slot));
   });
-  document.querySelectorAll('.btn-delete-team-card').forEach(btn => {
+  document.querySelectorAll('#teamsGrid .btn-delete-team-card').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       removeSpecificTeam(e.currentTarget.dataset.team);
