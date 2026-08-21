@@ -1223,11 +1223,36 @@ function autoOptimizeTeams(customMainNames = null, mode = 'both') {
   if (mode === 'both' || mode === 'sub') {
   const subFm = fieldMeta[1];
   if (subFm) {
-    const subTeamNames = sortTeamNames(subFm.teamNames);
-    const allRemaining = masterList.filter(m => !assignedSet.has(m.name.trim().toLowerCase())).sort((a, b) => (b.power || 0) - (a.power || 0));
+    // Find all remaining candidates who are not assigned AND not locked to 'main'
+    const allRemaining = masterList.filter(m => {
+      const lower = m.name.trim().toLowerCase();
+      if (assignedSet.has(lower)) return false;
+      if (m.fieldPref === 'main') return false; // respect strict main preference
+      return true;
+    }).sort((a, b) => (b.power || 0) - (a.power || 0));
+
+    // Calculate how many teams we need to fit ALL remaining members
+    const neededTeams = Math.ceil(allRemaining.length / 5);
+    
+    // Dynamically expand teams if there aren't enough
+    let subTeamNames = sortTeamNames(subFm.teamNames);
+    let maxNum = 0;
+    subTeamNames.forEach(tName => {
+      const num = parseInt(tName.replace(/\D/g, ''), 10) || 0;
+      if (num > maxNum) maxNum = num;
+    });
+
+    while (subTeamNames.length < neededTeams) {
+      maxNum++;
+      const newTeamName = `ทีม ${maxNum}`;
+      subFm.teamNames.push(newTeamName);
+      subFm.capacity[newTeamName] = 5;
+      subTeamNames.push(newTeamName);
+    }
+    
     const subPriests = allRemaining.filter(m => m.job === 'Priest').sort((a, b) => (b.power || 0) - (a.power || 0));
 
-    // Assign 1 Priest to highest power sub teams first
+    // Assign 1 Priest to each sub team if available
     subTeamNames.forEach((teamName, tIdx) => {
       if (tIdx < subPriests.length) {
         const p = subPriests[tIdx];
