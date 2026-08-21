@@ -96,6 +96,7 @@ const JOB_LIST = [
 
 /* App State - Firebase Only (no LocalStorage) */
 let guildRoster = {};
+  let lockedTeams = {}; // { "0_TeamA": true }
 let teamsAssignments = {}; // slotKey -> {name, job, power} | null
 let occupiedMap = new Map(); // lowerName -> slotKey
 let rowJobFilter = {};
@@ -681,7 +682,28 @@ function nameSelectHtml(key, job) {
   return out;
 }
 
-function renderTeams() {
+
+window.toggleLockTeam = function(fieldIdx, teamName) {
+  const key = fieldIdx + '_' + teamName;
+  lockedTeams[key] = !lockedTeams[key];
+  // Save to localStorage
+  try { localStorage.setItem('guild_locked_teams', JSON.stringify(lockedTeams)); } catch(e) {}
+  renderTeams();
+};
+
+function isTeamLocked(fieldIdx, teamName) {
+  return !!lockedTeams[fieldIdx + '_' + teamName];
+}
+
+// Load locked teams from localStorage
+(function() {
+  try {
+    const saved = localStorage.getItem('guild_locked_teams');
+    if (saved) lockedTeams = JSON.parse(saved);
+  } catch(e) {}
+})();
+
+  function renderTeams() {
   const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
   const fm = fieldMeta[currentFieldIdx];
   const teamsGrid = document.getElementById('teamsGrid');
@@ -739,17 +761,19 @@ function renderTeams() {
     const badgeText = filled === capacity ? (!hasPriest ? '⚠ ไม่มี Priest' : `ครบ ${filled}/${capacity}`) : `ขาด ${capacity - filled} คน`;
 
     const cardDim = activeJobFilter && !matchInTeam ? 'dim' : '';
-
+      const locked = isTeamLocked(currentFieldIdx, teamName);
     return `
-      <div class="team-card ${cardDim}">
+        <div class="team-card ${cardDim}${locked?' locked-team':''}">
         <div class="team-card-head">
           <div class="team-title-group">
             <span>${escapeHtml(teamName)}</span>
-            <span class="team-power-sum">⚡ ${teamPowerSum.toLocaleString('en-US')}</span>
+            ${locked ? '<span style="font-size:11px;background:#f59e0b;color:white;border-radius:8px;padding:2px 6px;margin-left:4px;">🔒</span>' : ''}
+              <span class="team-power-sum">⚡ ${teamPowerSum.toLocaleString('en-US')}</span>
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span class="status-badge ${badgeClass}">${badgeText}</span>
-            <button type="button" class="btn-delete-team-card"  data-team="${escapeHtml(teamName)}" title="ลบ${escapeHtml(teamName)}">✕</button>
+            ${isAdmin ? `<button type="button" onclick="window.toggleLockTeam(${currentFieldIdx}, '${escapeHtml(teamName)}')" style="background:${locked?'#f59e0b':'transparent'};border:1px solid ${locked?'#f59e0b':'var(--line)'};color:${locked?'white':'var(--text-lo)'};border-radius:8px;padding:2px 8px;cursor:pointer;font-size:12px;">${locked?'🔒 ล็อก':'🔓 ล็อก'}</button>` : ''}
+              <button type="button" class="btn-delete-team-card"  data-team="${escapeHtml(teamName)}" title="ลบ${escapeHtml(teamName)}">✕</button>
           </div>
         </div>
         <table class="team-table">
@@ -760,11 +784,24 @@ function renderTeams() {
   }).join('');
 
   // Status Bar
+  
+  // Count jobs in current field assignments
+  const jobCountInField = {};
+  Object.keys(teamsAssignments).forEach(k => {
+    if (k.startsWith(currentFieldIdx + '_')) {
+      const a = teamsAssignments[k];
+      if (a && a.job) jobCountInField[a.job] = (jobCountInField[a.job] || 0) + 1;
+    }
+  });
+  
   const statusBar = document.getElementById('fieldStatusBar');
   if (statusBar) {
     const displayTotal = currentFieldIdx === 1 ? Math.max(0, getMasterMemberList().length - 60) : fieldTotal;
     let bar = `<span class="pill">กรอกแล้ว <b>${fieldFilled}</b> / ${displayTotal} คน</span>`;
     bar += `<span class="pill">ทีมยังไม่ครบ <b>${teamsIncomplete}</b> ทีม</span>`;
+      if (Object.keys(jobCountInField).length > 0) {
+        bar += '<span class="pill" style="background:var(--bg-soft);">อาชีพ: ' + Object.entries(jobCountInField).sort((a,b)=>b[1]-a[1]).map(([j,c])=>'<b>'+escapeHtml(j)+'</b> '+c+'คน').join(' | ') + '</span>';
+      }
     if (missingPriestTeams.length > 0) {
       const listStr = missingPriestTeams.join(', ');
       bar += `<span class="pill warn">⚠ ทีมขาด Priest <b>${missingPriestTeams.length}</b> ทีม (${escapeHtml(listStr)})</span>`;
@@ -1160,6 +1197,7 @@ function autoOptimizeTeams(customMainNames = null, mode = 'both') {
     const mainFm = fieldMeta[0];
     if (mainFm) {
       mainFm.teamNames.forEach(teamName => {
+          if (isTeamLocked(0, teamName)) return; // Skip clearing locked team
         const cap = mainFm.capacity[teamName] || 5;
         for (let i = 0; i < cap; i++) {
           const key = slotKey(0, teamName, i);
@@ -1175,6 +1213,7 @@ function autoOptimizeTeams(customMainNames = null, mode = 'both') {
     const subFm = fieldMeta[1];
     if (subFm) {
       subFm.teamNames.forEach(teamName => {
+          if (isTeamLocked(1, teamName)) return; // Skip clearing locked team
         const cap = subFm.capacity[teamName] || 5;
         for (let i = 0; i < cap; i++) {
           const key = slotKey(1, teamName, i);
@@ -1189,6 +1228,21 @@ function autoOptimizeTeams(customMainNames = null, mode = 'both') {
   }
 
   const assignedSet = new Set(occupiedMap.keys());
+    
+    // Also ensure all locked members are in assignedSet (just to be absolutely safe)
+    Object.keys(teamsAssignments).forEach(key => {
+      const parts = key.split('_');
+      if (parts.length >= 2) {
+        const fieldIdx = parseInt(parts[0]);
+        const teamName = parts[1];
+        if (isTeamLocked(fieldIdx, teamName)) {
+           if (teamsAssignments[key].name) {
+             assignedSet.add(teamsAssignments[key].name.trim().toLowerCase());
+             occupiedMap.set(teamsAssignments[key].name.trim().toLowerCase(), key);
+           }
+        }
+      }
+    });
 
   let mainCandidates = [];
 
