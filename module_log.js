@@ -199,26 +199,26 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
                 let restoreBtn = '';
                 if (log.rollbackData && (log.action === 'DELETE_QUEUE' || log.action === 'CLEAR_TEAM' || log.action === 'DELETE_LEAVE')) {
                   const safeLog = encodeURIComponent(JSON.stringify(log));
-                  restoreBtn = \`<button onclick="window.restoreLogItem('\${tab}', '\${log.id}', '\${safeLog}')" style="background:#fef3c7;color:#d97706;border:1px solid #fcd34d;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">กู้คืนข้อมูลนี้</button>\`;
+                  restoreBtn = `<button onclick="window.restoreLogItem('${tab}', '${log.id}', '${safeLog}')" style="background:#fef3c7;color:#d97706;border:1px solid #fcd34d;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">กู้คืนข้อมูลนี้</button>`;
                 }
 
-                return \`
-                  <div style="background:var(--surface,#fff);border-radius:8px;padding:14px;border-left:4px solid \${al.color};display:flex;justify-content:space-between;align-items:flex-start;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+                return `
+                  <div style="background:var(--surface,#fff);border-radius:8px;padding:14px;border-left:4px solid ${al.color};display:flex;justify-content:space-between;align-items:flex-start;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
                     <div style="flex:1;min-width:0;">
                       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px;">
-                        <span style="background:\${al.color}22;color:\${al.color};font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;">\${al.label}</span>
-                        <span style="font-size:12px;color:var(--text-hi);">ผู้บันทึก: <b>\${log.actor}</b></span>
-                        <span style="font-size:12px;color:var(--text-lo);">\${dt}</span>
+                        <span style="background:${al.color}22;color:${al.color};font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;">${al.label}</span>
+                        <span style="font-size:12px;color:var(--text-hi);">ผู้บันทึก: <b>${log.actor}</b></span>
+                        <span style="font-size:12px;color:var(--text-lo);">${dt}</span>
                       </div>
                       <div style="display:flex;flex-direction:column;gap:4px;">
-                        \${log.dungeonName ? \`<div style="font-size:13px;color:var(--text-hi);"><b>ดันเจี้ยน:</b> \${log.dungeonName}</div>\` : ''}
-                        \${log.targetName ? \`<div style="font-size:13px;color:var(--text-hi);"><b>เป้าหมาย:</b> \${log.targetName}</div>\` : ''}
-                        <div style="font-size:13px;color:var(--text-hi);"><b>รายละเอียด:</b> \${log.detailText}</div>
+                        ${log.dungeonName ? `<div style="font-size:13px;color:var(--text-hi);"><b>ดันเจี้ยน:</b> ${log.dungeonName}</div>` : ''}
+                        ${log.targetName ? `<div style="font-size:13px;color:var(--text-hi);"><b>เป้าหมาย:</b> ${log.targetName}</div>` : ''}
+                        <div style="font-size:13px;color:var(--text-hi);"><b>รายละเอียด:</b> ${log.detailText}</div>
                       </div>
                     </div>
-                    \${restoreBtn ? \`<div>\${restoreBtn}</div>\` : ''}
+                    ${restoreBtn ? `<div>${restoreBtn}</div>` : ''}
                   </div>
-                \`;
+                `;
               }).join('')}
             </div>
           `;
@@ -237,24 +237,24 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
                 const tCount = (bk.data && bk.data.teams) ? bk.data.teams.length : 0;
                 const totalMembers = (bk.data && bk.data.teams) ? bk.data.teams.reduce((sum, t) => sum + (t.members || []).filter(m => m && m.name).length, 0) : 0;
                 const safeData = encodeURIComponent(JSON.stringify(bk.data));
-                return \`
+                return `
                   <div style="background:var(--surface,#fff);border-radius:8px;padding:16px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,0.04);">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
                       <div style="flex:1;min-width:0;">
-                        <div style="font-size:14px;font-weight:700;color:var(--text-hi);">Backup เมื่อ \${dt}</div>
+                        <div style="font-size:14px;font-weight:700;color:var(--text-hi);">Backup เมื่อ ${dt}</div>
                         <div style="font-size:13px;color:var(--text-lo);margin-top:6px;">
-                          ผู้บันทึก: <b style="color:var(--text-hi);">\${bk.actor || 'System'}</b>
-                          &nbsp;|&nbsp; สาเหตุ: <b style="color:var(--text-hi);">\${bk.reason || '-'}</b>
+                          ผู้บันทึก: <b style="color:var(--text-hi);">${bk.actor || 'System'}</b>
+                          &nbsp;|&nbsp; สาเหตุ: <b style="color:var(--text-hi);">${bk.reason || '-'}</b>
                         </div>
                         <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;">
-                          <span style="background:#eff6ff;color:#2563eb;font-size:12px;padding:4px 12px;border-radius:12px;font-weight:600;">คิว \${qCount} คน</span>
-                          <span style="background:#f0fdf4;color:#16a34a;font-size:12px;padding:4px 12px;border-radius:12px;font-weight:600;">\${tCount} ทีม (\${totalMembers} คน)</span>
+                          <span style="background:#eff6ff;color:#2563eb;font-size:12px;padding:4px 12px;border-radius:12px;font-weight:600;">คิว ${qCount} คน</span>
+                          <span style="background:#f0fdf4;color:#16a34a;font-size:12px;padding:4px 12px;border-radius:12px;font-weight:600;">${tCount} ทีม (${totalMembers} คน)</span>
                         </div>
                       </div>
-                      <button onclick="window.restoreDungeonBackup('\${d.id}', '\${safeData}')" style="background:#7c3aed;color:white;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;">กู้คืนทั้งระบบ</button>
+                      <button onclick="window.restoreDungeonBackup('${d.id}', '${safeData}')" style="background:#7c3aed;color:white;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;">กู้คืนทั้งระบบ</button>
                     </div>
                   </div>
-                \`;
+                `;
               }).join('')}
             </div>
           `;
