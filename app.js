@@ -772,7 +772,7 @@ function isTeamLocked(fieldIdx, teamName) {
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span class="status-badge ${badgeClass}">${badgeText}</span>
-            ${isAdmin ? `<button type="button" onclick="window.toggleLockTeam(${currentFieldIdx}, '${escapeHtml(teamName)}')" style="background:${locked?'#f59e0b':'transparent'};border:1px solid ${locked?'#f59e0b':'var(--line)'};color:${locked?'white':'var(--text-lo)'};border-radius:8px;padding:2px 8px;cursor:pointer;font-size:12px;">${locked?'ล็อก (Lock)':'ปลดล็อก (Unlock)'}</button>` : ''}
+            ${isAdmin ? `<button type="button" onclick="window.toggleLockTeam(${currentFieldIdx}, '${escapeHtml(teamName)}')" style="background:${locked?'#ef4444':'#ffffff'};border:none;color:${locked?'white':'#2563eb'};border-radius:20px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,0.1);">${locked?'ล็อก (Lock)':'ปลดล็อก (Unlock)'}</button>` : ''}
               <button type="button" class="btn-delete-team-card"  data-team="${escapeHtml(teamName)}" title="ลบ${escapeHtml(teamName)}">✕</button>
           </div>
         </div>
