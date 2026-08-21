@@ -1,3 +1,8 @@
+
+window.isUserAdmin = function() {
+  const r = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : '';
+  return r === 'admin' || r === 'owner' || r === 'หัวหน้ากิลด์';
+};
 // Firebase Web SDK v10 Modular Imports from CDN
 import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
@@ -704,7 +709,7 @@ function isTeamLocked(fieldIdx, teamName) {
 })();
 
   function renderTeams() {
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
   const fm = fieldMeta[currentFieldIdx];
   const teamsGrid = document.getElementById('teamsGrid');
   if (!fm || !teamsGrid) return;

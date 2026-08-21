@@ -1,3 +1,8 @@
+
+window.isUserAdmin = function() {
+  const r = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : '';
+  return r === 'admin' || r === 'owner' || r === 'หัวหน้ากิลด์';
+};
 // ==========================================
 // ====== AUTHENTICATION & ROLE SYSTEM ======
 // ==========================================
@@ -62,7 +67,7 @@ function showMainApp() {
   if (window.currentUser) {
     const uiInfo = document.getElementById('userInfoDisplay');
     if (uiInfo) {
-      uiInfo.innerHTML = `👤 ${window.escapeHtml ? window.escapeHtml(window.currentUser.username) : window.currentUser.username} <span style="opacity:0.7; margin:0 6px;">|</span> Role: ${(window.currentUser.role || '').toLowerCase() === 'admin' ? '<span style="color: #f59e0b; font-weight: 700;">👑 Admin</span>' : '🛡️ Member'}`;
+      uiInfo.innerHTML = `👤 ${window.escapeHtml ? window.escapeHtml(window.currentUser.username) : window.currentUser.username} <span style="opacity:0.7; margin:0 6px;">|</span> Role: ${window.isUserAdmin() ? '<span style="color: #f59e0b; font-weight: 700;">👑 Admin</span>' : '🛡️ Member'}`;
     }
   }
 }
@@ -174,7 +179,7 @@ window.handleLogout = function() {
 };
 
 function applyRolePermissions() {
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
   
   const btnAdminUsers = document.getElementById('btnAdminUsers');
   if (btnAdminUsers) btnAdminUsers.style.display = isAdmin ? 'block' : 'none';
@@ -282,7 +287,7 @@ let cachedAdminUsers = [];
 
   
 async function fetchAndRenderUsers() {
-    if (!window.db || !window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+    if (!window.db || !window.currentUser || !window.isUserAdmin()) return;
     const listEl = document.getElementById('adminUsersList');
     listEl.innerHTML = '<div style="text-align: center; color: var(--text-lo); margin-top: 20px;">กำลังโหลด...</div>';
     
@@ -492,7 +497,7 @@ window.memberJoinTeam = function(teamId) {
 
 window.addDungeonTeam = function(dungeonName, capacity) {
   if (!window.currentUser) return;
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const isAdmin = window.isUserAdmin();
   if (!isAdmin && window.currentDungeonTab !== 'มายา (Maya)') {
      return window.showToast("เฉพาะ Admin ที่สร้างทีมดันเจี้ยนอื่นได้", "error");
   }
@@ -508,7 +513,7 @@ window.addDungeonTeam = function(dungeonName, capacity) {
 };
 
 window.deleteDungeonTeam = function(id) {
-  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+  if (!window.currentUser || !window.isUserAdmin()) return;
   if (confirm("คุณต้องการลบทีมนี้ใช่หรือไม่?")) {
     dungeonData.teams = dungeonData.teams.filter(x => x.id !== id);
     saveDungeonState();
@@ -516,7 +521,7 @@ window.deleteDungeonTeam = function(id) {
 };
 
 window.updateDungeonTeamName = function(teamId, slotIdx, nameVal) {
-    if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+    if (!window.currentUser || !window.isUserAdmin()) return;
     const t = dungeonData.teams.find(x => x.id === teamId);
     if (!t) return;
     
@@ -545,7 +550,7 @@ window.updateDungeonTeamName = function(teamId, slotIdx, nameVal) {
 };
 
 window.updateDungeonTeamJob = function(teamId, slotIdx, jobVal) {
-  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+  if (!window.currentUser || !window.isUserAdmin()) return;
   const t = dungeonData.teams.find(x => x.id === teamId);
   if (!t) return;
   if (!t.members[slotIdx]) t.members[slotIdx] = { name: '', job: '', power: null };
@@ -554,7 +559,7 @@ window.updateDungeonTeamJob = function(teamId, slotIdx, jobVal) {
 };
 
 window.updateDungeonTeamPower = function(teamId, slotIdx, powerVal) {
-  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+  if (!window.currentUser || !window.isUserAdmin()) return;
   const t = dungeonData.teams.find(x => x.id === teamId);
   if (!t) return;
   if (!t.members[slotIdx]) t.members[slotIdx] = { name: '', job: '', power: null };
@@ -563,7 +568,7 @@ window.updateDungeonTeamPower = function(teamId, slotIdx, powerVal) {
 };
 
 window.clearDungeonSlot = function(teamId, slotIdx) {
-  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+  if (!window.currentUser || !window.isUserAdmin()) return;
   const t = dungeonData.teams.find(x => x.id === teamId);
   if (t) { t.members[slotIdx] = null; saveDungeonState(); }
 };
@@ -639,7 +644,7 @@ window.switchDungeonTab = function(tabName) {
 };
 
 function renderDungeonPage() {
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
   const currentTab = window.currentDungeonTab || 'มายา (Maya)';
 
   // Update create team button
@@ -878,7 +883,7 @@ async function saveAttendanceState() {
 
 
 window.autoGenerateAttendance = function() {
-  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+  if (!window.currentUser || !window.isUserAdmin()) return;
   if (!confirm('ต้องการสร้างตารางเช็คชื่อสำหรับ อังคาร พฤหัส อาทิตย์ ของสัปดาห์นี้อัตโนมัติหรือไม่?')) return;
   
   const today = new Date();
@@ -930,7 +935,7 @@ window.autoGenerateAttendance = function() {
 };
 
 window.createAttendanceDate = function() {
-  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+  if (!window.currentUser || !window.isUserAdmin()) return;
   const today = new Date().toISOString().split('T')[0];
   const dateStr = prompt("ระบุวันที่สำหรับการเช็คชื่อ (YYYY-MM-DD):", today);
   if (!dateStr) return;
@@ -1038,7 +1043,7 @@ window.renderAttendanceTable = function() {
   }
   
   const btnDelete = document.getElementById('btnDeleteAttendanceDate');
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
   if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
   
   const dayData = attendanceData.dates[selectedDate] || {};
@@ -1108,7 +1113,7 @@ window.renderAttendanceTable = function() {
 };
 
 window.updateAttendanceStatus = function(dateStr, name, status) {
-  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+  if (!window.currentUser || !window.isUserAdmin()) return;
   if (!attendanceData.dates[dateStr]) attendanceData.dates[dateStr] = {};
   attendanceData.dates[dateStr][name] = status;
   saveAttendanceState();
@@ -1392,7 +1397,7 @@ window.submitLeave = async function() {
   }
 
   // Validate user can only submit leave for themselves (by matching name from roster)
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const isAdmin = window.isUserAdmin();
   if (!isAdmin) {
     // Check if name matches current user's character
     let myCharName = '';
@@ -1435,7 +1440,7 @@ window.submitLeave = async function() {
 
 window.cancelLeave = async function(leaveId) {
   if (!window.currentUser) return window.showToast('กรุณาเข้าสู่ระบบ', 'error');
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const isAdmin = window.isUserAdmin();
   const entry = leaveData.find(l => l.id === leaveId);
   if (!entry) return;
 
@@ -1454,7 +1459,7 @@ function renderLeaveList() {
   const tbody = document.getElementById('leaveListTbody');
   if (!tbody) return;
 
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
 
   // Sort by date desc
   const sorted = [...leaveData].sort((a,b) => b.timestamp - a.timestamp);
@@ -1495,7 +1500,7 @@ function renderLeaveList() {
 // ==========================================
 
 window.updateAccountRole = async function(docId, newRole) {
-  if (!window.db || !window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') {
+  if (!window.db || !window.currentUser || !window.isUserAdmin()) {
     return window.showToast('ไม่มีสิทธิ์เปลี่ยน Role', 'error');
   }
   try {
