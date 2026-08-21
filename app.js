@@ -676,7 +676,7 @@ function nameSelectHtml(key, job) {
     const isSelected = currentName && m.name.trim().toLowerCase() === currentName.trim().toLowerCase();
     // Show pure name if selected, or show name + [Job] + Power if unselected in dropdown list
     const jobBadge = isSelected ? '' : ` [${m.job}]`;
-    const extraInfo = isSelected ? '' : (m.power != null ? ` (⚡ ${m.power.toLocaleString('en-US')})` : '');
+    const extraInfo = isSelected ? '' : (m.power != null ? ` (${m.power.toLocaleString('en-US')})` : '');
     out += `<option value="${escapeHtml(m.name)}" ${isSelected ? 'selected' : ''}>${escapeHtml(m.name)}${jobBadge}${extraInfo}</option>`;
   });
   return out;
@@ -740,7 +740,7 @@ function isTeamLocked(fieldIdx, teamName) {
         <tr class="${rowClass}">
           <td class="cell-rank">${i + 1}</td>
           <td>
-            <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField" value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="🔍 พิมพ์/คลิก..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
+            <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField" value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="พิมพ์/คลิก..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
           </td>
           <td>
             <select class="cell-input job-input ${job ? '' : 'empty'}" data-slot="${key}" style="--job-color:${job ? colorOf(job) : ''}" ${isAdmin ? '' : 'disabled'}>
@@ -767,12 +767,12 @@ function isTeamLocked(fieldIdx, teamName) {
         <div class="team-card-head">
           <div class="team-title-group">
             <span>${escapeHtml(teamName)}</span>
-            ${locked ? '<span style="font-size:11px;background:#f59e0b;color:white;border-radius:8px;padding:2px 6px;margin-left:4px;"></span>' : ''}
-              <span class="team-power-sum">⚡ ${teamPowerSum.toLocaleString('en-US')}</span>
+            ${locked ? '<span style="font-size:11px;background:#f59e0b;color:white;border-radius:8px;padding:2px 6px;margin-left:4px;">ล็อก</span>' : ''}
+              <span class="team-power-sum">${teamPowerSum.toLocaleString('en-US')}</span>
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span class="status-badge ${badgeClass}">${badgeText}</span>
-            ${isAdmin ? `<button type="button" onclick="window.toggleLockTeam(${currentFieldIdx}, '${escapeHtml(teamName)}')" style="background:${locked?'#f59e0b':'transparent'};border:1px solid ${locked?'#f59e0b':'var(--line)'};color:${locked?'white':'var(--text-lo)'};border-radius:8px;padding:2px 8px;cursor:pointer;font-size:12px;">${locked?'ล็อก':'ปลดล็อก'}</button>` : ''}
+            ${isAdmin ? `<button type="button" onclick="window.toggleLockTeam(${currentFieldIdx}, '${escapeHtml(teamName)}')" style="background:${locked?'#f59e0b':'transparent'};border:1px solid ${locked?'#f59e0b':'var(--line)'};color:${locked?'white':'var(--text-lo)'};border-radius:8px;padding:2px 8px;cursor:pointer;font-size:12px;">${locked?'ล็อก (Lock)':'ปลดล็อก (Unlock)'}</button>` : ''}
               <button type="button" class="btn-delete-team-card"  data-team="${escapeHtml(teamName)}" title="ลบ${escapeHtml(teamName)}">✕</button>
           </div>
         </div>
@@ -1572,7 +1572,7 @@ function handleTeamSearch() {
 
   if (!foundMember) {
     lastFoundInfo = null;
-    resultEl.innerHTML = `<div class="team-found-badge" style="border-color:var(--danger);background:#fff2f0;"><span class="team-found-text" style="color:var(--danger)">❌ ไม่พบสมาชิกชื่อ "${escapeHtml(inputEl.value)}" ในตารางทีม</span></div>`;
+    resultEl.innerHTML = `<div class="team-found-badge" style="border-color:var(--danger);background:#fff2f0;"><span class="team-found-text" style="color:var(--danger)">ไม่พบสมาชิกชื่อ "${escapeHtml(inputEl.value)}" ในตารางทีม</span></div>`;
     return;
   }
 
@@ -1644,7 +1644,7 @@ function getRecommendedMain60Candidates() {
 window.runAutoOptimizeSub = function() {
   const success = autoOptimizeTeams(null, 'sub');
   if (success !== false) {
-    showToast(`⚡ จัดสนามรองเรียบร้อยแล้ว!`, 'success');
+    showToast(`จัดสนามรองเรียบร้อยแล้ว!`, 'success');
     renderAll();
   }
 };
@@ -1680,7 +1680,7 @@ function addNewTeam() {
 
   saveState();
   const fieldTitle = fm.isMain ? "สนามหลัก" : "สนามรอง";
-  showToast(`➕ เพิ่ม "${newTeamName}" (5 คน) ใน${fieldTitle}เรียบร้อยแล้ว!`, 'success');
+  showToast(`เพิ่ม "${newTeamName}" (5 คน) ใน${fieldTitle}เรียบร้อยแล้ว!`, 'success');
 }
 
 function removeSpecificTeam(targetTeamName) {
@@ -1711,7 +1711,7 @@ function removeSpecificTeam(targetTeamName) {
     delete fm.capacity[targetTeamName];
 
     saveState();
-    showToast(`🗑️ ลบ "${targetTeamName}" ออกจาก${fieldTitle}เรียบร้อยแล้ว!`, 'info');
+    showToast(`ลบ "${targetTeamName}" ออกจาก${fieldTitle}เรียบร้อยแล้ว!`, 'info');
   }
 }
 
@@ -1862,7 +1862,7 @@ function initApp() {
 
       const success = autoOptimizeTeams(parsedNames, 'main');
       if (success !== false) {
-        showToast(`⚡ จัดสนามหลัก (${parsedNames.length} คน) เรียบร้อยแล้ว!`, 'success');
+        showToast(`จัดสนามหลัก (${parsedNames.length} คน) เรียบร้อยแล้ว!`, 'success');
         closeAutoMatchModal();
         renderAll();
       }

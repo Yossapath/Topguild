@@ -585,7 +585,7 @@ function dungeonNameSelectHtml(currentName, filterJob) {
   list.forEach(m => {
     const isSelected = currentName && m.name.toLowerCase() === currentName.toLowerCase();
     const jobBadge = isSelected ? '' : ` [${m.job || filterJob}]`;
-    const extraInfo = isSelected ? '' : (m.power != null ? ` (⚡ ${Number(m.power).toLocaleString('en-US')})` : '');
+    const extraInfo = isSelected ? '' : (m.power != null ? ` (${Number(m.power).toLocaleString('en-US')})` : '');
     out += `<option value="${window.escapeHtml(m.name)}" ${isSelected ? 'selected' : ''}>${window.escapeHtml(m.name)}${jobBadge}${extraInfo}</option>`;
   });
   return out;
@@ -668,7 +668,7 @@ function renderDungeonPage() {
             <div>
               <strong style="color:var(--text-hi);font-size:14px;">${eName}</strong>
               <span style="font-size:11px;color:${q.job && window.JOB_COLORS && window.JOB_COLORS[q.job] ? window.JOB_COLORS[q.job] : 'var(--text-lo)'};margin-left:6px;font-weight:600;">${q.job || ''}</span>
-              ${q.power ? '<span style="font-size:11px;color:var(--text-lo);">⚡' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
+              ${q.power ? '<span style="font-size:11px;color:var(--text-lo);">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
               ${q.timestamp ? '<div style="font-size:10.5px;color:var(--text-lo);margin-top:4px;">🕒 ' + new Date(q.timestamp).toLocaleString('th-TH',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + ' น.</div>' : ''}
             </div>
             <span style="font-size:11px;padding:2px 6px;border-radius:12px;font-weight:600;color:${sColor};">${sText}</span>
@@ -724,7 +724,7 @@ function renderDungeonPage() {
             <input type="text" class="cell-input name-input autocomplete-member"
               onchange="updateDungeonTeamName('${t.id}',${i},this.value)"
               data-team-id="${t.id}" data-slot-idx="${i}" data-action="dungeonTeam"
-              value="${memberName ? eName : ''}" placeholder="🔍 พิมพ์/คลิก..." autocomplete="off"
+              value="${memberName ? eName : ''}" placeholder="พิมพ์/คลิก..." autocomplete="off"
               style="width:100%;min-width:140px;font-size:14px;padding:6px;">
           </td>
           <td>
@@ -757,8 +757,8 @@ function renderDungeonPage() {
     return `<div class="team-card" style="width:100%;">
       <div class="team-card-head" style="display:flex;justify-content:space-between;align-items:center;padding:12px;">
         <div class="team-title-group">
-          <span style="font-size:16px;">🗡️ ${window.escapeHtml ? window.escapeHtml(t.dungeonName || t.type) : (t.dungeonName || t.type)}</span>
-          <span class="team-power-sum" style="font-size:14px;">⚡ ${totalPower.toLocaleString('en-US')}</span>
+          <span style="font-size:16px;">${window.escapeHtml ? window.escapeHtml(t.dungeonName || t.type) : (t.dungeonName || t.type)}</span>
+          <span class="team-power-sum" style="font-size:14px;">${totalPower.toLocaleString('en-US')}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <span class="status-badge ${badgeClass}" style="font-size:13px;padding:4px 8px;">${badgeText}</span>
@@ -777,7 +777,7 @@ function renderDungeonPage() {
         </table>
         <div style="display:flex;gap:8px;margin-top:8px;">
           ${!isAdmin ? '<button class="btn-primary" style="flex:1;border-radius:8px;padding:6px;font-size:13px;" onclick="memberJoinTeam(\'' + t.id + '\')">เข้าร่วมทีม</button>' : ''}
-          ${isAdmin ? '<button class="btn-secondary" style="flex:1;border-radius:8px;padding:6px;font-size:13px;border-color:var(--ok);color:var(--ok);" onclick="clearDungeonTeam(\'' + t.id + '\')">✅ ลงสำเร็จ</button>' : ''}
+          ${isAdmin ? '<button class="btn-secondary" style="flex:1;border-radius:8px;padding:6px;font-size:13px;border-color:var(--ok);color:var(--ok);" onclick="clearDungeonTeam(\'' + t.id + '\')">ลงสำเร็จ</button>' : ''}
         </div>
       </div>
     </div>`;
@@ -1075,8 +1075,8 @@ window.renderAttendanceTable = function() {
        <td style="text-align:center;">
          <select class="form-control" style="width:100%; min-width:100px; padding:4px;" ${isAdmin ? '' : 'disabled'} onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', this.value)">
            <option value="none" ${!status || status === 'none' ? 'selected' : ''}>--- เว้นว่าง ---</option>
-           <option value="attended" ${status === 'attended' ? 'selected' : ''}>✅ เข้าร่วม</option>
-           <option value="absent" ${status === 'absent' ? 'selected' : ''}>❌ ขาด</option>
+           <option value="attended" ${status === 'attended' ? 'selected' : ''}>เข้าร่วม</option>
+           <option value="absent" ${status === 'absent' ? 'selected' : ''}>ขาด</option>
            <option value="leave" ${status === 'leave' ? 'selected' : ''}>🟡 ลา</option>
          </select>
        </td>
@@ -1093,9 +1093,9 @@ window.renderAttendanceTable = function() {
     summaryDiv.innerHTML = `
       <div style="display:flex; justify-content:space-between; margin-bottom: 10px; background:var(--bg-soft); padding: 10px; border-radius: 8px;">
         <span style="color:var(--text-hi);">ทั้งหมด: ${totalCount} คน</span>
-        <span style="color:var(--ok);">✅ มา: ${joinedCount} คน</span>
+        <span style="color:var(--ok);">มา: ${joinedCount} คน</span>
         <span style="color:var(--warn);">🟡 ลา: ${leaveCount} คน</span>
-        <span style="color:var(--danger);">❌ ขาด: ${absentCount} คน</span>
+        <span style="color:var(--danger);">ขาด: ${absentCount} คน</span>
       </div>
     `;
   }

@@ -215,10 +215,10 @@
 </script>
 <div id="authWrap" style="display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: #f4f7fb; z-index: 10000; overflow: hidden; box-sizing: border-box; font-family: var(--font-display, 'Prompt', sans-serif);">
   
-  <div style="display: flex; flex-direction: row; width: 100%; max-width: 900px; padding: 20px; gap: 60px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+  <div style="display: flex; flex-direction: row; width: 100%; max-width: 900px; padding: 20px; gap: 60px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 0 auto;">
     
     <!-- Left Branding -->
-    <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; justify-content: center;">
+    <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; justify-content: center; text-align: left;">
       <!-- Logo Icon (Blue square with layers) -->
       <div style="width: 60px; height: 60px; background: #2563eb; border-radius: 12px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; color: white;">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 12 12 17 22 12"></polyline><polyline points="2 17 12 22 22 17"></polyline></svg>
@@ -346,7 +346,7 @@
   <nav class="main-tabs" aria-label="เมนูหลัก">
     <button type="button" class="main-tab-btn active" data-page="page-roster" onclick="switchTab('page-roster')">📋 รายชื่อสมาชิก</button>
     <button type="button" class="main-tab-btn" data-page="page-teams" onclick="switchTab('page-teams')">🛡️ สนามหลัก-สนามรอง</button>
-    <button type="button" class="main-tab-btn" data-page="page-dungeons" onclick="switchTab('page-dungeons')">จองคิวดันเจี้ยน</button>
+    <button type="button" class="main-tab-btn" data-page="page-dungeons" onclick="switchTab('page-dungeons')">⚔️ จองคิวดันเจี้ยน</button>
     <button type="button" class="main-tab-btn" data-page="page-attendance" onclick="switchTab('page-attendance')">📅 เช็คชื่อวอ</button>
     <button type="button" class="main-tab-btn" data-page="page-leave" onclick="switchTab('page-leave')">📝 แจ้งลาวอ</button>
     <button type="button" class="main-tab-btn" data-page="page-settings" onclick="switchTab('page-settings')" id="tabSettings">📦 จัดการข้อมูล</button>
@@ -355,12 +355,12 @@
   <section id="page-roster" class="page active">
     <div class="action-bar">
       <div class="search-box">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon"></span>
         <input type="text" id="rosterSearch" placeholder="ค้นหาชื่อสมาชิก..." aria-label="ค้นหาชื่อสมาชิก">
       </div>
       <div style="display: flex; gap: 8px;">
-        <button class="btn-secondary" id="btnOpenBulkAdd" onclick="openBulkAddModal()">📝 เพิ่มกลุ่ม (Excel)</button>
-        <button class="btn-primary" id="btnAddMember">➕ เพิ่มสมาชิกใหม่</button>
+        <button class="btn-secondary" id="btnOpenBulkAdd" onclick="openBulkAddModal()">เพิ่มกลุ่ม (Excel)</button>
+        <button class="btn-primary" id="btnAddMember">เพิ่มสมาชิกใหม่</button>
       </div>
     </div>
 
@@ -380,8 +380,8 @@
       <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
         <button type="button" class="btn-secondary" id="btnClearCurrentFieldTeamsBtn" onclick="clearCurrentFieldTeams()" style="border-color: #e53e3e; color: #e53e3e; font-weight: 700;" title="ล้างสมาชิกในทีมทั้งหมดของหน้านี้">ล้างทีมทั้งหมด</button>
         <button type="button" class="btn-secondary" id="btnAddTeamBtn" style="border-color:var(--ok);color:var(--ok);font-weight:700;">เพิ่มทีม (5 คน)</button>
-        <button class="btn-primary" id="btnAutoOptimizeMain" onclick="openAutoMatchModal('main')" style="background:linear-gradient(135deg, #15a083, #1c9d8b);box-shadow: 0 3px 10px rgba(21,160,131,0.25); white-space: nowrap; display: none;">⚡ จัดทีมสนามหลักอัตโนมัติ</button>
-        <button class="btn-primary" id="btnAutoOptimizeSub" onclick="window.runAutoOptimizeSub()" style="background:linear-gradient(135deg, #2c7eb9, #1c7bb5);box-shadow: 0 3px 10px rgba(44,126,185,0.25); white-space: nowrap; display: none;">⚡ จัดทีมสนามรองอัตโนมัติ</button>
+        <button class="btn-primary" id="btnAutoOptimizeMain" onclick="openAutoMatchModal('main')" style="background:linear-gradient(135deg, #15a083, #1c9d8b);box-shadow: 0 3px 10px rgba(21,160,131,0.25); white-space: nowrap; display: none;">จัดทีมสนามหลักอัตโนมัติ</button>
+        <button class="btn-primary" id="btnAutoOptimizeSub" onclick="window.runAutoOptimizeSub()" style="background:linear-gradient(135deg, #2c7eb9, #1c7bb5);box-shadow: 0 3px 10px rgba(44,126,185,0.25); white-space: nowrap; display: none;">จัดทีมสนามรองอัตโนมัติ</button>
       </div>
     </div>
     <div id="teamSearchResult" class="team-search-result-card"></div>
@@ -404,7 +404,7 @@
       <!-- ซ้าย: ทีมดันเจี้ยน -->
       <div style="flex: 1; display: flex; flex-direction: column; gap: 24px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="margin-bottom: 0;">🛡️ ทีมลงดันเจี้ยน</h3>
+          <h3 style="margin-bottom: 0;">ทีมลงดันเจี้ยน</h3>
           <div style="display: flex; gap: 8px;" id="dungeonAdminControls">
             <button id="btnCreateDungeonTeam" class="btn-secondary" onclick="addDungeonTeam(window.currentDungeonTab || 'มายา (Maya)', (window.currentDungeonTab === 'มายา (Maya)') ? 5 : 10)">+ สร้างทีมมายา</button>
           </div>
@@ -424,12 +424,12 @@
       <!-- ขวา: คิวจอง -->
       <div style="width: 320px; flex-shrink: 0; position: sticky; top: 16px;" class="sidebar">
         <div class="sidebar-head" style="background: var(--blue-700); color: white; border-bottom: none;">
-          <h3 style="margin:0; font-size: 15px;">⏳ คิวจองดันเจี้ยน</h3>
+          <h3 style="margin:0; font-size: 15px;">คิวจองดันเจี้ยน</h3>
         </div>
         <div style="padding: 12px; background: var(--surface); border-bottom: 1px solid var(--line);">
           <div class="form-group">
             <div style="position: relative; margin-bottom: 8px;">
-  <input type="text" id="dqName" class="form-control autocomplete-member" data-action="dungeonQueue" placeholder="🔍 พิมพ์ชื่อ หรือคลิกเพื่อเลือก..." autocomplete="off">
+  <input type="text" id="dqName" class="form-control autocomplete-member" data-action="dungeonQueue" placeholder="พิมพ์ชื่อ หรือคลิกเพื่อเลือก..." autocomplete="off">
 </div>
             <select id="dqClass" class="form-control" style="margin-bottom: 8px;">
               <option value="" disabled selected>-- เลือกอาชีพ --</option>
@@ -449,7 +449,7 @@
               <option value="บับเบิ้ล (Bubble)">ดันบับเบิ้ล (10 คน)</option>
               <option value="กระจก (Mirror)">ดันกระจก (10 คน)</option>
             </select>
-            <button class="btn-primary" style="width: 100%;" onclick="bookDungeonQueue()">📝 จองคิวลงดันเจี้ยน</button>
+            <button class="btn-primary" style="width: 100%;" onclick="bookDungeonQueue()">จองคิวลงดันเจี้ยน</button>
           </div>
         </div>
         <div class="sidebar-body" id="dqList" style="height: 500px; overflow-y: auto; background: var(--surface);">
@@ -462,7 +462,7 @@
   <section id="page-attendance" class="page">
     <div style="background: var(--surface); padding: 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
       <div style="display:flex; align-items:center; gap:16px;" id="attHeaderTitleGroup">
-      <h2 style="margin: 0; font-family: var(--font-display); font-size: 18px; color: var(--blue-700);">📅 ระบบเช็คชื่อกิลด์วอ</h2>
+      <h2 style="margin: 0; font-family: var(--font-display); font-size: 18px; color: var(--blue-700);">ระบบเช็คชื่อกิลด์วอ</h2>
       <div class="field-tabs" style="margin-bottom:0; display:flex; gap:8px;">
           <button class="field-tab-btn active" id="btnAttTabDaily" onclick="window.switchAttTab('daily')">เช็คชื่อรายวัน</button>
           <button class="field-tab-btn" id="btnAttTabStats" onclick="window.switchAttTab('stats')">สถิติรวม</button>
@@ -479,7 +479,7 @@
         <select id="attendanceDateSelect" class="form-control" style="width: auto; min-width: 200px;">
           <option value="">-- ไม่มีข้อมูล --</option>
         </select>
-          <button id="btnDeleteAttendanceDate" class="btn-secondary" style="border-color: var(--danger); color: var(--danger); display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.deleteAttendanceDate()">🗑️ ลบวันที่นี้</button>
+          <button id="btnDeleteAttendanceDate" class="btn-secondary" style="border-color: var(--danger); color: var(--danger); display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.deleteAttendanceDate()">ลบวันที่นี้</button>
       </div>
       <div style="display: flex; gap: 8px; align-items: center; flex: 1; justify-content: flex-end;">
         <input type="text" id="attendanceSearch" class="form-control" placeholder="ค้นหารายชื่อ..." style="max-width: 250px;" onkeyup="renderAttendanceTable()">
@@ -534,12 +534,12 @@
 
   <section id="page-leave" class="page">
     <div style="background: var(--surface); padding: 16px; border-radius: 12px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-      <h2 style="margin: 0 0 16px 0; font-family: var(--font-display); font-size: 18px; color: var(--blue-700);">📝 แบบฟอร์มแจ้งลาวอ</h2>
+      <h2 style="margin: 0 0 16px 0; font-family: var(--font-display); font-size: 18px; color: var(--blue-700);">แบบฟอร์มแจ้งลาวอ</h2>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
         <div>
           <label style="display: block; font-size: 12px; color: var(--text-lo); margin-bottom: 4px;">ชื่อตัวละคร</label>
           <div style="position:relative;">
-            <input type="text" id="leaveName" class="form-control autocomplete-member" data-action="leaveForm" placeholder="🔍 พิมพ์ชื่อ หรือคลิกเพื่อเลือก..." autocomplete="off">
+            <input type="text" id="leaveName" class="form-control autocomplete-member" data-action="leaveForm" placeholder="พิมพ์ชื่อ หรือคลิกเพื่อเลือก..." autocomplete="off">
           </div>
         </div>
         <div>
@@ -577,7 +577,7 @@
     </div>
 
     <div style="background: var(--surface); padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-      <h2 style="margin: 0 0 16px 0; font-family: var(--font-display); font-size: 16px; color: var(--text-hi);">📅 รายการแจ้งลาล่วงหน้า</h2>
+      <h2 style="margin: 0 0 16px 0; font-family: var(--font-display); font-size: 16px; color: var(--text-hi);">รายการแจ้งลาล่วงหน้า</h2>
       <div class="table-responsive">
         <table class="team-table" style="width: 100%;">
           <thead>
@@ -599,7 +599,7 @@
 
   <section id="page-settings" class="page">
     <div class="settings-card">
-      <h3>📦 จัดการข้อมูล (Data Management)</h3>
+      <h3>จัดการข้อมูล (Data Management)</h3>
       <p class="help-text">คุณสามารถนำเข้า/ส่งออกข้อมูล หรือรีเซ็ตข้อมูลกิลด์กลับเป็นค่าเริ่มต้นได้ที่นี่ (ระบบเชื่อมต่อ Cloud Database อัตโนมัติในพื้นหลัง)</p>
       
       <div class="btn-group">
@@ -607,7 +607,7 @@
         <button type="button" class="btn-secondary" id="btnExportJSON" onclick="handleExportJSON()">📥 ส่งออก Backup JSON</button>
         <button type="button" class="btn-secondary" id="btnImportJSON" onclick="handleImportJSON()">📤 นำเข้า Backup JSON</button>
         <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="handleImportFileChange(event)">
-        <button type="button" class="btn-danger" id="btnClearData" onclick="handleClearAllData()">🗑️ ล้างข้อมูลทั้งหมด</button>
+        <button type="button" class="btn-danger" id="btnClearData" onclick="handleClearAllData()">ล้างข้อมูลทั้งหมด</button>
       </div>
     </div>
   </section>
@@ -674,11 +674,11 @@
         <select id="modalMemberFieldPref" class="form-control">
           <option value="any">อิสระ (ให้ระบบจัดให้)</option>
           <option value="main">🎯 สนามหลัก (Main Field)</option>
-          <option value="sub">🛡️ สนามรอง (Sub Field)</option>
+          <option value="sub">สนามรอง (Sub Field)</option>
         </select>
       </div>
       <div class="btn-group" style="justify-content: space-between;">
-        <button type="button" class="btn-danger" id="btnDeleteMemberModal" style="display:none;">🗑️ ลบสมาชิกนี้</button>
+        <button type="button" class="btn-danger" id="btnDeleteMemberModal" style="display:none;">ลบสมาชิกนี้</button>
         <div style="display:flex; gap:8px;">
           <button type="button" class="btn-secondary" id="btnCancelModal">ยกเลิก</button>
           <button type="submit" class="btn-primary" id="btnSaveMember">บันทึกสมาชิก</button>
@@ -692,7 +692,7 @@
   <div class="modal-backdrop" id="autoMatchModal">
     <div class="modal-box" style="max-width: 580px;">
       <div class="modal-header">
-        <h3>⚡ กำหนดรายชื่อสนามหลัก (60 คน) เพื่อจัดทีม</h3>
+        <h3>กำหนดรายชื่อสนามหลัก (60 คน) เพื่อจัดทีม</h3>
         <button class="modal-close" id="btnCloseAutoMatchModal" onclick="closeAutoMatchModal()">✕</button>
       </div>
       <div class="modal-body" style="padding-top: 6px;">
@@ -735,18 +735,18 @@
       </div>
 
       <div style="background: var(--bg-soft); border-left: 4px solid #8b5cf6; padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;">
-        <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">📋 2. หน้ารายชื่อกิลด์ (Roster)</h4>
+        <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">2. หน้ารายชื่อกิลด์ (Roster)</h4>
         <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
-          <li><b>เพิ่มสมาชิก:</b> กด <code>➕ เพิ่มสมาชิกใหม่</code> ระบุชื่อ, อาชีพ, พลัง และเลือก "ความต้องการลงสนาม" (ทุกสนาม, เฉพาะสนามหลัก, เฉพาะสนามรอง)</li>
+          <li><b>เพิ่มสมาชิก:</b> กด <code>เพิ่มสมาชิกใหม่</code> ระบุชื่อ, อาชีพ, พลัง และเลือก "ความต้องการลงสนาม" (ทุกสนาม, เฉพาะสนามหลัก, เฉพาะสนามรอง)</li>
           <li><b>นำเข้าจาก Excel:</b> ก๊อปปี้ข้อมูลที่มีคอลัมน์ [ชื่อ] [อาชีพ] [ค่าพลัง] มาวางในปุ่ม <code>นำเข้าข้อมูล (Excel)</code> เพื่อเพิ่มทีละหลายคน</li>
           <li><b>แก้ไข/ลบ:</b> คลิกที่ชื่อตัวละครในตารางเพื่อเปลี่ยนข้อมูล หรือกดปุ่ม <code>✕ ลบรายชื่อ</code></li>
         </ul>
       </div>
 
       <div style="background: var(--bg-soft); border-left: 4px solid var(--ok); padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;">
-        <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">⚔️ 3. การจัดทีมกิลด์วอ (สนามหลักและสนามรอง)</h4>
+        <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">3. การจัดทีมกิลด์วอ (สนามหลักและสนามรอง)</h4>
         <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
-          <li><b>⚡ จัดทีมอัตโนมัติ:</b> ระบบจะจัดทีมให้อัตโนมัติ (เฉพาะ Admin) โดยสนามหลักจะคัดคนพลังสูงสุด 60 คน (การันตีมี Priest อย่างน้อย 1 คนทุกทีม) ส่วนสนามรองจะดึง "รายชื่อที่เหลือทั้งหมด" มาจัดให้อัตโนมัติพร้อมขยายทีมให้ตามจำนวนคน</li>
+          <li><b>จัดทีมอัตโนมัติ:</b> ระบบจะจัดทีมให้อัตโนมัติ (เฉพาะ Admin) โดยสนามหลักจะคัดคนพลังสูงสุด 60 คน (การันตีมี Priest อย่างน้อย 1 คนทุกทีม) ส่วนสนามรองจะดึง "รายชื่อที่เหลือทั้งหมด" มาจัดให้อัตโนมัติพร้อมขยายทีมให้ตามจำนวนคน</li>
           <li><b>จัดเองแบบ Manual:</b> สามารถกด Dropdown เลือกชื่อคนเข้าทีมได้เลย ระบบจะแสดงชื่อ อาชีพ และค่าพลังครบถ้วน</li>
           <li><b>การค้นหา:</b> พิมพ์ชื่อลงในช่องค้นหาด้านบน เพื่อหาว่าบุคคลนั้นอยู่ทีมไหน ระบบจะทำแถบสว่างไฮไลท์ให้</li>
         </ul>
@@ -761,9 +761,9 @@
       </div>
 
       <div style="background: var(--bg-soft); border-left: 4px solid #ec4899; padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;">
-        <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">📅 5. ระบบเช็คชื่อกิลด์วอ (Attendance)</h4>
+        <h4 style="margin: 0 0 6px 0; font-family: var(--font-display); color: var(--blue-900); font-size: 14px;">5. ระบบเช็คชื่อกิลด์วอ (Attendance)</h4>
         <ul style="margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-hi);">
-          <li><b>เช็คชื่อรายวัน:</b> Admin กดสร้างวันที่ แล้วติ๊กเลือกสถานะสมาชิกแต่ละคน (เข้าร่วม, ลา, ขาด) หากสร้างผิดสามารถกด "🗑️ ลบวันที่นี้" ออกได้</li>
+          <li><b>เช็คชื่อรายวัน:</b> Admin กดสร้างวันที่ แล้วติ๊กเลือกสถานะสมาชิกแต่ละคน (เข้าร่วม, ลา, ขาด) หากสร้างผิดสามารถกด "ลบวันที่นี้" ออกได้</li>
           <li><b>สถิติรวม:</b> กดแท็บ "สถิติรวม" เพื่อดูประวัติการเช็คชื่อทั้งหมดของสมาชิกตั้งแต่เริ่มต้น ว่ามาเข้าร่วมกี่ครั้ง, ลากี่ครั้ง และขาดกี่ครั้ง พร้อมช่องค้นหาชื่อ</li>
         </ul>
       </div>
@@ -802,8 +802,8 @@
 <div id="adminUsersOverlay" onclick="closeAdminUsersSidebar()" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; opacity: 0; transition: opacity 0.3s ease;"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="auth_dungeon.js?v=4.6"></script>
-<script type="module" src="app.js?v=4.6"></script>
+<script type="module" src="auth_dungeon.js?v=4.8"></script>
+<script type="module" src="app.js?v=4.8"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>
 
@@ -816,7 +816,7 @@
     <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55);" onclick="closeBulkAddModal()"></div>
     <div style="position:relative; background:var(--surface); border-radius:16px; padding:28px; width:90%; max-width:560px; box-shadow:0 8px 40px rgba(0,0,0,0.3); z-index:1;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <h3 style="margin:0; color:var(--text-hi); font-size:18px;">📝 เพิ่มรายชื่อกลุ่ม (Excel)</h3>
+        <h3 style="margin:0; color:var(--text-hi); font-size:18px;">เพิ่มรายชื่อกลุ่ม (Excel)</h3>
         <button onclick="closeBulkAddModal()" style="background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-lo);">✕</button>
       </div>
       <p style="color:var(--text-lo); font-size:13px; margin-bottom:12px;">
@@ -828,7 +828,7 @@
         placeholder="XxerrosS&#9;Paladin&#9;43684&#10;YuGi&#9;Assassin Cross&#9;43663&#10;DMTz&#9;High Wizard&#9;41193"></textarea>
       <div style="display:flex; gap:10px; margin-top:16px; justify-content:flex-end;">
         <button class="btn-secondary" onclick="closeBulkAddModal()">ยกเลิก</button>
-        <button class="btn-primary" onclick="processBulkAdd()">✅ บันทึก</button>
+        <button class="btn-primary" onclick="processBulkAdd()">บันทึก</button>
       </div>
     </div>
   </div>
