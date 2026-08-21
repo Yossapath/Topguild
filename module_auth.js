@@ -348,7 +348,6 @@ window.isUserAdmin = function() {
 // ====== AUTHENTICATION & ROLE SYSTEM ======
 // ==========================================
 
-import { doc, getDoc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 async function ensureDefaultAdmin() {
   if (!window.db) return;
