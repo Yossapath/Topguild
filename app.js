@@ -1044,66 +1044,89 @@ window.processBulkAdd = function() {
     showToast("กรุณาวางข้อมูลรายชื่อก่อน", "warning");
     return;
   }
-  
+
   const lines = text.split('\n');
   let addedCount = 0;
+  let updatedCount = 0;
   let errorCount = 0;
-  let currentRosterNames = new Set();
-  
-  Object.keys(guildRoster).forEach(j => {
-    (guildRoster[j] || []).forEach(m => currentRosterNames.add(m.name.trim().toLowerCase()));
-  });
-  
+
   const jobMap = {};
   JOB_LIST.forEach(j => {
     jobMap[j.toLowerCase()] = j;
     jobMap[j.replace(/\s+/g, '').toLowerCase()] = j;
   });
-  
+
   lines.forEach(line => {
     if (!line.trim()) return;
-    
-    let parts = line.split(/\t|,| {2,}/).map(p => p.trim()).filter(p => p);
+
+    // Split by tab, comma, or multiple spaces
+    let parts = line.split(/\t|,| {2,}/).map(p => p.trim()).filter(Boolean);
     if (parts.length < 3) {
-      parts = line.split(/\s+/).map(p => p.trim()).filter(p => p);
+      parts = line.split(/\s+/).map(p => p.trim()).filter(Boolean);
     }
-    
-    if (parts.length >= 3) {
-      const name = parts[0];
-      const jobRaw = parts.slice(1, parts.length - 1).join(" ");
-      const powerRaw = parts[parts.length - 1];
-      
-      const normalizedJobRaw = jobRaw.toLowerCase().replace(/\s+/g, '');
-      const job = jobMap[normalizedJobRaw] || jobMap[jobRaw.toLowerCase()];
-      const power = parseInt(powerRaw.replace(/,/g, ''), 10);
-      
-      if (name && job && !isNaN(power)) {
-        const nameLower = name.toLowerCase();
-        if (!currentRosterNames.has(nameLower)) {
-          if (!guildRoster[job]) guildRoster[job] = [];
-          guildRoster[job].push({ name, power });
-          currentRosterNames.add(nameLower);
-          addedCount++;
-        } else {
-          errorCount++;
-        }
+    if (parts.length < 3) { errorCount++; return; }
+
+    const name = parts[0];
+
+    // Detect power: last numeric part
+    let powerIndex = -1;
+    for (let i = parts.length - 1; i >= 1; i--) {
+      const n = parseInt(parts[i].replace(/,/g, ''), 10);
+      if (!isNaN(n) && n > 0) { powerIndex = i; break; }
+    }
+    if (powerIndex === -1) { errorCount++; return; }
+
+    // Job = everything between name and power
+    const jobRaw = parts.slice(1, powerIndex).join(' ').trim();
+    const normalizedJob = jobRaw.toLowerCase().replace(/\s+/g, '');
+    const job = jobMap[normalizedJob] || jobMap[jobRaw.toLowerCase()];
+    const power = parseInt(parts[powerIndex].replace(/,/g, ''), 10);
+
+    if (!name || !job || isNaN(power)) { errorCount++; return; }
+
+    const nameLower = name.toLowerCase();
+
+    // Find if member exists anywhere in roster
+    let existingJob = null;
+    let existingIdx = -1;
+    Object.keys(guildRoster).forEach(j => {
+      const arr = guildRoster[j] || [];
+      const i = arr.findIndex(m => m.name.trim().toLowerCase() === nameLower);
+      if (i !== -1) { existingJob = j; existingIdx = i; }
+    });
+
+    if (existingJob !== null) {
+      // UPDATE existing member
+      if (existingJob === job) {
+        // Same job — update power and name casing
+        guildRoster[existingJob][existingIdx].power = power;
+        guildRoster[existingJob][existingIdx].name = name;
       } else {
-        errorCount++;
+        // Changed job — move to new job group
+        const old = guildRoster[existingJob].splice(existingIdx, 1)[0];
+        if (!guildRoster[job]) guildRoster[job] = [];
+        guildRoster[job].push({ name, power, requirement: old.requirement || 'all' });
       }
+      updatedCount++;
     } else {
-      errorCount++;
+      // ADD new member
+      if (!guildRoster[job]) guildRoster[job] = [];
+      guildRoster[job].push({ name, power, requirement: 'all' });
+      addedCount++;
     }
   });
 
-  if (addedCount > 0) {
-    saveState();
-    showToast(`เพิ่มสมาชิกสำเร็จ ${addedCount} คน${errorCount > 0 ? ` (ข้ามข้อมูลผิด/ซ้ำ ${errorCount} รายการ)` : ''}`, "success");
-    console.log(`[Bulk Add] Added ${addedCount} members.`);
-    closeBulkAddModal();
-  } else {
-    showToast("ไม่พบข้อมูลที่ถูกต้อง หรือชื่อซ้ำทั้งหมด โปรดตรวจสอบรูปแบบ (ชื่อ อาชีพ พลัง)", "error");
-  }
-}
+  saveState();
+  renderJobGrid();
+  updateSummaryStrip();
+  closeBulkAddModal();
+
+  const parts2 = [];
+  if (addedCount > 0) parts2.push(`เพิ่มใหม่ ${addedCount} คน`);
+  if (updatedCount > 0) parts2.push(`อัปเดต ${updatedCount} คน`);
+  if (errorCount > 0) parts2.push(`(ข้ามข้อมูลผิดพลาด ${errorCount} รายการ)`);
+  showToast(parts2.join(' | ') || 'ไม่มีการเปลี่ยนแปลง', (addedCount + updatedCount > 0) ? 'success' : 'warning');
+};
 
 window.openAutoMatchModal = function() {
   const modal = document.getElementById('autoMatchModal');

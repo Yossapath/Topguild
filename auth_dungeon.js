@@ -699,24 +699,6 @@ function renderDungeonPage() {
             <td style="text-align:center; font-size:14px; font-weight:600; color:${jobColor};">${memberJob || '-'}</td>
             <td></td>
           </tr>
-        `;
-      }
-    }
-
-    const pct = filledCount / t.capacity;
-    const badgeClass = pct === 1 ? 'ok' : (pct > 0.5 ? 'warn' : '');
-    const badgeText = filledCount === t.capacity ? `ครบ ${filledCount}/${t.capacity}` : `ขาด ${t.capacity - filledCount} คน`;
-
-    return `
-      <div class="team-card" style="width: 100%;">
-        <div class="team-card-head" style="display:flex; justify-content:space-between; align-items:center; padding:12px;">
-          <div class="team-title-group">
-            <span style="font-size:16px;">🗡️ ${t.dungeonName}</span>
-            <span class="team-power-sum" style="font-size:14px;">⚡ ${totalPower.toLocaleString('en-US')}</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span class="status-badge ${badgeClass}" style="font-size:13px; padding:4px 8px;">${badgeText}</span>
-            ${isAdmin ? `<button class="btn-delete-dungeon-team" onclick="deleteDungeonTeam('${t.id}')" style="background:transparent; border:none; color:white; cursor:pointer; font-size:16px;" title="ลบทีม">✕</button>` : ''}
           </div>
         </div>
         <table class="team-table" style="width: 100%; table-layout: auto;">
@@ -769,26 +751,41 @@ let attendanceData = { dates: {} };
 let unsubAttendanceListener = null;
 
 async function setupAttendanceFirebase() {
+  // STEP 1: Render from localStorage instantly (avoids blank screen on refresh)
+  try {
+    const localAtt = localStorage.getItem('guild_attendance_data');
+    if (localAtt) {
+      const parsed = JSON.parse(localAtt);
+      if (parsed && parsed.dates && Object.keys(parsed.dates).length > 0) {
+        attendanceData = parsed;
+        setTimeout(renderAttendanceOptions, 50);
+      }
+    }
+  } catch(e) {}
+
+  // STEP 2: Firebase real-time listener (authoritative source)
   if (!window.db) return;
   try {
     const attRef = doc(window.db, 'guild_system', 'attendance');
-    
     const snap = await getDoc(attRef);
     if (!snap.exists()) {
       await setDoc(attRef, { dates: {} });
     }
-
     unsubAttendanceListener = onSnapshot(attRef, (snapshot) => {
       if (snapshot.exists()) {
         attendanceData = snapshot.data();
         if (!attendanceData.dates) attendanceData.dates = {};
+        // Keep localStorage in sync
+        try { localStorage.setItem('guild_attendance_data', JSON.stringify(attendanceData)); } catch(e2) {}
         renderAttendanceOptions();
       }
     });
   } catch(e) {
-    console.error(e);
+    console.error('setupAttendanceFirebase error:', e);
   }
 }
+// CRITICAL: Export so app.js can call window.setupAttendanceFirebase()
+window.setupAttendanceFirebase = setupAttendanceFirebase;
 
 async function saveAttendanceState() {
   localStorage.setItem('guild_attendance_data', JSON.stringify(attendanceData));
