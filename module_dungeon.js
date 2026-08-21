@@ -347,6 +347,12 @@ function renderDungeonPage() {
   const qList = document.getElementById('dqList');
   if (qList) {
     const filteredQueues = (dungeonData.queues || []).filter(q => q.dungeon === currentTab);
+    filteredQueues.sort((a, b) => {
+      const aDone = a.status === 'done' ? 1 : 0;
+      const bDone = b.status === 'done' ? 1 : 0;
+      if (aDone !== bDone) return aDone - bDone;
+      return (a.timestamp || 0) - (b.timestamp || 0);
+    });
     if (filteredQueues.length === 0) {
       qList.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-lo);font-size:13px;">ยังไม่มีคิว</div>';
     } else {
