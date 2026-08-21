@@ -269,6 +269,9 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
     };
 
     console.log('[Module Log] ระบบ Log และ Backup พร้อมใช้งาน (V8 Final)');
+    if (document.getElementById('logPageBody')) {
+        document.getElementById('logPageBody').innerHTML = '<div style="text-align:center;padding:60px;color:green;">Module Log โหลดสำเร็จ! กดปุ่มรีเฟรชหรือแท็บด้านบนเพื่อดึงข้อมูล</div>';
+    }
 
   } catch(err) {
     console.error('[Module Log] ระบบ Log มีปัญหา:', err);
