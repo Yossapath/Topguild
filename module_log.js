@@ -52,6 +52,16 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
             } else {
               return window.showToast('ไม่พบทีมดังกล่าว (อาจถูกลบไปแล้ว)', 'error');
             }
+          } else if (log.action === 'CLEAR_SLOT') {
+            const t = window.dungeonData.teams.find(x => x.id === rb.teamId);
+            if (t) {
+              if (t.members[rb.slotIdx]) {
+                return window.showToast('ช่องนี้มีผู้เล่นอื่นอยู่แล้ว ไม่สามารถกู้คืนทับได้', 'warning');
+              }
+              t.members[rb.slotIdx] = rb.memberData;
+            } else {
+              return window.showToast('ไม่พบทีมดังกล่าว (อาจถูกลบไปแล้ว)', 'error');
+            }
           } else {
             return window.showToast('รายการนี้ไม่รองรับการกู้คืน', 'error');
           }
@@ -197,7 +207,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
                 
                 // Show Restore Button only for certain destructive actions
                 let restoreBtn = '';
-                if (log.rollbackData && (log.action === 'DELETE_QUEUE' || log.action === 'CLEAR_TEAM' || log.action === 'DELETE_LEAVE')) {
+                if (log.rollbackData && (log.action === 'DELETE_QUEUE' || log.action === 'CLEAR_TEAM' || log.action === 'DELETE_LEAVE' || log.action === 'CLEAR_SLOT')) {
                   const safeLog = encodeURIComponent(JSON.stringify(log));
                   restoreBtn = `<button onclick="window.restoreLogItem('${tab}', '${log.id}', '${safeLog}')" style="background:#fef3c7;color:#d97706;border:1px solid #fcd34d;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">กู้คืนข้อมูลนี้</button>`;
                 }
