@@ -552,14 +552,16 @@
           <thead>
             <tr style="background: var(--bg-soft); border-bottom: 2px solid var(--line);">
               <th style="padding: 12px 16px; text-align: left; font-family: var(--font-display); color: var(--blue-900); width:30px;">#</th>
-              <th style="padding: 12px 16px; text-align: left; font-family: var(--font-display); color: var(--blue-900);">ชื่อตัวละคร</th>
-              <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--ok);">🟢 เข้าร่วม (ครั้ง)</th>
-              <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--warn);">🟡 ลา (ครั้ง)</th>
-              <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--danger);">🔴 ขาด (ครั้ง)</th>
+                <th style="padding: 12px 16px; text-align: left; font-family: var(--font-display); color: var(--blue-900);">ชื่อตัวละคร</th>
+                <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--blue-900);">อาชีพ</th>
+                <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--ok);">🟢 เข้าร่วม</th>
+                <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--warn);">🟡 ลา</th>
+                <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--danger);">🔴 ขาด</th>
+                <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--blue-900);">% มา</th>
             </tr>
           </thead>
           <tbody id="attStatsTbody">
-            <tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--text-lo);">กำลังโหลดสถิติ...</td></tr>
+            <tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-lo);">กำลังโหลดสถิติ...</td></tr>
           </tbody>
         </table>
       </div>
@@ -750,8 +752,8 @@
 <div id="adminUsersOverlay" onclick="closeAdminUsersSidebar()" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; opacity: 0; transition: opacity 0.3s ease;"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="auth_dungeon.js?v=2.7"></script>
-<script type="module" src="app.js?v=2.7"></script>
+<script type="module" src="auth_dungeon.js?v=2.8"></script>
+<script type="module" src="app.js?v=2.8"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>
 </body>

@@ -792,8 +792,14 @@ async function setupAttendanceFirebase() {
 
 async function saveAttendanceState() {
   if (!window.db) return;
-  const attRef = doc(window.db, 'guild_system', 'attendance');
-  await setDoc(attRef, attendanceData);
+  try {
+    const attRef = doc(window.db, 'guild_system', 'attendance');
+    await setDoc(attRef, attendanceData, { merge: true });
+    console.log('Saved attendance data to Firebase successfully');
+  } catch(err) {
+    console.error('Failed to save attendance data:', err);
+    window.showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล (เช็คสิทธิ์ Database)', 'error');
+  }
 }
 
 
