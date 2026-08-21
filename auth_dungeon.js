@@ -948,6 +948,24 @@ window.switchDungeonTab = function(type) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  const dqNameInput = document.getElementById('dqName');
+  if (dqNameInput) {
+    dqNameInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim().toLowerCase();
+      if (!val) return;
+      if (window.guildRoster) {
+        for (let job in window.guildRoster) {
+          const found = window.guildRoster[job].find(m => m.name.toLowerCase() === val);
+          if (found) {
+            const dqClass = document.getElementById('dqClass');
+            if (dqClass) dqClass.value = job;
+            break;
+          }
+        }
+      }
+    });
+  }
+
   const saved = localStorage.getItem('guild_current_user');
   if (saved) {
     try {
