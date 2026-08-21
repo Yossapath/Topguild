@@ -1429,6 +1429,8 @@ select.name-input.empty {
 
 .form-control {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box !important;
   padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
