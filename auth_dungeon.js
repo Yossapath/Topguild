@@ -632,12 +632,10 @@ window.switchDungeonTab = function(tabName) {
   // Highlight tabs
   document.querySelectorAll('.dungeon-tab').forEach(btn => {
       btn.classList.remove('active');
-      btn.style.background = 'transparent';
-      btn.style.color = 'var(--text-lo)';
+      
       if (btn.getAttribute('data-type') === tabName) {
         btn.classList.add('active');
-        btn.style.background = '#2563eb';
-        btn.style.color = 'white';
+        
       }
     });
   renderDungeonPage();
@@ -663,8 +661,25 @@ function renderDungeonPage() {
       qList.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-lo);font-size:13px;">ยังไม่มีคิว</div>';
     } else {
       qList.innerHTML = filteredQueues.map(q => {
-        const sColor = q.status === 'done' ? 'var(--ok)' : (q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)');
-        const sText = q.status === 'done' ? 'สำเร็จ' : (q.status === 'active' ? 'กำลังลงดัน' : 'รอลงดัน');
+        
+          // Check if in team
+          const currentTeams = dungeonData.teams.filter(t => t.type === currentTab);
+          let inTeamIndex = -1;
+          currentTeams.forEach((team, tIdx) => {
+            if (team.members.some(m => m && m.name && m.name.toLowerCase() === q.name.toLowerCase())) {
+              inTeamIndex = tIdx + 1;
+            }
+          });
+
+          let sColor, sText;
+          if (inTeamIndex !== -1) {
+            sColor = '#8b5cf6'; // Purple
+            sText = 'อยู่ในทีม ' + inTeamIndex;
+          } else {
+            sColor = q.status === 'done' ? 'var(--ok)' : (q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)');
+            sText = q.status === 'done' ? 'สำเร็จ' : (q.status === 'active' ? 'กำลังลงดัน' : 'รอลงดัน');
+          }
+
         const eName = window.escapeHtml ? window.escapeHtml(q.name) : q.name;
         const eJob = window.escapeHtml ? window.escapeHtml(q.job || '') : (q.job || '');
         const adminCtrl = isAdmin ? `<div style="display:flex;gap:4px;margin-top:8px;">
@@ -702,7 +717,7 @@ function renderDungeonPage() {
     return;
   }
 
-  tArea.innerHTML = teamsForTab.map(t => {
+  tArea.innerHTML = teamsForTab.map((t, teamIdx) => {
     let mHtml = '';
     let totalPower = 0;
     let filledCount = 0;
@@ -768,7 +783,7 @@ function renderDungeonPage() {
     return `<div class="team-card" style="width:100%;">
       <div class="team-card-head" style="display:flex;justify-content:space-between;align-items:center;padding:12px;">
         <div class="team-title-group">
-          <span style="font-size:16px;">${window.escapeHtml ? window.escapeHtml(t.dungeonName || t.type) : (t.dungeonName || t.type)}</span>
+          <span style="font-size:16px;">${window.escapeHtml ? window.escapeHtml(t.dungeonName || t.type) : (t.dungeonName || t.type)} <span style="color:var(--text-lo); font-size:14px; font-weight:normal; margin-left:8px;">(ทีมที่ ${teamIdx + 1})</span></span>
           <span class="team-power-sum" style="font-size:14px;">${totalPower.toLocaleString('en-US')}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
@@ -1036,80 +1051,16 @@ window.renderAttendanceTable = function() {
   if (!selectedDate) {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--text-lo);">กรุณาเลือกวันที่เพื่อดูข้อมูล</td></tr>';
     const summaryDiv = document.getElementById('attendanceSummary');
-    if (summaryDiv) summaryDiv.innerHTML = '';
-    const btnDelete = document.getElementById('btnDeleteAttendanceDate');
-    if (btnDelete) btnDelete.style.display = 'none';
-    return;
-  }
-  
-  const btnDelete = document.getElementById('btnDeleteAttendanceDate');
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
-  if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
-  
-  const dayData = attendanceData.dates[selectedDate] || {};
-  
-  let allMembers = [];
-  if (window.guildRoster) {
-    Object.keys(window.guildRoster).forEach(job => {
-      window.guildRoster[job].forEach(m => {
-        allMembers.push({ name: m.name, job: job, power: m.power || 0 });
-      });
-    });
-  }
-  
-  allMembers.sort((a,b) => b.power - a.power);
-  
-  const searchInput = document.getElementById('attendanceSearch');
-  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-  
-  let html = '';
-  let joinedCount = 0;
-  let leaveCount = 0;
-  let absentCount = 0;
-  let totalCount = 0;
-  
-  let idx = 1;
-  allMembers.forEach(m => {
-     if (query && !m.name.toLowerCase().includes(query)) return;
-     const status = dayData[m.name] || 'none';
-     totalCount++;
-     if (status === 'attended') joinedCount++;
-     else if (status === 'leave') leaveCount++;
-     else absentCount++;
-     
-     const escapedName = window.escapeHtml ? window.escapeHtml(m.name) : m.name;
-     html += `<tr>
-       <td class="cell-rank">${idx++}</td>
-       <td>${escapedName}</td>
-       <td style="text-align:center; font-weight: 600; color:${window.JOB_COLORS && window.JOB_COLORS[m.job] ? window.JOB_COLORS[m.job] : "var(--text-hi)"};">${m.job}</td>
-         <td style="text-align:center;"><small style="color:var(--text-lo)">${m.power}</small></td>
-       <td style="text-align:center;">
-         <select class="form-control" style="width:100%; min-width:100px; padding:4px;" ${isAdmin ? '' : 'disabled'} onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', this.value)">
-           <option value="none" ${!status || status === 'none' ? 'selected' : ''}>--- เว้นว่าง ---</option>
-           <option value="attended" ${status === 'attended' ? 'selected' : ''}>เข้าร่วม</option>
-           <option value="absent" ${status === 'absent' ? 'selected' : ''}>ขาด</option>
-           <option value="leave" ${status === 'leave' ? 'selected' : ''}>ลา</option>
-         </select>
-       </td>
-     </tr>`;
-  });
-  
-  if (html === '') {
-    html = '<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--text-lo);">ไม่พบข้อมูลสมาชิก</td></tr>';
-  }
-  tbody.innerHTML = html;
-  
-  const summaryDiv = document.getElementById('attendanceSummary');
   if (summaryDiv) {
     summaryDiv.innerHTML = `
-      <div style="display:flex; justify-content:space-around; align-items:center; margin-bottom: 10px; background:var(--bg-soft); padding: 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 15px; font-weight: 600;">
-        <span style="color:var(--text-hi);">ทั้งหมด: ${totalCount} คน</span>
-        <span style="color:var(--line);">|</span>
-        <span style="color:var(--ok);">มา: ${joinedCount} คน</span>
-        <span style="color:var(--line);">|</span>
-        <span style="color:var(--warn);">ลา: ${leaveCount} คน</span>
-        <span style="color:var(--line);">|</span>
-        <span style="color:var(--danger);">ขาด: ${absentCount} คน</span>
+      <div style="display:flex; justify-content:center; align-items:center; margin-bottom: 10px; background:var(--bg-soft); padding: 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 15px; font-weight: 600;">
+        <span style="color:var(--text-hi);">ทั้งหมด : ${totalCount} คน</span>
+        <span style="color:var(--line); margin: 0 20px;">|</span>
+        <span style="color:var(--ok);">มา : ${joinedCount} คน</span>
+        <span style="color:var(--line); margin: 0 20px;">|</span>
+        <span style="color:var(--warn);">ลา : ${leaveCount} คน</span>
+        <span style="color:var(--line); margin: 0 20px;">|</span>
+        <span style="color:var(--danger);">ขาด : ${absentCount} คน</span>
       </div>
     `;
   }

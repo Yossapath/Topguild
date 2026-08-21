@@ -1760,3 +1760,28 @@ footer {
   border-color: var(--blue-700, #1d4ed8);
   background: var(--surface);
 }
+
+
+.dungeon-tab {
+  padding: 12px 24px !important;
+  border: 2px solid var(--blue-300, #93c5fd) !important;
+  background: transparent !important;
+  color: var(--text-lo) !important;
+  border-radius: 8px !important; /* Square-ish rectangle */
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+.dungeon-tab:hover {
+  background: var(--bg-soft) !important;
+}
+.dungeon-tab.active {
+  background: var(--blue-600, #2563eb) !important;
+  color: #ffffff !important;
+  border-color: var(--blue-600, #2563eb) !important;
+  box-shadow: 0 2px 4px rgba(37,99,235,0.2) !important;
+}
+[data-theme="dark"] .dungeon-tab {
+  border-color: var(--blue-700, #1d4ed8) !important;
+}
