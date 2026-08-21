@@ -767,12 +767,12 @@ function isTeamLocked(fieldIdx, teamName) {
         <div class="team-card-head">
           <div class="team-title-group">
             <span>${escapeHtml(teamName)}</span>
-            ${locked ? '<span style="font-size:11px;background:#f59e0b;color:white;border-radius:8px;padding:2px 6px;margin-left:4px;">🔒</span>' : ''}
+            ${locked ? '<span style="font-size:11px;background:#f59e0b;color:white;border-radius:8px;padding:2px 6px;margin-left:4px;"></span>' : ''}
               <span class="team-power-sum">⚡ ${teamPowerSum.toLocaleString('en-US')}</span>
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span class="status-badge ${badgeClass}">${badgeText}</span>
-            ${isAdmin ? `<button type="button" onclick="window.toggleLockTeam(${currentFieldIdx}, '${escapeHtml(teamName)}')" style="background:${locked?'#f59e0b':'transparent'};border:1px solid ${locked?'#f59e0b':'var(--line)'};color:${locked?'white':'var(--text-lo)'};border-radius:8px;padding:2px 8px;cursor:pointer;font-size:12px;">${locked?'🔒 ล็อก':'🔓 ล็อก'}</button>` : ''}
+            ${isAdmin ? `<button type="button" onclick="window.toggleLockTeam(${currentFieldIdx}, '${escapeHtml(teamName)}')" style="background:${locked?'#f59e0b':'transparent'};border:1px solid ${locked?'#f59e0b':'var(--line)'};color:${locked?'white':'var(--text-lo)'};border-radius:8px;padding:2px 8px;cursor:pointer;font-size:12px;">${locked?'ล็อก':'ปลดล็อก'}</button>` : ''}
               <button type="button" class="btn-delete-team-card"  data-team="${escapeHtml(teamName)}" title="ลบ${escapeHtml(teamName)}">✕</button>
           </div>
         </div>
