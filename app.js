@@ -704,7 +704,7 @@ function isTeamLocked(fieldIdx, teamName) {
 })();
 
   function renderTeams() {
-  const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
   const fm = fieldMeta[currentFieldIdx];
   const teamsGrid = document.getElementById('teamsGrid');
   if (!fm || !teamsGrid) return;
@@ -772,7 +772,7 @@ function isTeamLocked(fieldIdx, teamName) {
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span class="status-badge ${badgeClass}">${badgeText}</span>
-            ${isAdmin ? `<button type="button" onclick="window.toggleLockTeam(${currentFieldIdx}, '${escapeHtml(teamName)}')" style="background:${locked?'#ef4444':'#ffffff'};border:none;color:${locked?'white':'#2563eb'};border-radius:20px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,0.1);">${locked?'ล็อก (Lock)':'ปลดล็อก (Unlock)'}</button>` : ''}
+            ${isAdmin ? `<button type="button" onclick="window.toggleLockTeam(${currentFieldIdx}, '${escapeHtml(teamName)}')" style="background:${locked?'#ffffff':'#2563eb'};border:none;color:${locked?'#2563eb':'#ffffff'};border-radius:20px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,0.1);">${locked?'ปลดล็อก (Unlock)':'ล็อก (Lock)'}</button>` : ''}
               <button type="button" class="btn-delete-team-card"  data-team="${escapeHtml(teamName)}" title="ลบ${escapeHtml(teamName)}">✕</button>
           </div>
         </div>

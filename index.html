@@ -213,7 +213,7 @@
     document.write('<style>#authWrap { display: none !important; } #appWrap { display: block !important; }</style>');
   }
 </script>
-<div id="authWrap" style="display: flex; align-items: center; justify-content: center; width: 100vw; min-height: 100vh; position: fixed; top: 0; left: 0; background: #f4f7fb; z-index: 10000; overflow-y: auto; box-sizing: border-box; font-family: var(--font-display, 'Prompt', sans-serif);">
+<div id="authWrap" style="display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: #f4f7fb; z-index: 10000; overflow-y: auto; box-sizing: border-box; font-family: var(--font-display, 'Prompt', sans-serif);">
   
   <div style="display: flex; flex-direction: row; width: 100%; max-width: 1000px; padding: 40px 20px; gap: 80px; align-items: center; justify-content: center; flex-wrap: wrap; ">
     
@@ -331,15 +331,15 @@
       <button type="button" class="btn-blue-theme-outline" id="btnStyleSolid" onclick="setJobStyle('solid')" >สีพื้นหลัง</button>
       <button type="button" class="btn-blue-theme-outline" id="btnStyleOutline" onclick="setJobStyle('outline')" >สีตัวหนังสือ</button>
     </div>
-    <button type="button" class="btn-secondary btn-blue-theme" id="btnThemeToggle" onclick="toggleTheme()" >ธีมมืด</button>
-    <button type="button" class="btn-secondary btn-blue-theme" id="btnOpenGuideModal" onclick="openGuideModal()" >คู่มือ</button>
+    <button type="button" class="btn-solid-blue" id="btnThemeToggle" onclick="toggleTheme()" >ธีมมืด</button>
+    <button type="button" class="btn-solid-blue" id="btnOpenGuideModal" onclick="openGuideModal()" >คู่มือ</button>
     <button type="button" id="btnLogout" onclick="handleLogout()">ออกจากระบบ</button>
   </div>
 
   <header>
     <div class="eyebrow">Guild Data Center</div>
     <h1>ระบบข้อมูลกิลด์</h1>
-    <div class="subtitle">รายชื่อสมาชิกแยกตามอาชีพ และการจัดทีมลงสนามหลัก / สนามรอง (ซิงค์ข้อมูล Real-time)</div>
+    <div class="subtitle" style="display:none;"></div>
   </header>
 
   <!-- Navigation Tabs -->
@@ -802,8 +802,8 @@
 <div id="adminUsersOverlay" onclick="closeAdminUsersSidebar()" style="position: fixed; top: 0; left: 0; width: 100vw; min-height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; opacity: 0; transition: opacity 0.3s ease;"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="auth_dungeon.js?v=4.9"></script>
-<script type="module" src="app.js?v=4.9"></script>
+<script type="module" src="auth_dungeon.js?v=5.0"></script>
+<script type="module" src="app.js?v=5.0"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>
 

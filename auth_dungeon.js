@@ -160,15 +160,21 @@ window.handleRegister = async function() {
 };
 
 window.handleLogout = function() {
-  window.currentUser = null;
-  localStorage.removeItem('guild_current_user');
-  showAuthUI();
-  document.getElementById('loginUsername').value = '';
-  document.getElementById('loginPassword').value = '';
+  const btn = document.getElementById('btnLogout');
+  if (btn) {
+    btn.innerHTML = 'กำลังออกจากระบบ...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+  }
+  setTimeout(() => {
+    window.currentUser = null;
+    localStorage.removeItem('guild_current_user');
+    window.location.reload();
+  }, 600);
 };
 
 function applyRolePermissions() {
-  const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
   
   const btnAdminUsers = document.getElementById('btnAdminUsers');
   if (btnAdminUsers) btnAdminUsers.style.display = isAdmin ? 'block' : 'none';
@@ -633,7 +639,7 @@ window.switchDungeonTab = function(tabName) {
 };
 
 function renderDungeonPage() {
-  const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
   const currentTab = window.currentDungeonTab || 'มายา (Maya)';
 
   // Update create team button
@@ -1032,7 +1038,7 @@ window.renderAttendanceTable = function() {
   }
   
   const btnDelete = document.getElementById('btnDeleteAttendanceDate');
-  const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
   if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
   
   const dayData = attendanceData.dates[selectedDate] || {};
@@ -1448,7 +1454,7 @@ function renderLeaveList() {
   const tbody = document.getElementById('leaveListTbody');
   if (!tbody) return;
 
-  const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = (userRole === 'admin' || userRole === 'owner' || userRole === 'หัวหน้ากิลด์');
 
   // Sort by date desc
   const sorted = [...leaveData].sort((a,b) => b.timestamp - a.timestamp);
