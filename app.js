@@ -733,6 +733,14 @@ function renderTeams() {
     statusBar.innerHTML = bar;
   }
 
+  // Toggle Action Buttons depending on field index and admin role
+  const isAdmin = window.currentUser && window.currentUser.role === 'admin';
+  const btnMain = document.getElementById('btnAutoOptimizeMain');
+  const btnSub = document.getElementById('btnAutoOptimizeSub');
+  
+  if (btnMain) btnMain.style.display = (isAdmin && currentFieldIdx === 0) ? 'block' : 'none';
+  if (btnSub) btnSub.style.display = (isAdmin && currentFieldIdx === 1) ? 'block' : 'none';
+
   attachRowListeners();
   renderSidebar();
 }

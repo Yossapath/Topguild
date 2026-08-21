@@ -180,11 +180,6 @@ function applyRolePermissions() {
   const btnAdminCreateAtt = document.getElementById('btnAdminCreateAttendance');
   if (btnAdminCreateAtt) btnAdminCreateAtt.style.display = isAdmin ? 'block' : 'none';
 
-  const btnAutoOptMain = document.getElementById('btnAutoOptimizeMain');
-  if (btnAutoOptMain) btnAutoOptMain.style.display = isAdmin ? 'block' : 'none';
-  const btnAutoOptSub = document.getElementById('btnAutoOptimizeSub');
-  if (btnAutoOptSub) btnAutoOptSub.style.display = isAdmin ? 'block' : 'none';
-
   const tabSettings = document.getElementById('tabSettings');
   if (tabSettings) tabSettings.style.display = isAdmin ? 'block' : 'none';
 
@@ -539,17 +534,14 @@ function renderDungeonPage() {
             ondrop="window.onDungeonSlotDrop(event, '${t.id}', ${i}); this.style.background='';">
             <td class="cell-rank">${i + 1}</td>
             <td>
-              <select class="cell-input name-input ${memberName ? '' : 'empty'}" onchange="updateDungeonTeamName('${t.id}', ${i}, this.value)">
+              <select class="cell-input name-input ${memberName ? '' : 'empty'}" onchange="updateDungeonTeamName('${t.id}', ${i}, this.value)" style="width:100%; min-width:140px; font-size:14px; padding:6px;">
                 ${dungeonNameSelectHtml(memberName, memberJob)}
               </select>
             </td>
             <td>
-              <select class="cell-input job-input ${memberJob ? '' : 'empty'}" onchange="updateDungeonTeamJob('${t.id}', ${i}, this.value)" style="--job-color:${jobColor}">
+              <select class="cell-input job-input ${memberJob ? '' : 'empty'}" onchange="updateDungeonTeamJob('${t.id}', ${i}, this.value)" style="--job-color:${jobColor}; width:100%; min-width:120px; font-size:14px; padding:6px; text-align:center;">
                 ${dungeonJobSelectHtml(memberJob)}
               </select>
-            </td>
-            <td>
-              <input class="cell-input power-input" type="number" onchange="updateDungeonTeamPower('${t.id}', ${i}, this.value)" value="${memberPower != null ? memberPower : ''}" placeholder="-">
             </td>
             <td class="cell-action">
               <button class="clear-btn" onclick="clearDungeonSlot('${t.id}', ${i})" title="ล้างช่องนี้">✕</button>
@@ -560,11 +552,10 @@ function renderDungeonPage() {
         mHtml += `
           <tr>
             <td class="cell-rank">${i + 1}</td>
-            <td style="padding-left:8px; font-size:13px; color:var(--text-hi);">
+            <td style="padding-left:8px; font-size:14px; color:var(--text-hi);">
               ${memberName ? escapedName : '<i style="color:var(--text-lo)">- ว่าง -</i>'}
             </td>
-            <td style="text-align:center; font-size:13px; font-weight:600; color:${jobColor};">${memberJob || '-'}</td>
-            <td style="text-align:center; font-size:13px; color:var(--text-hi);">${memberPower != null ? Number(memberPower).toLocaleString('en-US') : '-'}</td>
+            <td style="text-align:center; font-size:14px; font-weight:600; color:${jobColor};">${memberJob || '-'}</td>
             <td></td>
           </tr>
         `;
@@ -576,19 +567,19 @@ function renderDungeonPage() {
     const badgeText = filledCount === t.capacity ? `ครบ ${filledCount}/${t.capacity}` : `ขาด ${t.capacity - filledCount} คน`;
 
     return `
-      <div class="team-card">
-        <div class="team-card-head" style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="team-card" style="min-width: 320px;">
+        <div class="team-card-head" style="display:flex; justify-content:space-between; align-items:center; padding:12px;">
           <div class="team-title-group">
-            <span>🗡️ ${t.dungeonName}</span>
-            <span class="team-power-sum">⚡ ${totalPower.toLocaleString('en-US')}</span>
+            <span style="font-size:16px;">🗡️ ${t.dungeonName}</span>
+            <span class="team-power-sum" style="font-size:14px;">⚡ ${totalPower.toLocaleString('en-US')}</span>
           </div>
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span class="status-badge ${badgeClass}">${badgeText}</span>
-            ${isAdmin ? `<button class="btn-delete-dungeon-team" onclick="deleteDungeonTeam('${t.id}')" style="background:transparent; border:none; color:white; cursor:pointer;" title="ลบทีม">✕</button>` : ''}
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="status-badge ${badgeClass}" style="font-size:13px; padding:4px 8px;">${badgeText}</span>
+            ${isAdmin ? `<button class="btn-delete-dungeon-team" onclick="deleteDungeonTeam('${t.id}')" style="background:transparent; border:none; color:white; cursor:pointer; font-size:16px;" title="ลบทีม">✕</button>` : ''}
           </div>
         </div>
-        <table class="team-table">
-          <thead><tr><th style="width:18px;"></th><th>ชื่อ</th><th style="text-align:center;">อาชีพ</th><th style="text-align:center;">ค่าพลัง</th><th style="width:26px;"></th></tr></thead>
+        <table class="team-table" style="width: 100%; table-layout: auto;">
+          <thead><tr><th style="width:30px;">#</th><th>ชื่อ</th><th style="text-align:center;">อาชีพ</th><th style="width:36px;"></th></tr></thead>
           <tbody>${mHtml}</tbody>
         </table>
       </div>
@@ -702,6 +693,96 @@ function renderAttendanceOptions() {
   window.renderAttendanceTable();
 }
 
+
+window.switchAttTab = function(tab) {
+  const dailyBtn = document.getElementById('btnAttTabDaily');
+  const statsBtn = document.getElementById('btnAttTabStats');
+  const dailyView = document.getElementById('attDailyView');
+  const statsView = document.getElementById('attStatsView');
+  
+  if (tab === 'daily') {
+    if (dailyBtn) dailyBtn.classList.add('active');
+    if (statsBtn) statsBtn.classList.remove('active');
+    if (dailyView) dailyView.style.display = 'block';
+    if (statsView) statsView.style.display = 'none';
+    window.renderAttendanceTable();
+  } else {
+    if (dailyBtn) dailyBtn.classList.remove('active');
+    if (statsBtn) statsBtn.classList.add('active');
+    if (dailyView) dailyView.style.display = 'none';
+    if (statsView) statsView.style.display = 'block';
+    window.renderAttendanceStats();
+  }
+};
+
+window.deleteAttendanceDate = function() {
+  const select = document.getElementById('attendanceDateSelect');
+  if (!select) return;
+  const dateStr = select.value;
+  if (!dateStr) return;
+  
+  if (confirm('คุณต้องการลบข้อมูลเช็คชื่อของวันที่ ' + dateStr + ' ใช่หรือไม่?')) {
+    delete attendanceData.dates[dateStr];
+    saveAttendanceState();
+    select.value = '';
+    renderAttendanceOptions();
+  }
+};
+
+window.renderAttendanceStats = function() {
+  const tbody = document.getElementById('attStatsTbody');
+  if (!tbody) return;
+  
+  const searchInput = document.getElementById('attStatsSearch');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  
+  // Aggregate stats
+  const statsMap = {}; // { name: { joined:0, leave:0, absent:0 } }
+  const dates = Object.keys(attendanceData.dates);
+  
+  dates.forEach(d => {
+    const dayData = attendanceData.dates[d];
+    Object.keys(dayData).forEach(name => {
+      const status = dayData[name];
+      if (!statsMap[name]) statsMap[name] = { joined: 0, leave: 0, absent: 0 };
+      if (status === 'attended') statsMap[name].joined++;
+      if (status === 'leave') statsMap[name].leave++;
+      if (status === 'absent') statsMap[name].absent++;
+    });
+  });
+  
+  // Prepare member list from guildRoster to show everyone (or those with stats)
+  let allMembers = [];
+  if (window.guildRoster) {
+    Object.keys(window.guildRoster).forEach(j => {
+      allMembers.push(...window.guildRoster[j]);
+    });
+  }
+  
+  // If a member has no record, they will have 0/0/0
+  let rowsHtml = '';
+  let idx = 1;
+  allMembers.sort((a,b) => a.name.localeCompare(b.name)).forEach(m => {
+    const nameLower = m.name.toLowerCase();
+    if (query && !nameLower.includes(query)) return;
+    
+    const st = statsMap[m.name] || { joined: 0, leave: 0, absent: 0 };
+    rowsHtml += '<tr>';
+    rowsHtml += '<td class="cell-rank">' + (idx++) + '</td>';
+    rowsHtml += '<td>' + (window.escapeHtml ? window.escapeHtml(m.name) : m.name) + '</td>';
+    rowsHtml += '<td style="text-align:center; font-weight:600; color:var(--ok);">' + st.joined + '</td>';
+    rowsHtml += '<td style="text-align:center; font-weight:600; color:var(--warn);">' + st.leave + '</td>';
+    rowsHtml += '<td style="text-align:center; font-weight:600; color:var(--danger);">' + st.absent + '</td>';
+    rowsHtml += '</tr>';
+  });
+  
+  if (rowsHtml === '') {
+    rowsHtml = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-lo);">ไม่พบข้อมูล</td></tr>';
+  }
+  
+  tbody.innerHTML = rowsHtml;
+};
+
 window.renderAttendanceTable = function() {
   const select = document.getElementById('attendanceDateSelect');
   const tbody = document.getElementById('attendanceTbody');
@@ -711,6 +792,9 @@ window.renderAttendanceTable = function() {
   if (!selectedDate) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-lo);">กรุณาเลือกหรือสร้างวันที่เช็คชื่อ</td></tr>';
     const summaryDiv = document.getElementById('attendanceSummary');
+  const btnDelete = document.getElementById('btnDeleteAttendanceDate');
+  const isAdmin = window.currentUser && window.currentUser.role === 'admin';
+  if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
     if (summaryDiv) summaryDiv.innerHTML = '';
     return;
   }
