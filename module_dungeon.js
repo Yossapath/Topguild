@@ -94,7 +94,8 @@ window.clearDungeonTeam = function(teamId) {
   if (t) {
     const memberNames = (t.members || []).filter(m => m && m.name).map(m => m.name);
     if (window.backupDungeonData) window.backupDungeonData('ก่อนลงสำเร็จ: ทีม ' + (t.dungeonName || t.type));
-    if (window.writeSystemLog) window.writeSystemLog('dungeon', 'CLEAR_TEAM', '', t.type, 'ลงดันเจี้ยนสำเร็จ (ทีม ' + (t.dungeonName || t.type) + ')', { teamId: t.id, members: JSON.parse(JSON.stringify(t.members)) });
+    const memberStr = memberNames.length > 0 ? memberNames.join(', ') : '-';
+      if (window.writeSystemLog) window.writeSystemLog('dungeon', 'CLEAR_TEAM', memberStr, t.type, 'ลงดันเจี้ยนสำเร็จ (ทีม ' + (t.dungeonName || t.type) + ') | สมาชิก: ' + memberStr, { teamId: t.id, members: JSON.parse(JSON.stringify(t.members)) });
     t.members = Array(t.capacity).fill(null);
     saveDungeonState();
     window.showToast("เคลียร์ทีมเรียบร้อย", "success");
