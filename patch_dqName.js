@@ -1,37 +1,33 @@
 ﻿const fs = require('fs');
 let html = fs.readFileSync('index.html', 'utf8');
 
-html = html.replace(
-  '<input type="text" id="dqName" class="form-control" placeholder="ชื่อตัวละคร..." style="margin-bottom: 8px;">',
-  '<input type="text" id="dqName" class="form-control" placeholder="ชื่อตัวละคร..." style="margin-bottom: 8px;" list="rosterDatalist">'
-);
+// Replace dqName HTML to use the global autocomplete
+const oldDqHTML = `<div style="position:relative;">
+            <input type="text" id="dqName" class="form-control" placeholder="🔍 พิมพ์ชื่อ หรือคลิกเพื่อเลือก..." autocomplete="off">
+            <div id="dqNameDropdown" class="custom-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:100;"></div>
+          </div>`;
+const newDqHTML = `<div>
+            <input type="text" id="dqName" class="form-control autocomplete-member" data-action="dungeonQueue" placeholder="🔍 พิมพ์ชื่อ หรือคลิกเพื่อเลือก..." autocomplete="off">
+          </div>`;
 
-fs.writeFileSync('index.html', html, 'utf8');
+if (html.includes('id="dqNameDropdown"')) {
+  html = html.replace(oldDqHTML, newDqHTML);
+  fs.writeFileSync('index.html', html, 'utf8');
+}
 
 let js = fs.readFileSync('auth_dungeon.js', 'utf8');
+// Extend globalActionLogic
+const addDungeonQueueAction = `} else if (action === 'dungeonQueue') {
+             const job = item.getAttribute('data-job');
+             const dqClass = document.getElementById('dqClass');
+             if (dqClass) dqClass.value = job;
+          }`;
+js = js.replace(/\} else if \(action === 'leaveForm'\) \{[\s\S]*?\}/, `$& ${addDungeonQueueAction}`);
 
-const s1 = `document.addEventListener('DOMContentLoaded', () => {`;
-const r1 = `document.addEventListener('DOMContentLoaded', () => {
-  const dqNameInput = document.getElementById('dqName');
-  if (dqNameInput) {
-    dqNameInput.addEventListener('input', (e) => {
-      const val = e.target.value.trim().toLowerCase();
-      if (!val) return;
-      if (window.guildRoster) {
-        for (let job in window.guildRoster) {
-          const found = window.guildRoster[job].find(m => m.name.toLowerCase() === val);
-          if (found) {
-            const dqClass = document.getElementById('dqClass');
-            if (dqClass) dqClass.value = job;
-            break;
-          }
-        }
-      }
-    });
-  }
-`;
-
-js = js.replace(s1, r1);
+// REMOVE the old dqNameDropdown logic from auth_dungeon.js
+const oldJsRegex = /const dqNameInput = document\.getElementById\('dqName'\);[\s\S]*?dqNameInput\.addEventListener\('blur', \(\) => \{[\s\S]*?\}\);\s*\}/;
+js = js.replace(oldJsRegex, '// Old dqName dropdown removed');
 
 fs.writeFileSync('auth_dungeon.js', js, 'utf8');
-console.log('patched dqName');
+
+console.log('Fixed Dungeon Queue Input');

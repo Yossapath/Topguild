@@ -340,8 +340,10 @@ function renderDungeonPage() {
           const currentTeams = dungeonData.teams.filter(t => t.type === currentTab);
           let inTeamIndex = -1;
           currentTeams.forEach((team, tIdx) => {
-            if (team.members.some(m => m && m.name && m.name.toLowerCase() === q.name.toLowerCase())) {
-              inTeamIndex = tIdx + 1;
+            if (team.members && Array.isArray(team.members)) {
+              if (team.members.some(m => m && m.name && q && q.name && m.name.toLowerCase() === q.name.toLowerCase())) {
+                inTeamIndex = tIdx + 1;
+              }
             }
           });
 
@@ -396,8 +398,9 @@ function renderDungeonPage() {
     let totalPower = 0;
     let filledCount = 0;
 
+    const members = t.members || [];
     for (let i = 0; i < t.capacity; i++) {
-      const member = t.members[i];
+      const member = members[i];
       const memberName = member ? (typeof member === 'string' ? member : (member.name || '')) : '';
       let memberJob = member ? (typeof member === 'string' ? '' : (member.job || '')) : '';
       let memberPower = member ? (typeof member === 'string' ? null : (member.power || null)) : null;
