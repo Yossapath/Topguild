@@ -973,7 +973,7 @@ window.renderAttendanceTable = function() {
   let idx = 1;
   allMembers.forEach(m => {
      if (query && !m.name.toLowerCase().includes(query)) return;
-     const status = dayData[m.name] || 'absent';
+     const status = dayData[m.name] || 'none';
      totalCount++;
      if (status === 'attended') joinedCount++;
      else if (status === 'leave') leaveCount++;
@@ -986,8 +986,9 @@ window.renderAttendanceTable = function() {
        <td style="text-align:center;">${m.job} <br><small style="color:var(--text-lo)">(${m.power})</small></td>
        <td style="text-align:center;">
          <select class="form-control" style="width:100%; min-width:100px; padding:4px;" ${isAdmin ? '' : 'disabled'} onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', this.value)">
+           <option value="none" ${!status || status === 'none' ? 'selected' : ''}>--- เว้นว่าง ---</option>
+           <option value="attended" ${status === 'attended' ? 'selected' : ''}>✅ เข้าร่วม</option>
            <option value="absent" ${status === 'absent' ? 'selected' : ''}>❌ ขาด</option>
-           <option value="attended" ${status === 'attended' ? 'selected' : ''}>✅ มา</option>
            <option value="leave" ${status === 'leave' ? 'selected' : ''}>🟡 ลา</option>
          </select>
        </td>
