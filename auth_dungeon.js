@@ -791,6 +791,7 @@ async function setupAttendanceFirebase() {
 }
 
 async function saveAttendanceState() {
+  localStorage.setItem('guild_attendance_data', JSON.stringify(attendanceData));
   if (!window.db) return;
   try {
     const attRef = doc(window.db, 'guild_system', 'attendance');
@@ -889,12 +890,24 @@ function renderAttendanceOptions() {
     select.innerHTML = '<option value="">-- ไม่มีข้อมูล --</option>';
   } else {
     select.innerHTML = '<option value="">-- กรุณาเลือกวันที่ --</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
+    
+    const lastSelected = localStorage.getItem('guild_attendance_last_date');
+    
     if (dates.includes(currentVal) && currentVal !== '') {
       select.value = currentVal;
+    } else if (lastSelected && dates.includes(lastSelected)) {
+      select.value = lastSelected;
     } else {
-      select.value = dates[0]; // Auto-select the most recent date
+      select.value = dates[0];
     }
   }
+  
+  // Attach onchange to save to localStorage
+  select.onchange = function() {
+    localStorage.setItem('guild_attendance_last_date', this.value);
+    window.renderAttendanceTable();
+  };
+  
   window.renderAttendanceTable();
 }
 
@@ -990,7 +1003,8 @@ window.renderAttendanceTable = function() {
      html += `<tr>
        <td class="cell-rank">${idx++}</td>
        <td>${escapedName}</td>
-       <td style="text-align:center;">${m.job} <br><small style="color:var(--text-lo)">(${m.power})</small></td>
+       <td style="text-align:center; font-weight: 500;">${m.job}</td>
+         <td style="text-align:center;"><small style="color:var(--text-lo)">${m.power}</small></td>
        <td style="text-align:center;">
          <select class="form-control" style="width:100%; min-width:100px; padding:4px;" ${isAdmin ? '' : 'disabled'} onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', this.value)">
            <option value="none" ${!status || status === 'none' ? 'selected' : ''}>--- เว้นว่าง ---</option>
