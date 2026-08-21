@@ -357,27 +357,40 @@ window.deleteDungeonTeam = function(id) {
   }
 };
 
-// Store member as object { name, job, power } or null
-window.updateDungeonTeamMember = function(teamId, slotIdx, nameVal) {
+window.updateDungeonTeamName = function(teamId, slotIdx, nameVal) {
   if (!window.currentUser || window.currentUser.role !== 'admin') return;
   const t = dungeonData.teams.find(x => x.id === teamId);
   if (!t) return;
-
-  if (!nameVal || !nameVal.trim()) {
-    t.members[slotIdx] = null;
-  } else {
-    const name = nameVal.trim();
-    // Auto-lookup job & power from roster
-    let job = '';
-    let power = null;
-    if (window.guildRoster) {
-      for (const j in window.guildRoster) {
-        const found = (window.guildRoster[j] || []).find(m => m.name.toLowerCase() === name.toLowerCase());
-        if (found) { job = j; power = found.power; break; }
-      }
+  if (!t.members[slotIdx]) t.members[slotIdx] = { name: '', job: '', power: null };
+  t.members[slotIdx].name = nameVal.trim();
+  
+  if (nameVal && window.guildRoster) {
+    for (const j in window.guildRoster) {
+      const found = (window.guildRoster[j] || []).find(m => m.name.toLowerCase() === nameVal.toLowerCase());
+      if (found) { t.members[slotIdx].job = j; t.members[slotIdx].power = found.power; break; }
     }
-    t.members[slotIdx] = { name, job, power };
   }
+  if (!nameVal.trim() && !t.members[slotIdx].job && !t.members[slotIdx].power) {
+    t.members[slotIdx] = null;
+  }
+  saveDungeonState();
+};
+
+window.updateDungeonTeamJob = function(teamId, slotIdx, jobVal) {
+  if (!window.currentUser || window.currentUser.role !== 'admin') return;
+  const t = dungeonData.teams.find(x => x.id === teamId);
+  if (!t) return;
+  if (!t.members[slotIdx]) t.members[slotIdx] = { name: '', job: '', power: null };
+  t.members[slotIdx].job = jobVal;
+  saveDungeonState();
+};
+
+window.updateDungeonTeamPower = function(teamId, slotIdx, powerVal) {
+  if (!window.currentUser || window.currentUser.role !== 'admin') return;
+  const t = dungeonData.teams.find(x => x.id === teamId);
+  if (!t) return;
+  if (!t.members[slotIdx]) t.members[slotIdx] = { name: '', job: '', power: null };
+  t.members[slotIdx].power = powerVal === '' ? null : Number(powerVal);
   saveDungeonState();
 };
 
@@ -386,6 +399,50 @@ window.clearDungeonSlot = function(teamId, slotIdx) {
   const t = dungeonData.teams.find(x => x.id === teamId);
   if (t) { t.members[slotIdx] = null; saveDungeonState(); }
 };
+
+function dungeonNameSelectHtml(currentName, filterJob) {
+  let list = [];
+  if (window.guildRoster) {
+    if (filterJob && window.guildRoster[filterJob]) {
+      list = [...window.guildRoster[filterJob]];
+    } else {
+      Object.keys(window.guildRoster).forEach(j => {
+        list.push(...window.guildRoster[j].map(m => ({...m, job: j})));
+      });
+    }
+  }
+  
+  list.sort((a,b) => (b.power||0) - (a.power||0));
+
+  let out = `<option value="" ${!currentName ? 'selected' : ''}>— เลือกชื่อ —</option>`;
+  
+  if (currentName && !list.some(m => m.name.toLowerCase() === currentName.toLowerCase())) {
+    out += `<option value="${window.escapeHtml(currentName)}" selected>${window.escapeHtml(currentName)} ❓</option>`;
+  }
+
+  list.forEach(m => {
+    const isSelected = currentName && m.name.toLowerCase() === currentName.toLowerCase();
+    const jobBadge = isSelected ? '' : ` [${m.job || filterJob}]`;
+    const extraInfo = isSelected ? '' : (m.power != null ? ` (⚡ ${Number(m.power).toLocaleString('en-US')})` : '');
+    out += `<option value="${window.escapeHtml(m.name)}" ${isSelected ? 'selected' : ''}>${window.escapeHtml(m.name)}${jobBadge}${extraInfo}</option>`;
+  });
+  return out;
+}
+
+const DUNGEON_JOB_LIST = [
+  "Lord Knight", "Paladin", "High Wizard", "Sniper", 
+  "Priest", "Champion", "Assassin Cross", "Merchant", 
+  "Gunslinger", "Druid"
+];
+
+function dungeonJobSelectHtml(currentJob) {
+  let out = `<option value="" ${!currentJob ? 'selected' : ''}>— เลือกอาชีพ —</option>`;
+  DUNGEON_JOB_LIST.forEach(j => {
+    const isSelected = currentJob && currentJob.toLowerCase() === j.toLowerCase();
+    out += `<option value="${j}" ${isSelected ? 'selected' : ''}>${j}</option>`;
+  });
+  return out;
+}
 
 function renderDungeonPage() {
   const isAdmin = window.currentUser && window.currentUser.role === 'admin';
@@ -440,12 +497,6 @@ function renderDungeonPage() {
   const tArea = document.getElementById('dungeonTeamsArea');
   if (!tArea) return;
 
-  // Build roster name list for datalist
-  let allRosterNames = [];
-  if (window.guildRoster) {
-    Object.values(window.guildRoster).forEach(arr => arr.forEach(m => allRosterNames.push(m.name)));
-  }
-
   const teamsForTab = dungeonData.teams.filter(t => t.type === currentTab);
 
   if (teamsForTab.length === 0) {
@@ -461,13 +512,11 @@ function renderDungeonPage() {
     let filledCount = 0;
 
     for (let i = 0; i < t.capacity; i++) {
-      const member = t.members[i]; // now { name, job, power } or null (or legacy string)
-      // Handle legacy string format
+      const member = t.members[i]; 
       const memberName = member ? (typeof member === 'string' ? member : (member.name || '')) : '';
       let memberJob = member ? (typeof member === 'string' ? '' : (member.job || '')) : '';
       let memberPower = member ? (typeof member === 'string' ? null : (member.power || null)) : null;
 
-      // If legacy string, try to look up from roster
       if (memberName && !memberJob && window.guildRoster) {
         for (const j in window.guildRoster) {
           const found = (window.guildRoster[j] || []).find(m => m.name.toLowerCase() === memberName.toLowerCase());
@@ -478,28 +527,29 @@ function renderDungeonPage() {
       if (memberName) { filledCount++; if (memberPower) totalPower += Number(memberPower); }
 
       const escapedName = window.escapeHtml ? window.escapeHtml(memberName) : memberName;
-      const jobColor = memberJob && window.JOB_COLORS ? window.JOB_COLORS[memberJob] || '#8fa8bd' : '#8fa8bd';
+      const jobColor = memberJob && window.JOB_COLORS ? window.JOB_COLORS[memberJob] : '';
+
+      const rowClass = !memberName ? 'empty-row' : '';
 
       if (isAdmin) {
         mHtml += `
-          <tr data-team-id="${t.id}" data-slot="${i}"
+          <tr class="${rowClass}" data-team-id="${t.id}" data-slot="${i}"
             ondragover="event.preventDefault(); this.style.background='var(--blue-100)';"
             ondragleave="this.style.background='';"
             ondrop="window.onDungeonSlotDrop(event, '${t.id}', ${i}); this.style.background='';">
             <td class="cell-rank">${i + 1}</td>
             <td>
-              <input type="text" list="rosterDatalist"
-                value="${escapedName}"
-                onchange="updateDungeonTeamMember('${t.id}', ${i}, this.value)"
-                class="cell-input name-input ${memberName ? '' : 'empty'}"
-                placeholder="— เลือกชื่อ —"
-                style="border:none; background:transparent; width:100%; height:100%;">
+              <select class="cell-input name-input ${memberName ? '' : 'empty'}" onchange="updateDungeonTeamName('${t.id}', ${i}, this.value)">
+                ${dungeonNameSelectHtml(memberName, memberJob)}
+              </select>
             </td>
-            <td style="text-align:center; font-size:13px; font-weight:600; color:${jobColor};">
-              ${memberJob || '<span style="color:var(--text-lo)">-</span>'}
+            <td>
+              <select class="cell-input job-input ${memberJob ? '' : 'empty'}" onchange="updateDungeonTeamJob('${t.id}', ${i}, this.value)" style="--job-color:${jobColor}">
+                ${dungeonJobSelectHtml(memberJob)}
+              </select>
             </td>
-            <td style="text-align:center; font-size:13px; color:var(--text-hi);">
-              ${memberPower != null ? Number(memberPower).toLocaleString('en-US') : '-'}
+            <td>
+              <input class="cell-input power-input" type="number" onchange="updateDungeonTeamPower('${t.id}', ${i}, this.value)" value="${memberPower != null ? memberPower : ''}" placeholder="-">
             </td>
             <td class="cell-action">
               <button class="clear-btn" onclick="clearDungeonSlot('${t.id}', ${i})" title="ล้างช่องนี้">✕</button>
