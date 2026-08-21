@@ -1596,6 +1596,7 @@ function handleTeamSearch() {
 function renderAll() {
   if (typeof buildFieldTabs === "function") buildFieldTabs();
   window.guildRoster = guildRoster;
+  window.handleNameChange = handleNameChange;
   window.occupiedMap = occupiedMap;
   window.rowJobFilter = rowJobFilter;
   window.teamsAssignments = teamsAssignments;

@@ -202,7 +202,56 @@ window.closeAdminUsersSidebar = function() {
   setTimeout(() => document.getElementById('adminUsersOverlay').style.display = 'none', 300);
 };
 
-async function fetchAndRenderUsers() {
+let cachedAdminUsers = [];
+  
+  window.renderAdminUsers = function() {
+    const listEl = document.getElementById('adminUsersList');
+    if (!listEl) return;
+    
+    const searchInput = document.getElementById('adminUsersSearch');
+    const term = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    
+    let filtered = cachedAdminUsers;
+    if (term) {
+      filtered = filtered.filter(d => d.username.toLowerCase().includes(term));
+    }
+    
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<div style="text-align: center; color: var(--text-lo); margin-top: 20px;">ไม่พบผู้ใช้ที่ค้นหา</div>';
+      return;
+    }
+    
+    let html = '';
+    filtered.forEach(d => {
+      const isMe = d.username.toLowerCase() === window.currentUser.username.toLowerCase();
+      // สีเหลืองสำหรับ admin
+      const roleColor = d.role === 'admin' ? '#eab308' : 'var(--blue-500)';
+      html += `<div style="padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-weight: 600; color: var(--text-hi); font-size: 14px;">${window.escapeHtml ? window.escapeHtml(d.username) : d.username}</div>
+          <div style="font-size: 12px; color: var(--text-lo); margin-top: 2px; display: flex; align-items: center; gap: 6px;">
+            <span>อาชีพ: ${d.class || '-'}</span> 
+            <span style="opacity:0.3;">|</span> 
+            <span>Role:</span>
+            ${!isMe ? 
+              `<select onchange="updateAccountRole('${d.id}', this.value)" style="font-size: 11px; padding: 1px 4px; border-radius: 4px; border: 1px solid var(--line); background: var(--bg-soft); color: ${this.value==='admin'||d.role==='admin' ? '#eab308' : 'var(--blue-500)'}; font-weight: 600; cursor: pointer;">
+                <option value="admin" ${d.role === 'admin' ? 'selected' : ''} style="color:#eab308">Admin</option>
+                <option value="member" ${d.role === 'member' ? 'selected' : ''} style="color:var(--blue-500)">Member</option>
+              </select>` 
+              : `<span style="color: ${roleColor}; font-weight: 600;">${d.role === 'admin' ? 'Admin' : 'Member'}</span>`
+            }
+          </div>
+        </div>
+        ${!isMe ? 
+          `<button onclick="deleteAccount('${d.id}')" style="background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px;">ลบ</button>` 
+          : '<span style="font-size:12px; color:var(--text-lo);">คุณ</span>'
+        }
+      </div>`;
+    });
+    listEl.innerHTML = html;
+  };
+  
+  async function fetchAndRenderUsers() {
   if (!window.db || !window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
   const listEl = document.getElementById('adminUsersList');
   listEl.innerHTML = '<div style="text-align: center; color: var(--text-lo); margin-top: 20px;">กำลังโหลด...</div>';
@@ -607,7 +656,7 @@ function renderDungeonPage() {
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <strong style="color:var(--text-hi);font-size:14px;">${eName}</strong>
-              <span style="font-size:11px;color:var(--text-lo);margin-left:6px;">${q.job || ''}</span>
+              <span style="font-size:11px;color:${q.job && window.JOB_COLORS && window.JOB_COLORS[q.job] ? window.JOB_COLORS[q.job] : 'var(--text-lo)'};margin-left:6px;font-weight:600;">${q.job || ''}</span>
               ${q.power ? '<span style="font-size:11px;color:var(--text-lo);">⚡' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
               ${q.timestamp ? '<div style="font-size:10.5px;color:var(--text-lo);margin-top:4px;">🕒 ' + new Date(q.timestamp).toLocaleString('th-TH',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + ' น.</div>' : ''}
             </div>
@@ -668,9 +717,7 @@ function renderDungeonPage() {
               style="width:100%;min-width:140px;font-size:14px;padding:6px;">
           </td>
           <td>
-            <select class="cell-input job-input ${memberJob ? '' : 'empty'}"
-              onchange="updateDungeonTeamJob('${t.id}',${i},this.value)"
-              style="width:100%;min-width:120px;font-size:14px;padding:6px;">
+            <select class="cell-input job-input ${memberJob ? '' : 'empty'}" onchange="updateDungeonTeamJob('${t.id}',${i},this.value)" style="width:100%;min-width:120px;font-size:14px;padding:6px;color:${jobColor};font-weight:600;">
               ${dungeonJobSelectHtml(memberJob)}
             </select>
           </td>
