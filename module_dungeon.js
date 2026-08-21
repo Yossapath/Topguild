@@ -379,7 +379,7 @@ function renderDungeonPage() {
           <button class="btn-secondary" onclick="changeDungeonQueueStatus('${q.id}','done')" style="font-size:11px;padding:2px 4px;">เสร็จ</button>
           <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:11px;padding:2px 4px;color:var(--danger);border-color:var(--danger);">ลบ</button>
         </div>` : '';
-        const dragAttr = isAdmin ? `draggable="true" data-queue-name="${eName}" data-queue-job="${eJob}" data-queue-power="${q.power || 0}"` : '';
+        const dragAttr = isAdmin ? `draggable="true" data-queue-name="${eName}" data-queue-job="${eJob}" data-queue-power="${q.power || 0}" data-queue-time="${q.timestamp || ''}"` : '';
         return `<div ${dragAttr} style="padding:10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;${isAdmin ? 'cursor:grab;' : ''}" ondragstart="window.onDungeonQueueDragStart(event)">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
@@ -507,8 +507,9 @@ window.onDungeonQueueDragStart = function(event) {
   const el = event.currentTarget;
   const data = {
     name: el.dataset.queueName || '',
-    job: el.dataset.queueJob || '',
-    power: el.dataset.queuePower || ''
+      job: el.dataset.queueJob || '',
+      power: el.dataset.queuePower || '',
+      time: el.dataset.queueTime || ''
   };
   event.dataTransfer.setData('text/plain', JSON.stringify(data));
 };
@@ -521,7 +522,10 @@ window.onDungeonSlotDrop = function(event, teamId, slotIdx) {
     const t = dungeonData.teams.find(x => x.id === teamId);
     if (t) {
       t.members[slotIdx] = { name: data.name, job: data.job, power: data.power ? Number(data.power) : null };
-      if (window.writeSystemLog) window.writeSystemLog('dungeon', 'DROP_TO_TEAM', data.name, t.type, 'จัด ' + data.name + ' ลงช่องที่ ' + (slotIdx+1), null);
+      let detailText = 'จัด ' + data.name + ' ลงช่องที่ ' + (slotIdx+1);
+        if (data.power && Number(data.power) > 0) detailText += ' | พลัง: ' + Number(data.power).toLocaleString('en-US');
+        if (data.time) detailText += ' | เวลาจอง: ' + new Date(Number(data.time)).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+        if (window.writeSystemLog) window.writeSystemLog('dungeon', 'DROP_TO_TEAM', data.name, t.type, detailText, null);
       saveDungeonState();
     }
   } catch(e) { console.error(e); }
