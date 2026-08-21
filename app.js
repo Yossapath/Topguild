@@ -331,6 +331,7 @@ async function setupFirebase(configObj) {
     if (window.checkAuth) window.checkAuth();
     if (window.setupDungeonFirebase) window.setupDungeonFirebase();
     if (window.setupAttendanceFirebase) window.setupAttendanceFirebase();
+    if (window.setupLeaveFirebase) window.setupLeaveFirebase();
 
     const rosterData = toRoster(rSnap);
     const teamsData  = toTeams(tSnap);
@@ -679,7 +680,7 @@ function nameSelectHtml(key, job) {
 }
 
 function renderTeams() {
-  const isAdmin = window.currentUser && window.currentUser.role === 'admin';
+  const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
   const fm = fieldMeta[currentFieldIdx];
   const teamsGrid = document.getElementById('teamsGrid');
   if (!fm || !teamsGrid) return;
