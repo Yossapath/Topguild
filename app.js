@@ -254,14 +254,6 @@ function serializeTeamsState() {
     main: arr[0] || { title: 'สนามหลัก', isMain: true, teams: { "ทีม 1": [{},{},{},{},{}] } },
     sub: arr[1] || { title: 'สนามรอง', isMain: false, teams: { "ทีม 1": [{},{},{},{},{}] } }
   };
-} else {
-          slotList.push({ name: "", job: "", power: null });
-        }
-      }
-      teamsObj[teamName] = slotList;
-    });
-    return { title: fm.title, teams: teamsObj };
-  });
 }
 
 /* Save to Firebase only - no LocalStorage */
