@@ -334,6 +334,7 @@
       <span class="db-status-text" id="dbStatusText">สถานะฐานข้อมูล: <b>เชื่อมต่อ Firebase Cloud Database (topguild-eeb40) Active 🟢</b></span>
     </div>
     <button type="button" class="btn-solid-blue" id="btnAdminUsers" onclick="openAdminUsersSidebar()" style="display: none;">จัดการผู้ใช้</button>
+    <button type="button" class="btn-solid-blue" id="btnAdminLogs" onclick="window.openAdminLogsModal()" style="display: none; background: #475569;">ประวัติระบบ (Log)</button>
     
   </div>
 
@@ -823,6 +824,8 @@
   <script type="module" src="module_auth.js?v=6.5"></script>
   <!-- Module: Dungeon (isolated - bug here won't affect other pages) -->
   <script type="module" src="module_dungeon.js?v=6.5"></script>
+    <!-- Module: Log & Backup (Admin Only) -->
+    <script type="module" src="module_log.js?v=1.0"></script>
   <!-- Module: Attendance (isolated) -->
   <script type="module" src="module_attendance.js?v=6.5"></script>
   <!-- Module: Leave (isolated) -->

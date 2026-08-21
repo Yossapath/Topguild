@@ -65,6 +65,7 @@ window.bookDungeonQueue = function() {
   });
   
   saveDungeonState();
+  if (window.writeSystemLog) window.writeSystemLog('BOOK_QUEUE', { name, job, dungeon, power });
   
   document.getElementById('dqName').value = '';
   document.getElementById('dqClass').value = '';
@@ -80,6 +81,8 @@ window.changeDungeonQueueStatus = function(id, newStatus) {
 };
 
 window.deleteDungeonQueue = function(id) {
+  const q = dungeonData.queues.find(x => x.id === id);
+  if (window.writeSystemLog) window.writeSystemLog('DELETE_QUEUE', { name: q ? q.name : id, dungeon: q ? q.dungeon : '' });
   dungeonData.queues = dungeonData.queues.filter(x => x.id !== id);
   saveDungeonState();
 };
@@ -89,6 +92,9 @@ window.clearDungeonTeam = function(teamId) {
   if (!confirm("ยืนยันว่าทีมนี้ลงดันเจี้ยนสำเร็จ และต้องการเคลียร์รายชื่อทั้งหมด?")) return;
   const t = dungeonData.teams.find(x => x.id === teamId);
   if (t) {
+    const memberNames = (t.members || []).filter(m => m && m.name).map(m => m.name);
+    if (window.backupDungeonData) window.backupDungeonData('ก่อนลงสำเร็จ: ทีม ' + (t.dungeonName || t.type));
+    if (window.writeSystemLog) window.writeSystemLog('CLEAR_TEAM', { teamType: t.type, teamId: t.id, members: memberNames });
     t.members = Array(t.capacity).fill(null);
     saveDungeonState();
     window.showToast("เคลียร์ทีมเรียบร้อย", "success");
@@ -183,12 +189,16 @@ window.addDungeonTeam = function(dungeonName, capacity) {
     capacity,
     members: Array(capacity).fill(null)
   });
+  if (window.writeSystemLog) window.writeSystemLog('CREATE_TEAM', { dungeonName, capacity, tab: window.currentDungeonTab });
   saveDungeonState();
 };
 
 window.deleteDungeonTeam = function(id) {
   if (!window.currentUser || !window.isUserAdmin()) return;
   if (confirm("คุณต้องการลบทีมนี้ใช่หรือไม่?")) {
+    const t = dungeonData.teams.find(x => x.id === id);
+    if (window.backupDungeonData) window.backupDungeonData('ก่อนลบทีม: ' + (t ? t.dungeonName || t.type : id));
+    if (window.writeSystemLog) window.writeSystemLog('DELETE_TEAM', { teamId: id, teamType: t ? t.type : '', teamName: t ? t.dungeonName : '' });
     dungeonData.teams = dungeonData.teams.filter(x => x.id !== id);
     saveDungeonState();
   }
@@ -244,7 +254,12 @@ window.updateDungeonTeamPower = function(teamId, slotIdx, powerVal) {
 window.clearDungeonSlot = function(teamId, slotIdx) {
   if (!window.currentUser || !window.isUserAdmin()) return;
   const t = dungeonData.teams.find(x => x.id === teamId);
-  if (t) { t.members[slotIdx] = null; saveDungeonState(); }
+  if (t) {
+    const removed = t.members[slotIdx];
+    if (window.writeSystemLog) window.writeSystemLog('CLEAR_SLOT', { name: removed ? removed.name : '', slot: slotIdx, teamId: teamId });
+    t.members[slotIdx] = null;
+    saveDungeonState();
+  }
 };
 
 function dungeonNameSelectHtml(currentName, filterJob) {
@@ -506,6 +521,7 @@ window.onDungeonSlotDrop = function(event, teamId, slotIdx) {
     const t = dungeonData.teams.find(x => x.id === teamId);
     if (t) {
       t.members[slotIdx] = { name: data.name, job: data.job, power: data.power ? Number(data.power) : null };
+      if (window.writeSystemLog) window.writeSystemLog('DROP_TO_TEAM', { name: data.name, job: data.job, teamId: teamId, slot: slotIdx, teamType: t.type });
       saveDungeonState();
     }
   } catch(e) { console.error(e); }
