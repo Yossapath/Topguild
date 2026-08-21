@@ -505,9 +505,11 @@ function buildFieldTabs() {
     btn.className = 'field-tab-btn' + (idx === currentFieldIdx ? ' active' : '');
     btn.textContent = label;
     btn.addEventListener('click', () => {
-      currentFieldIdx = idx;
-      renderTeams();
-    });
+        currentFieldIdx = idx;
+        document.querySelectorAll('#fieldTabs .field-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderTeams();
+      });
     fieldTabsEl.appendChild(btn);
   });
 }
@@ -716,9 +718,7 @@ function renderTeams() {
         <tr class="${rowClass}">
           <td class="cell-rank">${i + 1}</td>
           <td>
-            <select class="cell-input name-input ${a && a.name ? '' : 'empty'}" data-slot="${key}" ${isAdmin ? '' : 'disabled'}>
-              ${nameSelectHtml(key, job)}
-            </select>
+            <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField" value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="🔍 พิมพ์/คลิก..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
           </td>
           <td>
             <select class="cell-input job-input ${job ? '' : 'empty'}" data-slot="${key}" style="--job-color:${job ? colorOf(job) : ''}" ${isAdmin ? '' : 'disabled'}>

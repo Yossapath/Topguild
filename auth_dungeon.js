@@ -335,8 +335,97 @@ window.deleteDungeonQueue = function(id) {
   saveDungeonState();
 };
 
+
+window.clearDungeonTeam = function(teamId) {
+  if (!confirm("ยืนยันว่าทีมนี้ลงดันเจี้ยนสำเร็จ และต้องการเคลียร์รายชื่อทั้งหมด?")) return;
+  const t = dungeonData.teams.find(x => x.id === teamId);
+  if (t) {
+    t.members = Array(t.capacity).fill(null);
+    saveDungeonState();
+    window.showToast("เคลียร์ทีมเรียบร้อย", "success");
+  }
+};
+
+window.memberJoinTeam = function(teamId) {
+  if (!window.currentUser) return window.showToast("กรุณาเข้าสู่ระบบ", "error");
+  const myName = window.currentUser.username;
+  
+  // Get my job and power
+  let myJob = '';
+  let myPower = 0;
+  if (window.guildRoster) {
+    Object.keys(window.guildRoster).forEach(job => {
+      const found = (window.guildRoster[job]||[]).find(m => m.name.toLowerCase() === myName.toLowerCase());
+      if (found) { myJob = job; myPower = found.power || 0; }
+    });
+  }
+  if (!myJob) return window.showToast("ไม่พบข้อมูลอาชีพของคุณในรายชื่อสมาชิก", "error");
+
+  const t = dungeonData.teams.find(x => x.id === teamId);
+  if (!t) return;
+  
+  // Check if user is already in ANY team in THIS dungeon tab
+  const alreadyInTeam = dungeonData.teams.some(team => 
+    team.type === window.currentDungeonTab && 
+    team.members.some(m => m && m.name.toLowerCase() === myName.toLowerCase())
+  );
+  if (alreadyInTeam) return window.showToast("คุณอยู่ในทีมดันเจี้ยนนี้แล้ว", "warning");
+
+  const currentMembers = t.members.filter(m => m && m.name);
+  const filledCount = currentMembers.length;
+  if (filledCount >= t.capacity) return window.showToast("ทีมนี้เต็มแล้ว", "warning");
+
+  const curPriest = currentMembers.filter(m => m.job === 'Priest').length;
+  const curTank = currentMembers.filter(m => m.job === 'Lord Knight' || m.job === 'Paladin').length;
+  const emptySlots = t.capacity - filledCount;
+
+  if (window.currentDungeonTab === 'มายา (Maya)') {
+    if (filledCount >= 2) return window.showToast("ทีมมายารับสมาชิกกดเข้าเองได้สูงสุด 2 คน โปรดสร้างทีมใหม่", "warning");
+    const missingPriests = Math.max(0, 1 - curPriest);
+    const myContribution = (myJob === 'Priest') ? 1 : 0;
+    if ((emptySlots - 1) < (missingPriests - myContribution)) {
+       return window.showToast("ไม่สามารถเข้าได้ ทีมมายาต้องการ Priest ขั้นต่ำ 1 คน", "warning");
+    }
+  } else if (window.currentDungeonTab === 'บับเบิ้ล (Bubble)') {
+    const missingPriests = Math.max(0, 2 - curPriest);
+    const missingTanks = Math.max(0, 1 - curTank);
+    let myContribution = 0;
+    if (myJob === 'Priest') myContribution = missingPriests > 0 ? 1 : 0;
+    else if (myJob === 'Lord Knight' || myJob === 'Paladin') myContribution = missingTanks > 0 ? 1 : 0;
+    
+    if ((emptySlots - 1) < (missingPriests + missingTanks - myContribution)) {
+       return window.showToast("ไม่สามารถเข้าได้ ทีมต้องการ Priest ขั้นต่ำ 2 คน และ แทงค์ขั้นต่ำ 1 คน", "warning");
+    }
+  } else if (window.currentDungeonTab === 'กระจก (Mirror)') {
+    const missingPriests = Math.max(0, 2 - curPriest);
+    const missingTanks = Math.max(0, 2 - curTank);
+    let myContribution = 0;
+    if (myJob === 'Priest') myContribution = missingPriests > 0 ? 1 : 0;
+    else if (myJob === 'Lord Knight' || myJob === 'Paladin') myContribution = missingTanks > 0 ? 1 : 0;
+    
+    if ((emptySlots - 1) < (missingPriests + missingTanks - myContribution)) {
+       return window.showToast("ไม่สามารถเข้าได้ ทีมต้องการ Priest ขั้นต่ำ 2 คน และ แทงค์ขั้นต่ำ 2 คน", "warning");
+    }
+  }
+
+  const emptyIdx = t.members.findIndex(m => !m || !m.name);
+  if (emptyIdx !== -1) {
+    t.members[emptyIdx] = { name: myName, job: myJob, power: myPower };
+    
+    // Auto remove from queue if they are in it
+    dungeonData.queues = dungeonData.queues.filter(q => q.name.toLowerCase() !== myName.toLowerCase() || q.dungeon !== window.currentDungeonTab);
+    
+    saveDungeonState();
+    window.showToast("เข้าร่วมทีมสำเร็จ!", "success");
+  }
+};
+
 window.addDungeonTeam = function(dungeonName, capacity) {
-  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+  if (!window.currentUser) return;
+  const isAdmin = (window.currentUser.role || '').toLowerCase() === 'admin';
+  if (!isAdmin && window.currentDungeonTab !== 'มายา (Maya)') {
+     return window.showToast("เฉพาะ Admin ที่สร้างทีมดันเจี้ยนอื่นได้", "error");
+  }
   const teamNum = dungeonData.teams.filter(t => t.type === window.currentDungeonTab).length + 1;
   dungeonData.teams.push({
     id: Date.now().toString(),
@@ -357,9 +446,19 @@ window.deleteDungeonTeam = function(id) {
 };
 
 window.updateDungeonTeamName = function(teamId, slotIdx, nameVal) {
-  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
-  const t = dungeonData.teams.find(x => x.id === teamId);
-  if (!t) return;
+    if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+    const t = dungeonData.teams.find(x => x.id === teamId);
+    if (!t) return;
+    
+    // Check duplicates
+    if (nameVal.trim()) {
+       const isDup = dungeonData.teams.some(team => team.type === window.currentDungeonTab && team.members.some((m, idx) => m && m.name.toLowerCase() === nameVal.trim().toLowerCase() && !(team.id === teamId && idx === slotIdx)));
+       if (isDup) {
+          window.showToast("รายชื่อซ้ำ! คนนี้อยู่ในทีมแล้ว", "warning");
+          if (typeof renderDungeonPage === 'function') renderDungeonPage();
+          return;
+       }
+    }
   if (!t.members[slotIdx]) t.members[slotIdx] = { name: '', job: '', power: null };
   t.members[slotIdx].name = nameVal.trim();
   
@@ -446,11 +545,20 @@ function dungeonJobSelectHtml(currentJob) {
 function renderDungeonPage() {
   const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
   const dc = document.getElementById('dungeonAdminControls');
-  if (dc) dc.style.display = isAdmin ? 'flex' : 'none';
+  if (dc) dc.style.display = (isAdmin || window.currentDungeonTab === 'มายา (Maya)') ? 'flex' : 'none';
 
   const currentTab = window.currentDungeonTab || 'มายา (Maya)';
 
   // ---- QUEUE PANEL ----
+  
+  const btnCreate = document.getElementById('btnCreateDungeonTeam');
+  if (btnCreate) {
+    if (isAdmin) {
+      btnCreate.innerHTML = '+ สร้างทีม' + (currentTab.split(' ')[0]);
+    } else {
+      btnCreate.innerHTML = '+ สร้างทีมใหม่';
+    }
+  }
   const qList = document.getElementById('dqList');
   if (qList) {
     const filteredQueues = dungeonData.queues.filter(q => q.dungeon === currentTab);
@@ -539,9 +647,7 @@ function renderDungeonPage() {
             ondrop="window.onDungeonSlotDrop(event, '${t.id}', ${i}); this.style.background='';">
             <td class="cell-rank">${i + 1}</td>
             <td>
-              <select class="cell-input name-input ${memberName ? '' : 'empty'}" onchange="updateDungeonTeamName('${t.id}', ${i}, this.value)" style="width:100%; min-width:140px; font-size:14px; padding:6px;">
-                ${dungeonNameSelectHtml(memberName, memberJob)}
-              </select>
+              <input type="text" class="cell-input name-input autocomplete-member" onchange="updateDungeonTeamName('${t.id}', ${i}, this.value)" data-team-id="${t.id}" data-slot-idx="${i}" data-action="dungeonTeam" value="${memberName ? escapedName : ''}" placeholder="🔍 พิมพ์/คลิก..." autocomplete="off" style="width:100%; min-width:140px; font-size:14px; padding:6px;" ${isAdmin ? '' : 'disabled'}>
             </td>
             <td>
               <select class="cell-input job-input ${memberJob ? '' : 'empty'}" onchange="updateDungeonTeamJob('${t.id}', ${i}, this.value)" style="--job-color:${jobColor}; width:100%; min-width:120px; font-size:14px; padding:6px; text-align:center;">
@@ -587,6 +693,10 @@ function renderDungeonPage() {
           <thead><tr><th style="width:30px;">#</th><th>ชื่อ</th><th style="text-align:center;">อาชีพ</th><th style="width:36px;"></th></tr></thead>
           <tbody>${mHtml}</tbody>
         </table>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          ${!isAdmin ? `<button class="btn-primary" style="flex:1; border-radius:8px; padding:6px; font-size:13px;" onclick="memberJoinTeam('${t.id}')">เข้าร่วมทีม</button>` : ''}
+          <button class="btn-secondary" style="${!isAdmin ? 'flex:0 0 auto;' : 'flex:1;'} border-radius:8px; padding:6px; font-size:13px; border-color: var(--ok); color: var(--ok);" onclick="clearDungeonTeam('${t.id}')">✅ ลงสำเร็จ</button>
+        </div>
       </div>
     `;
   }).join('');
@@ -734,6 +844,98 @@ window.deleteAttendanceDate = function() {
   }
 };
 
+
+window.renderAttendanceTable = function() {
+  const tbody = document.getElementById('attTbody');
+  if (!tbody) return;
+  const select = document.getElementById('attendanceDateSelect');
+  if (!select) return;
+  const selectedDate = select.value;
+  
+  if (!selectedDate) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--text-lo);">กรุณาเลือกวันที่เพื่อดูข้อมูล</td></tr>';
+    const summaryDiv = document.getElementById('attendanceSummary');
+    if (summaryDiv) summaryDiv.innerHTML = '';
+    const btnDelete = document.getElementById('btnDeleteAttendanceDate');
+    if (btnDelete) btnDelete.style.display = 'none';
+    return;
+  }
+  
+  const btnDelete = document.getElementById('btnDeleteAttendanceDate');
+  const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
+  if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
+  
+  const dayData = attendanceData.dates[selectedDate] || {};
+  
+  let allMembers = [];
+  if (window.guildRoster) {
+    Object.keys(window.guildRoster).forEach(job => {
+      window.guildRoster[job].forEach(m => {
+        allMembers.push({ name: m.name, job: job, power: m.power || 0 });
+      });
+    });
+  }
+  
+  allMembers.sort((a,b) => b.power - a.power);
+  
+  const searchInput = document.getElementById('attSearch');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  
+  let html = '';
+  let joinedCount = 0;
+  let leaveCount = 0;
+  let absentCount = 0;
+  let totalCount = 0;
+  
+  let idx = 1;
+  allMembers.forEach(m => {
+     if (query && !m.name.toLowerCase().includes(query)) return;
+     const status = dayData[m.name] || 'absent';
+     totalCount++;
+     if (status === 'attended') joinedCount++;
+     else if (status === 'leave') leaveCount++;
+     else absentCount++;
+     
+     const escapedName = window.escapeHtml ? window.escapeHtml(m.name) : m.name;
+     html += `<tr>
+       <td class="cell-rank">${idx++}</td>
+       <td>${escapedName}</td>
+       <td style="text-align:center;">${m.job} <br><small style="color:var(--text-lo)">(${m.power})</small></td>
+       <td style="text-align:center;">
+         <select class="form-control" style="width:100%; min-width:100px; padding:4px;" ${isAdmin ? '' : 'disabled'} onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', this.value)">
+           <option value="absent" ${status === 'absent' ? 'selected' : ''}>❌ ขาด</option>
+           <option value="attended" ${status === 'attended' ? 'selected' : ''}>✅ มา</option>
+           <option value="leave" ${status === 'leave' ? 'selected' : ''}>🟡 ลา</option>
+         </select>
+       </td>
+     </tr>`;
+  });
+  
+  if (html === '') {
+    html = '<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--text-lo);">ไม่พบข้อมูลสมาชิก</td></tr>';
+  }
+  tbody.innerHTML = html;
+  
+  const summaryDiv = document.getElementById('attendanceSummary');
+  if (summaryDiv) {
+    summaryDiv.innerHTML = `
+      <div style="display:flex; justify-content:space-between; margin-bottom: 10px; background:var(--bg-soft); padding: 10px; border-radius: 8px;">
+        <span style="color:var(--text-hi);">ทั้งหมด: ${totalCount} คน</span>
+        <span style="color:var(--ok);">✅ มา: ${joinedCount} คน</span>
+        <span style="color:var(--warn);">🟡 ลา: ${leaveCount} คน</span>
+        <span style="color:var(--danger);">❌ ขาด: ${absentCount} คน</span>
+      </div>
+    `;
+  }
+};
+
+window.updateAttendanceStatus = function(dateStr, name, status) {
+  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
+  if (!attendanceData.dates[dateStr]) attendanceData.dates[dateStr] = {};
+  attendanceData.dates[dateStr][name] = status;
+  saveAttendanceState();
+};
+
 window.renderAttendanceStats = function() {
   const tbody = document.getElementById('attStatsTbody');
   if (!tbody) return;
@@ -758,286 +960,104 @@ window.renderAttendanceStats = function() {
   
   // Prepare member list from guildRoster to show everyone (or those with stats)
   let allMembers = [];
-  if (window.guildRoster) {
-    const seen = new Map();
-    Object.keys(window.guildRoster).forEach(job => {
-      (window.guildRoster[job] || []).forEach(m => {
-        const key = (m.name || '').toLowerCase().trim();
-        if (!key) return;
-        const currentPower = Number(m.power) || 0;
-        if (seen.has(key)) {
-          const existing = seen.get(key);
-          if (currentPower > (Number(existing.power) || 0)) {
-            seen.set(key, { name: m.name, job, power: m.power });
-          }
-        } else {
-          seen.set(key, { name: m.name, job, power: m.power });
-        }
-      });
+  Object.keys(window.guildRoster).forEach(job => {
+    window.guildRoster[job].forEach(m => {
+      allMembers.push({ name: m.name, job: job, power: m.power || 0 });
     });
-    allMembers = Array.from(seen.values());
-  }
-  
-  // If a member has no record, they will have 0/0/0
-  let rowsHtml = '';
-  let idx = 1;
-  allMembers.sort((a,b) => a.name.localeCompare(b.name)).forEach(m => {
-    const nameLower = m.name.toLowerCase();
-    if (query && !nameLower.includes(query)) return;
-    
-    const st = statsMap[m.name] || { joined: 0, leave: 0, absent: 0 };
-    rowsHtml += '<tr>';
-    rowsHtml += '<td class="cell-rank">' + (idx++) + '</td>';
-    rowsHtml += '<td>' + (window.escapeHtml ? window.escapeHtml(m.name) : m.name) + '</td>';
-    rowsHtml += '<td style="text-align:center; font-weight:600; color:var(--ok);">' + st.joined + '</td>';
-    rowsHtml += '<td style="text-align:center; font-weight:600; color:var(--warn);">' + st.leave + '</td>';
-    rowsHtml += '<td style="text-align:center; font-weight:600; color:var(--danger);">' + st.absent + '</td>';
-    rowsHtml += '</tr>';
   });
   
-  if (rowsHtml === '') {
-    rowsHtml = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-lo);">ไม่พบข้อมูล</td></tr>';
-  }
-  
-  tbody.innerHTML = rowsHtml;
-};
-
-window.renderAttendanceTable = function() {
-  const select = document.getElementById('attendanceDateSelect');
-  const tbody = document.getElementById('attendanceTbody');
-  if (!select || !tbody) return;
-  
-  const selectedDate = select.value;
-  if (!selectedDate) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-lo);">กรุณาเลือกหรือสร้างวันที่เช็คชื่อ</td></tr>';
-    const summaryDiv = document.getElementById('attendanceSummary');
-  const btnDelete = document.getElementById('btnDeleteAttendanceDate');
-  const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
-  if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
-    if (summaryDiv) summaryDiv.innerHTML = '';
-    return;
-  }
-  
-  const isAdmin = window.currentUser && (window.currentUser.role || '').toLowerCase() === 'admin';
-  const records = attendanceData.dates[selectedDate] || {};
-  
-  let allMembers = [];
-  if (window.guildRoster) {
-    Object.keys(window.guildRoster).forEach(job => {
-      (window.guildRoster[job] || []).forEach(m => {
-        allMembers.push({ name: m.name, job, power: m.power });
-      });
-    });
-  }
-  
-  allMembers.sort((a, b) => (b.power || 0) - (a.power || 0));
-  
-  const searchInput = document.getElementById('attendanceSearch');
-  const searchText = searchInput ? searchInput.value.trim().toLowerCase() : '';
-  if (searchText) {
-    allMembers = allMembers.filter(m => m.name.toLowerCase().includes(searchText));
-  }
-  
-  if (allMembers.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-lo);">ไม่พบรายชื่อในระบบกิลด์</td></tr>';
-    const summaryDiv = document.getElementById('attendanceSummary');
-    if (summaryDiv) summaryDiv.innerHTML = '';
-    return;
-  }
-
-  let html = '';
-  let countAttended = 0;
-  let countLeave = 0;
-  let countAbsent = 0;
-  let countNone = 0;
-  
-  // Store names for event delegation
-  const memberNames = allMembers.map(m => m.name);
-  
-  allMembers.forEach((m, idx) => {
-    const name = m.name;
-    const status = records[name] || 'none'; 
-    const escapedName = window.escapeHtml ? window.escapeHtml(name) : name;
-    // Safe name for use in inline JS attributes (escape single quotes)
-    const safeName = name.replace(/'/g, "\\'").replace(/\\/g, "\\\\");
+  const action = inputEl.getAttribute('data-action');
+  if (action === 'mainField') {
+    const slotKey = inputEl.getAttribute('data-slot');
+    const requiredJob = window.rowJobFilter ? window.rowJobFilter[slotKey] : '';
     
-    if (status === 'attended') countAttended++;
-    else if (status === 'leave') countLeave++;
-    else if (status === 'absent') countAbsent++;
-    else countNone++;
-    
-    let statusUI = '';
-    if (isAdmin) {
-      statusUI = `
-        <div style="display: flex; justify-content: center; gap: 8px;">
-          <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
-            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${safeName}', 'attended')" ${status === 'attended' ? 'checked' : ''}>
-            <span style="color: var(--ok); font-weight: 600; font-size: 13px;">🟢 เข้าร่วม</span>
-          </label>
-          <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
-            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${safeName}', 'leave')" ${status === 'leave' ? 'checked' : ''}>
-            <span style="color: var(--warn); font-weight: 600; font-size: 13px;">🟡 ลา</span>
-          </label>
-          <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
-            <input type="radio" name="att_${idx}" onchange="updateAttendanceStatus('${selectedDate}', '${safeName}', 'absent')" ${status === 'absent' ? 'checked' : ''}>
-            <span style="color: var(--danger); font-weight: 600; font-size: 13px;">🔴 ขาด</span>
-          </label>
-        </div>
-      `;
-    } else {
-      let badge = '<span style="color: var(--text-lo);">- ยังไม่เช็คชื่อ -</span>';
-      if (status === 'attended') badge = '<span style="color: var(--ok); font-weight: 600;">🟢 เข้าร่วม</span>';
-      else if (status === 'leave') badge = '<span style="color: var(--warn); font-weight: 600;">🟡 ลา</span>';
-      else if (status === 'absent') badge = '<span style="color: var(--danger); font-weight: 600;">🔴 ขาด</span>';
+    allMembers = allMembers.filter(m => {
+      // 1. Filter by selected job for this row (if any)
+      if (requiredJob && m.job !== requiredJob) return false;
       
-      statusUI = `<div style="text-align: center;">${badge}</div>`;
-    }
-    
-    const jobColor = m.job && window.JOB_COLORS ? window.JOB_COLORS[m.job] || '#8fa8bd' : '#8fa8bd';
-    
-    html += `
-      <tr style="border-bottom: 1px solid var(--line);">
-        <td style="padding: 10px 16px; color: var(--text-lo);">${idx + 1}</td>
-        <td style="padding: 10px 16px; font-weight: 600; color: var(--text-hi);">${escapedName}</td>
-        <td style="padding: 10px 16px; text-align: center; font-size: 13px; font-weight: 600; color: ${jobColor};">${m.job || '-'}</td>
-        <td style="padding: 10px 16px; text-align: center; color: var(--text-hi); font-size: 13px;">${m.power ? Number(m.power).toLocaleString('en-US') : '-'}</td>
-        <td style="padding: 10px 16px;">${statusUI}</td>
-      </tr>
-    `;
-  });
-  
-  const summaryDiv = document.getElementById('attendanceSummary');
-  if (summaryDiv) {
-    summaryDiv.innerHTML = `
-      <div style="background: var(--bg-soft); padding: 8px 16px; border-radius: 8px; border-left: 4px solid var(--ok); flex: 1; display: flex; flex-direction: column; align-items: center;">
-        <span style="font-size: 12px; color: var(--text-lo); font-weight: 600;">เข้าร่วม (Attended)</span>
-        <span style="font-size: 18px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);">${countAttended}</span>
-      </div>
-      <div style="background: var(--bg-soft); padding: 8px 16px; border-radius: 8px; border-left: 4px solid var(--warn); flex: 1; display: flex; flex-direction: column; align-items: center;">
-        <span style="font-size: 12px; color: var(--text-lo); font-weight: 600;">ลา (Leave)</span>
-        <span style="font-size: 18px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);">${countLeave}</span>
-      </div>
-      <div style="background: var(--bg-soft); padding: 8px 16px; border-radius: 8px; border-left: 4px solid var(--danger); flex: 1; display: flex; flex-direction: column; align-items: center;">
-        <span style="font-size: 12px; color: var(--text-lo); font-weight: 600;">ขาด (Absent)</span>
-        <span style="font-size: 18px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);">${countAbsent}</span>
-      </div>
-      <div style="background: var(--bg-soft); padding: 8px 16px; border-radius: 8px; border-left: 4px solid var(--line); flex: 1; display: flex; flex-direction: column; align-items: center;">
-        <span style="font-size: 12px; color: var(--text-lo); font-weight: 600;">ยังไม่เช็คชื่อ</span>
-        <span style="font-size: 18px; font-weight: 700; color: var(--blue-900); font-family: var(--font-display);">${countNone}</span>
-      </div>
-    `;
-  }
-  
-  tbody.innerHTML = html;
-};
-
-window.updateAttendanceStatus = function(dateStr, name, status) {
-  if (!window.currentUser || (window.currentUser.role || '').toLowerCase() !== 'admin') return;
-  if (!attendanceData.dates[dateStr]) attendanceData.dates[dateStr] = {};
-  attendanceData.dates[dateStr][name] = status;
-  saveAttendanceState();
-};
-
-window.setupAttendanceFirebase = setupAttendanceFirebase;
-
-window.currentDungeonTab = 'มายา (Maya)';
-
-window.switchDungeonTab = function(type) {
-  window.currentDungeonTab = type;
-  
-  document.querySelectorAll('.dungeon-tab').forEach(btn => {
-    if (btn.dataset.type === type) {
-      btn.classList.add('active');
-      btn.style.background = '#2563eb';
-      btn.style.color = 'white';
-    } else {
-      btn.classList.remove('active');
-      btn.style.background = 'transparent';
-      btn.style.color = 'var(--text-lo)';
-    }
-  });
-
-  const btnCreate = document.getElementById('btnCreateDungeonTeam');
-  if (btnCreate) {
-    const shortName = type.split(' ')[0]; // e.g., 'มายา' from 'มายา (Maya)'
-    btnCreate.innerText = '+ สร้างทีม' + shortName;
-  }
-
-  window.renderDungeonPage();
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-
-  const dqNameInput = document.getElementById('dqName');
-  const dqNameDropdown = document.getElementById('dqNameDropdown');
-  
-  if (dqNameInput && dqNameDropdown) {
-    let allMembers = [];
-    
-    function populateDropdown(filterText = '') {
-      if (!window.guildRoster) return;
-      allMembers = [];
-      Object.keys(window.guildRoster).forEach(job => {
-        window.guildRoster[job].forEach(m => {
-          allMembers.push({ name: m.name, job: job, power: m.power || 0 });
-        });
-      });
-      
-      allMembers.sort((a,b) => b.power - a.power);
-      
-      let filtered = allMembers;
-      if (filterText) {
-        const lower = filterText.toLowerCase();
-        filtered = allMembers.filter(m => m.name.toLowerCase().includes(lower));
+      // 2. Filter out already occupied members
+      const lowerName = m.name.toLowerCase();
+      if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
+        // Allow them if they are occupying THIS exact slot
+        if (window.occupiedMap.get(lowerName) !== slotKey) return false;
       }
+      return true;
+    });
+  }
+  
+  if (action === 'dungeonTeam' && typeof dungeonData !== 'undefined') {
+    const currentTab = window.currentDungeonTab;
+    const inUseNames = new Set();
+    dungeonData.teams.forEach(t => {
+      if (t.type === currentTab) {
+        t.members.forEach((m, idx) => {
+          if (m && m.name) {
+             // Don't filter out if it's the exact slot we are editing
+             const teamId = inputEl.getAttribute('data-team-id');
+             const slotIdx = parseInt(inputEl.getAttribute('data-slot-idx'));
+             if (t.id === teamId && idx === slotIdx) return;
+             inUseNames.add(m.name.toLowerCase());
+          }
+        });
+      }
+    });
+    allMembers = allMembers.filter(m => !inUseNames.has(m.name.toLowerCase()));
+  }
+  
+  const val = filterText.toLowerCase();
+      const filtered = allMembers.filter(m => m.name.toLowerCase().includes(val));
       
       if (filtered.length === 0) {
-        dqNameDropdown.innerHTML = '<div style="padding: 10px; text-align:center; color:var(--text-lo); font-size: 13px;">ไม่พบชื่อตัวละคร</div>';
+        leaveNameDropdown.innerHTML = '<div style="padding: 10px; text-align:center; color:var(--text-lo); font-size: 13px;">ไม่พบชื่อตัวละคร</div>';
         return;
       }
       
-      dqNameDropdown.innerHTML = filtered.map(m => 
+      leaveNameDropdown.innerHTML = filtered.map(m => 
         `<div class="custom-dropdown-item" data-name="${window.escapeHtml ? window.escapeHtml(m.name) : m.name}" data-job="${m.job}">
           <strong style="color:var(--blue-700);">${window.escapeHtml ? window.escapeHtml(m.name) : m.name}</strong> 
-          <span style="opacity:0.7; font-size:12px;">- ${m.job} (${m.power})</span>
+          <span style="opacity:0.7; font-size:12px;">- ${m.job}</span>
         </div>`
       ).join('');
       
-      // Bind clicks
-      dqNameDropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
-        item.addEventListener('mousedown', (e) => { // mousedown fires before blur
+      leaveNameDropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
+        item.addEventListener('mousedown', (e) => {
           e.preventDefault(); 
-          dqNameInput.value = item.getAttribute('data-name');
-          const job = item.getAttribute('data-job');
-          const dqClass = document.getElementById('dqClass');
-          if (dqClass) dqClass.value = job;
-          dqNameDropdown.style.display = 'none';
+          leaveNameInput.value = item.getAttribute('data-name');
+          const leaveJob = document.getElementById('leaveJob');
+          if (leaveJob) leaveJob.value = item.getAttribute('data-job');
+          leaveNameDropdown.style.display = 'none';
         });
       });
     }
     
-    dqNameInput.addEventListener('focus', () => {
-      populateDropdown(dqNameInput.value.trim());
-      dqNameDropdown.style.display = 'block';
+    leaveNameInput.addEventListener('focus', () => {
+      populateLeaveDropdown(leaveNameInput.value.trim());
+      leaveNameDropdown.style.display = 'block';
     });
     
-    dqNameInput.addEventListener('input', (e) => {
-      populateDropdown(e.target.value.trim());
-      dqNameDropdown.style.display = 'block';
+    leaveNameInput.addEventListener('input', (e) => {
+      populateLeaveDropdown(e.target.value.trim());
+      leaveNameDropdown.style.display = 'block';
       
-      // Auto match job if typing exact name
       const val = e.target.value.trim().toLowerCase();
-      const exactMatch = allMembers.find(m => m.name.toLowerCase() === val);
-      if (exactMatch) {
-        const dqClass = document.getElementById('dqClass');
-        if (dqClass) dqClass.value = exactMatch.job;
+      let exactJob = '';
+      Object.keys(window.guildRoster || {}).forEach(job => {
+        (window.guildRoster[job]||[]).forEach(m => {
+          if (m.name.toLowerCase() === val) exactJob = job;
+        });
+      });
+      if (exactJob) {
+        const leaveJob = document.getElementById('leaveJob');
+        if (leaveJob) leaveJob.value = exactJob;
       }
     });
     
-    dqNameInput.addEventListener('blur', () => {
-      setTimeout(() => { dqNameDropdown.style.display = 'none'; }, 150);
+    leaveNameInput.addEventListener('blur', () => {
+      setTimeout(() => { leaveNameDropdown.style.display = 'none'; }, 150);
     });
   }
+
+  // Old dqName dropdown removed
 
 
 
@@ -1100,21 +1120,40 @@ async function saveLeaveState() {
   await setDoc(leaveRef, leaveData);
 }
 
+// Ensure the form gets populated with the current user's name/job
+setInterval(() => {
+  const nameEl = document.getElementById('leaveName');
+  const jobEl = document.getElementById('leaveJob');
+  if (nameEl && window.currentUser && window.currentUser.username) {
+    nameEl.value = window.currentUser.username;
+    
+    // Attempt to auto-fill job if not filled yet
+    if (!jobEl.value && window.guildRoster) {
+      Object.keys(window.guildRoster).forEach(job => {
+        const found = window.guildRoster[job].find(m => m.name.toLowerCase() === window.currentUser.username.toLowerCase());
+        if (found) {
+           jobEl.value = job;
+        }
+      });
+    }
+  }
+}, 1000);
+
 window.submitLeave = function() {
   const nameEl = document.getElementById('leaveName');
   const jobEl = document.getElementById('leaveJob');
   const dayEl = document.getElementById('leaveDay');
   const dateEl = document.getElementById('leaveDate');
   
-  if (!nameEl.value || !jobEl.value || !dayEl.value || !dateEl.value) {
-    window.showToast("กรุณากรอกข้อมูลให้ครบทุกช่อง", "error");
+  if (!nameEl.value || !dayEl.value || !dateEl.value) {
+    window.showToast("กรุณากรอกข้อมูลให้ครบทุกช่อง (รอระบบโหลดชื่อสักครู่)", "error");
     return;
   }
   
   const leaveObj = {
     id: Date.now().toString(),
     name: nameEl.value.trim(),
-    job: jobEl.value,
+    job: jobEl.value || '-',
     dayStr: dayEl.value,
     dateStr: dateEl.value // YYYY-MM-DD
   };
@@ -1122,15 +1161,13 @@ window.submitLeave = function() {
   leaveData.list.push(leaveObj);
   saveLeaveState();
   
-  nameEl.value = '';
-  jobEl.value = '';
   dayEl.value = '';
   dateEl.value = '';
   window.showToast("บันทึกการแจ้งลาเรียบร้อย", "success");
 };
 
 window.deleteLeave = function(id) {
-  if (confirm("ต้องการลบรายการแจ้งลานี้ใช่หรือไม่?")) {
+  if (confirm("ต้องการยกเลิกการแจ้งลานี้ใช่หรือไม่?")) {
     leaveData.list = leaveData.list.filter(L => L.id !== id);
     saveLeaveState();
   }
@@ -1151,9 +1188,11 @@ function renderLeaveList() {
     const canDelete = isAdmin || isMine;
     
     let dayTh = '';
-    if (L.dayStr === 'Tuesday') dayTh = 'อังคาร';
-    else if (L.dayStr === 'Thursday') dayTh = 'พฤหัสบดี';
-    else if (L.dayStr === 'Sunday') dayTh = 'อาทิตย์';
+    if (L.dayStr === 'Tuesday_1') dayTh = 'อังคาร รอบ 1 (21:30-21:55)';
+    else if (L.dayStr === 'Tuesday_2') dayTh = 'อังคาร รอบ 2 (22:00-22:25)';
+    else if (L.dayStr === 'Thursday_1') dayTh = 'พฤหัสบดี (22:00-22:25)';
+    else if (L.dayStr === 'Sunday_1') dayTh = 'อาทิตย์ (21:00-22:00)';
+    else dayTh = L.dayStr;
     
     html += `
       <tr style="border-bottom: 1px solid var(--line);">
@@ -1161,8 +1200,8 @@ function renderLeaveList() {
         <td style="padding: 10px;">${dayTh}</td>
         <td style="padding: 10px; font-weight:600; color:var(--text-hi);">${window.escapeHtml ? window.escapeHtml(L.name) : L.name}</td>
         <td style="padding: 10px; color:var(--text-lo);">${L.job}</td>
-        <td style="padding: 10px;">
-          ${canDelete ? `<button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteLeave('${L.id}')">ลบ</button>` : '-'}
+        <td style="padding: 10px; text-align:center;">
+          ${canDelete ? `<button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteLeave('${L.id}')">${isMine ? 'ยกเลิกการลา' : 'ลบ'}</button>` : '-'}
         </td>
       </tr>
     `;
@@ -1178,8 +1217,7 @@ function renderLeaveList() {
 // --- AUTO ATTENDANCE GENERATOR ---
 function getDatesOfCurrentWeek() {
   const now = new Date();
-  const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday...
-  // Get Monday of this week
+  const currentDay = now.getDay(); 
   const monday = new Date(now);
   monday.setDate(now.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
   
@@ -1190,10 +1228,9 @@ function getDatesOfCurrentWeek() {
     return `${yr}-${mo}-${da}`;
   };
   
-  // Calculate target days
-  const tue = new Date(monday); tue.setDate(monday.getDate() + 1); // Tuesday
-  const thu = new Date(monday); thu.setDate(monday.getDate() + 3); // Thursday
-  const sun = new Date(monday); sun.setDate(monday.getDate() + 6); // Sunday
+  const tue = new Date(monday); tue.setDate(monday.getDate() + 1); 
+  const thu = new Date(monday); thu.setDate(monday.getDate() + 3); 
+  const sun = new Date(monday); sun.setDate(monday.getDate() + 6); 
   
   return {
     tuesday: formatIso(tue),
@@ -1209,10 +1246,10 @@ window.autoGenerateAttendance = function() {
   
   const weekDates = getDatesOfCurrentWeek();
   const datesToCreate = [
-    { date: weekDates.tuesday + " (อังคาร รอบ 1)", baseDate: weekDates.tuesday, dayStr: 'Tuesday' },
-    { date: weekDates.tuesday + " (อังคาร รอบ 2)", baseDate: weekDates.tuesday, dayStr: 'Tuesday' },
-    { date: weekDates.thursday + " (พฤหัส รอบ 1)", baseDate: weekDates.thursday, dayStr: 'Thursday' },
-    { date: weekDates.sunday + " (อาทิตย์ รอบ 1)", baseDate: weekDates.sunday, dayStr: 'Sunday' }
+    { date: weekDates.tuesday + " (อังคาร รอบ 1)", baseDate: weekDates.tuesday, leaveMatch: 'Tuesday_1' },
+    { date: weekDates.tuesday + " (อังคาร รอบ 2)", baseDate: weekDates.tuesday, leaveMatch: 'Tuesday_2' },
+    { date: weekDates.thursday + " (พฤหัส รอบ 1)", baseDate: weekDates.thursday, leaveMatch: 'Thursday_1' },
+    { date: weekDates.sunday + " (อาทิตย์ รอบ 1)", baseDate: weekDates.sunday, leaveMatch: 'Sunday_1' }
   ];
   
   let changed = false;
@@ -1224,23 +1261,20 @@ window.autoGenerateAttendance = function() {
       changed = true;
     }
     
-    // 2. Auto-apply leaves for this date
-    // Find all leaves that match this target's baseDate
-    const matchingLeaves = leaveData.list.filter(L => L.dateStr === target.baseDate);
+    // 2. Auto-apply leaves for this exact date & round
+    const matchingLeaves = leaveData.list.filter(L => L.dateStr === target.baseDate && L.dayStr === target.leaveMatch);
     matchingLeaves.forEach(L => {
-      // Find exact member key (lowercase)
       if (window.guildRoster) {
         let foundKey = null;
         Object.keys(window.guildRoster).forEach(job => {
           (window.guildRoster[job] || []).forEach(m => {
             if (m.name.toLowerCase() === L.name.toLowerCase()) {
-              foundKey = m.name; // Keep original casing
+              foundKey = m.name;
             }
           });
         });
         
         if (foundKey) {
-          // If they haven't explicitly attended, mark as leave
           if (attendanceData.dates[target.date][foundKey] !== 'attended') {
              attendanceData.dates[target.date][foundKey] = 'leave';
              changed = true;
@@ -1260,3 +1294,133 @@ window.autoGenerateAttendance = function() {
 };
 
 window.setupLeaveFirebase = setupLeaveFirebase;
+
+window.activeAutocompleteInput = null;
+
+function showGlobalDropdown(inputEl, filterText = '') {
+  try {
+  if (!window.guildRoster) return;
+  const dropdown = document.getElementById('globalMemberDropdown');
+  if (!dropdown) return;
+  
+  let allMembers = [];
+  Object.keys(window.guildRoster).forEach(job => {
+    window.guildRoster[job].forEach(m => {
+      allMembers.push({ name: m.name, job: job, power: m.power || 0 });
+    });
+  });
+  
+  const action = inputEl.getAttribute('data-action');
+  
+  // Apply specific filters
+  if (action === 'mainField') {
+    const slotKey = inputEl.getAttribute('data-slot');
+    const requiredJob = window.rowJobFilter ? window.rowJobFilter[slotKey] : '';
+    
+    allMembers = allMembers.filter(m => {
+      if (requiredJob && m.job !== requiredJob) return false;
+      const lowerName = m.name.toLowerCase();
+      if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
+        if (window.occupiedMap.get(lowerName) !== slotKey) return false;
+      }
+      return true;
+    });
+  } else if (action === 'dungeonTeam' && typeof window.dungeonData !== 'undefined') {
+    const currentTab = window.currentDungeonTab;
+    const teamId = inputEl.getAttribute('data-team-id');
+    const slotIdx = parseInt(inputEl.getAttribute('data-slot-idx'));
+    const inUseNames = new Set();
+    
+    window.dungeonData.teams.forEach(t => {
+      if (t.type === currentTab) {
+        t.members.forEach((m, idx) => {
+          if (m && m.name) {
+             if (t.id === teamId && idx === slotIdx) return; // Allow current occupant
+             inUseNames.add(m.name.toLowerCase());
+          }
+        });
+      }
+    });
+    allMembers = allMembers.filter(m => !inUseNames.has(m.name.toLowerCase()));
+  }
+  
+  const val = filterText.toLowerCase();
+  const filtered = allMembers.filter(m => m.name.toLowerCase().includes(val));
+  
+  if (filtered.length === 0) {
+    dropdown.innerHTML = '<div style="padding: 10px; text-align:center; color:var(--text-lo); font-size: 13px;">ไม่พบชื่อตัวละคร</div>';
+  } else {
+    dropdown.innerHTML = filtered.map(m => 
+      `<div class="custom-dropdown-item" data-name="${window.escapeHtml ? window.escapeHtml(m.name) : m.name}" data-job="${m.job}" data-power="${m.power}">
+        <strong style="color:var(--blue-700);">${window.escapeHtml ? window.escapeHtml(m.name) : m.name}</strong> 
+        <span style="opacity:0.7; font-size:12px;">- ${m.job} (${m.power})</span>
+      </div>`
+    ).join('');
+    
+    dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault(); 
+        if (window.activeAutocompleteInput) {
+          const newName = item.getAttribute('data-name');
+          window.activeAutocompleteInput.value = newName;
+          
+          const action = window.activeAutocompleteInput.getAttribute('data-action');
+          if (action === 'mainField') {
+             const slot = window.activeAutocompleteInput.getAttribute('data-slot');
+             if (typeof handleNameChange === 'function') handleNameChange(slot, newName);
+          } else if (action === 'dungeonTeam') {
+             const teamId = window.activeAutocompleteInput.getAttribute('data-team-id');
+             const slotIdx = window.activeAutocompleteInput.getAttribute('data-slot-idx');
+             if (typeof updateDungeonTeamName === 'function') updateDungeonTeamName(teamId, parseInt(slotIdx), newName);
+          } else if (action === 'leaveForm') {
+             const job = item.getAttribute('data-job');
+             const leaveJob = document.getElementById('leaveJob');
+             if (leaveJob) leaveJob.value = job;
+          } else if (action === 'dungeonQueue') {
+             const job = item.getAttribute('data-job');
+             const dqClass = document.getElementById('dqClass');
+             if (dqClass) dqClass.value = job;
+          }
+        }
+        dropdown.style.display = 'none';
+      });
+    });
+  }
+  
+  const rect = inputEl.getBoundingClientRect();
+  dropdown.style.top = (rect.bottom + window.scrollY) + 'px';
+  dropdown.style.left = (rect.left + window.scrollX) + 'px';
+  dropdown.style.width = Math.max(200, rect.width) + 'px';
+  dropdown.style.display = 'block';
+  window.activeAutocompleteInput = inputEl;
+  } catch(e) {
+    console.error('Dropdown Error:', e);
+  }
+}
+
+document.addEventListener('input', (e) => {
+  if (e.target && e.target.classList.contains('autocomplete-member')) {
+    showGlobalDropdown(e.target, e.target.value.trim());
+  }
+});
+
+document.addEventListener('focusin', (e) => {
+  if (e.target && e.target.classList.contains('autocomplete-member')) {
+    showGlobalDropdown(e.target, e.target.value.trim());
+  }
+});
+
+document.addEventListener('focusout', (e) => {
+  if (e.target && e.target.classList.contains('autocomplete-member')) {
+    setTimeout(() => {
+      const dropdown = document.getElementById('globalMemberDropdown');
+      if (dropdown) dropdown.style.display = 'none';
+    }, 150);
+  }
+});
+
+// Update window scroll to hide dropdown
+window.addEventListener('scroll', () => {
+  const dropdown = document.getElementById('globalMemberDropdown');
+  if (dropdown && dropdown.style.display === 'block') dropdown.style.display = 'none';
+}, true);
