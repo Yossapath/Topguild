@@ -213,37 +213,45 @@
     document.write('<style>#authWrap { display: none !important; } #appWrap { display: block !important; }</style>');
   }
 </script>
-<div id="authWrap" style="display: grid; place-items: center; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: linear-gradient(135deg, #e3f2fd, #bbdefb); z-index: 10000; overflow: hidden; padding: 20px; box-sizing: border-box;">
-  <div style="background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px; margin: 0 auto;">
+<div id="authWrap" style="display: grid; place-items: center; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: linear-gradient(135deg, #0f172a, #1e293b); z-index: 10000; overflow: hidden; padding: 20px; box-sizing: border-box; font-family: var(--font-display, 'Prompt', sans-serif);">
+  <!-- Decorative background elements -->
+  <div style="position: absolute; top: -150px; right: -100px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; pointer-events: none;"></div>
+  <div style="position: absolute; bottom: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; pointer-events: none;"></div>
+
+  <div style="background: #ffffff; padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); width: 100%; max-width: 400px; margin: 0 auto; position: relative; z-index: 1;">
     
-    <div style="text-align: center; margin-bottom: 28px;">
-      <h2 style="margin: 0; color: #1e3a8a; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">Row Topguild</h2>
+    <div style="text-align: center; margin-bottom: 32px;">
+      <h2 style="margin: 0; font-size: 36px; font-weight: 900; letter-spacing: -1px; background: linear-gradient(90deg, #1e40af, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">TopGuild</h2>
+      <p style="margin: 4px 0 0 0; color: #64748b; font-size: 14px; font-weight: 600; letter-spacing: 0.5px;">Ragnarok The New world</p>
     </div>
+
     <!-- Login Form -->
     <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
       <div class="form-group" style="margin-bottom: 20px;">
-        <label style="font-weight: 700; color: #1e3a8a; margin-bottom: 8px; display: block; font-size: 14px;">Username Game</label>
-        <input type="text" id="loginUsername" style="width: 100%; padding: 12px 16px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #334155; transition: border-color 0.2s;" placeholder="ชื่อตัวละครของคุณ" required>
+        <label style="font-weight: 700; color: #334155; margin-bottom: 8px; display: block; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Username Game</label>
+        <input type="text" id="loginUsername" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #0f172a; transition: all 0.2s; outline: none; background: #f8fafc;" placeholder="ชื่อตัวละครของคุณ" onfocus="this.style.borderColor='#3b82f6'; this.style.background='#ffffff';" onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc';" required>
       </div>
-      <div class="form-group" style="margin-bottom: 24px;">
-        <label style="font-weight: 700; color: #1e3a8a; margin-bottom: 8px; display: block; font-size: 14px;">Password</label>
-        <input type="password" id="loginPassword" style="width: 100%; padding: 12px 16px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #334155; transition: border-color 0.2s;" placeholder="รหัสผ่าน" required>
+      <div class="form-group" style="margin-bottom: 28px;">
+        <label style="font-weight: 700; color: #334155; margin-bottom: 8px; display: block; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Password</label>
+        <input type="password" id="loginPassword" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #0f172a; transition: all 0.2s; outline: none; background: #f8fafc;" placeholder="รหัสผ่าน" onfocus="this.style.borderColor='#3b82f6'; this.style.background='#ffffff';" onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc';" required>
       </div>
-      <button type="submit" style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">เข้าสู่ระบบ</button>
-      <div style="text-align: center; margin-top: 20px; font-size: 14px; color: #64748b;">
-        ยังไม่มีบัญชีใช่หรือไม่? <a href="#" onclick="toggleAuthMode('register'); return false;" style="color: #2563eb; font-weight: 600; text-decoration: none;">สมัครสมาชิก</a>
+      <button type="submit" id="btnLoginSubmit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37,99,235,0.3); display: flex; justify-content: center; align-items: center; gap: 8px;">
+        <span>เข้าสู่ระบบ</span>
+      </button>
+      <div style="text-align: center; margin-top: 24px; font-size: 14px; color: #64748b;">
+        ยังไม่มีบัญชีใช่หรือไม่? <a href="#" onclick="toggleAuthMode('register'); return false;" style="color: #2563eb; font-weight: 700; text-decoration: none;">สมัครสมาชิก</a>
       </div>
     </form>
 
     <!-- Register Form (Hidden by default) -->
     <form id="registerForm" style="display: none;" onsubmit="event.preventDefault(); handleRegister();">
       <div class="form-group" style="margin-bottom: 16px;">
-        <label style="font-weight: 700; color: #1e3a8a; margin-bottom: 8px; display: block; font-size: 14px;">Username Game</label>
-        <input type="text" id="regUsername" style="width: 100%; padding: 12px 16px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #334155; transition: border-color 0.2s;" placeholder="ชื่อตัวละครของคุณ" required>
+        <label style="font-weight: 700; color: #334155; margin-bottom: 8px; display: block; font-size: 13px; text-transform: uppercase;">Username Game</label>
+        <input type="text" id="regUsername" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #0f172a; background: #f8fafc; outline: none;" placeholder="ชื่อตัวละครของคุณ" required>
       </div>
       <div class="form-group" style="margin-bottom: 16px;">
-        <label style="font-weight: 700; color: #1e3a8a; margin-bottom: 8px; display: block; font-size: 14px;">Class (อาชีพ)</label>
-        <select id="regJob" style="width: 100%; padding: 12px 16px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #334155; transition: border-color 0.2s;" required>
+        <label style="font-weight: 700; color: #334155; margin-bottom: 8px; display: block; font-size: 13px; text-transform: uppercase;">Class (อาชีพ)</label>
+        <select id="regJob" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #0f172a; background: #f8fafc; outline: none;" required>
           <option value="" disabled selected>-- เลือกอาชีพ --</option>
           <option value="Lord Knight">Lord Knight</option>
           <option value="Paladin">Paladin</option>
@@ -256,20 +264,20 @@
           <option value="Gunslinger">Gunslinger</option>
           <option value="Druid">Druid</option>
         </select>
-        
       </div>
       <div class="form-group" style="margin-bottom: 24px;">
-        <label style="font-weight: 700; color: #1e3a8a; margin-bottom: 8px; display: block; font-size: 14px;">Password</label>
-        <input type="password" id="regPassword" style="width: 100%; padding: 12px 16px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #334155; transition: border-color 0.2s;" placeholder="รหัสผ่าน" required>
+        <label style="font-weight: 700; color: #334155; margin-bottom: 8px; display: block; font-size: 13px; text-transform: uppercase;">Password</label>
+        <input type="password" id="regPassword" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; color: #0f172a; background: #f8fafc; outline: none;" placeholder="รหัสผ่าน" required>
       </div>
-      <button type="submit" style="width: 100%; padding: 12px; background: #059669; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(5,150,105,0.2);">สมัครสมาชิกใหม่</button>
-      <div style="text-align: center; margin-top: 20px; font-size: 14px; color: #64748b;">
-        มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuthMode('login'); return false;" style="color: #2563eb; font-weight: 600; text-decoration: none;">เข้าสู่ระบบ</a>
+      <button type="submit" id="btnRegSubmit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #059669, #047857); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(5,150,105,0.3); display: flex; justify-content: center; align-items: center; gap: 8px;">
+        <span>สมัครสมาชิกใหม่</span>
+      </button>
+      <div style="text-align: center; margin-top: 24px; font-size: 14px; color: #64748b;">
+        มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuthMode('login'); return false;" style="color: #2563eb; font-weight: 700; text-decoration: none;">เข้าสู่ระบบ</a>
       </div>
     </form>
   </div>
 </div>
-
 <!-- MAIN APP WRAPPER -->
 <div id="appWrap" class="wrap" style="display: none;">
   <datalist id="rosterDatalist"></datalist>
@@ -279,7 +287,7 @@
       <span class="status-indicator online" id="dbStatusDot"></span>
       <span class="db-status-text" id="dbStatusText">สถานะฐานข้อมูล: <b>เชื่อมต่อ Firebase Cloud Database (topguild-eeb40) Active 🟢</b></span>
     </div>
-    <button type="button" class="btn-config-toggle" id="btnAdminUsers" onclick="openAdminUsersSidebar()" style="display: none; background: #8b5cf6;">
+    <button type="button" class="btn-config-toggle" id="btnAdminUsers" onclick="openAdminUsersSidebar()" style="display: none; background: #3b82f6;">
       👥 จัดการผู้ใช้
     </button>
     <button type="button" class="btn-config-toggle" id="btnConfigToggle" onclick="openSettingsPage()">
@@ -767,8 +775,8 @@
 <div id="adminUsersOverlay" onclick="closeAdminUsersSidebar()" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; opacity: 0; transition: opacity 0.3s ease;"></div>
 
 <!-- Firebase SDK v10 (CDN Module) -->
-<script type="module" src="auth_dungeon.js?v=4.2"></script>
-<script type="module" src="app.js?v=4.2"></script>
+<script type="module" src="auth_dungeon.js?v=4.3"></script>
+<script type="module" src="app.js?v=4.3"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>
 
