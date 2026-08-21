@@ -226,22 +226,23 @@ let cachedAdminUsers = [];
       const isMe = d.username.toLowerCase() === window.currentUser.username.toLowerCase();
       // สีเหลืองสำหรับ admin
       const roleColor = d.role === 'admin' ? '#eab308' : 'var(--blue-500)';
-      html += `<div style="padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <div style="font-weight: 600; color: var(--text-hi); font-size: 14px;">${window.escapeHtml ? window.escapeHtml(d.username) : d.username}</div>
-          <div style="font-size: 12px; color: var(--text-lo); margin-top: 2px; display: flex; align-items: center; gap: 6px;">
-            <span>อาชีพ: ${d.class || '-'}</span> 
-            <span style="opacity:0.3;">|</span> 
-            <span>Role:</span>
-            ${!isMe ? 
-              `<select onchange="updateAccountRole('${d.id}', this.value)" style="font-size: 11px; padding: 1px 4px; border-radius: 4px; border: 1px solid var(--line); background: var(--bg-soft); color: ${this.value==='admin'||d.role==='admin' ? '#eab308' : 'var(--blue-500)'}; font-weight: 600; cursor: pointer;">
-                <option value="admin" ${d.role === 'admin' ? 'selected' : ''} style="color:#eab308">Admin</option>
-                <option value="member" ${d.role === 'member' ? 'selected' : ''} style="color:var(--blue-500)">Member</option>
-              </select>` 
-              : `<span style="color: ${roleColor}; font-weight: 600;">${d.role === 'admin' ? 'Admin' : 'Member'}</span>`
-            }
+      html += `<div style="padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="flex: 1;">
+            <div style="font-weight: 600; color: var(--text-hi); font-size: 14px;">${window.escapeHtml ? window.escapeHtml(d.username) : d.username}</div>
+            <div style="font-size: 12px; color: var(--text-lo); margin-top: 4px; display: flex; flex-direction: column; gap: 4px;">
+              <div>อาชีพ: <span style="font-weight: 500; color: ${window.JOB_COLORS && window.JOB_COLORS[d.class] ? window.JOB_COLORS[d.class] : 'var(--text-hi)'}">${d.class || '-'}</span></div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span>Role:</span>
+                ${!isMe ? 
+                  `<select onchange="updateAccountRole('${d.id}', this.value)" style="font-size: 11px; padding: 1px 4px; border-radius: 4px; border: 1px solid var(--line); background: var(--bg-soft); color: ${d.role==='admin' ? '#eab308' : 'var(--blue-500)'}; font-weight: 600; cursor: pointer; width: auto; min-width: 70px;">
+                    <option value="admin" ${d.role === 'admin' ? 'selected' : ''} style="color:#eab308">Admin</option>
+                    <option value="member" ${d.role === 'member' ? 'selected' : ''} style="color:var(--blue-500)">Member</option>
+                  </select>` 
+                  : `<span style="color: ${roleColor}; font-weight: 600;">${d.role === 'admin' ? 'Admin' : 'Member'}</span>`
+                }
+              </div>
+            </div>
           </div>
-        </div>
         ${!isMe ? 
           `<button onclick="deleteAccount('${d.id}')" style="background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px;">ลบ</button>` 
           : '<span style="font-size:12px; color:var(--text-lo);">คุณ</span>'
@@ -1059,7 +1060,7 @@ window.renderAttendanceTable = function() {
      html += `<tr>
        <td class="cell-rank">${idx++}</td>
        <td>${escapedName}</td>
-       <td style="text-align:center; font-weight: 500;">${m.job}</td>
+       <td style="text-align:center; font-weight: 600; color:${window.JOB_COLORS && window.JOB_COLORS[m.job] ? window.JOB_COLORS[m.job] : "var(--text-hi)"};">${m.job}</td>
          <td style="text-align:center;"><small style="color:var(--text-lo)">${m.power}</small></td>
        <td style="text-align:center;">
          <select class="form-control" style="width:100%; min-width:100px; padding:4px;" ${isAdmin ? '' : 'disabled'} onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', this.value)">
@@ -1141,7 +1142,7 @@ window.renderAttendanceStats = function() {
     html += '<tr>' +
       '<td class="cell-rank">' + (i+1) + '</td>' +
       '<td>' + eName + '</td>' +
-      '<td style="text-align:center;">' + m.job + '</td>' +
+      '<td style="text-align:center; font-weight: 600; color:' + (window.JOB_COLORS && window.JOB_COLORS[m.job] ? window.JOB_COLORS[m.job] : 'var(--text-hi)') + ';">' + m.job + '</td>' +
       '<td style="text-align:center; color:var(--ok)">' + s.joined + '</td>' +
       '<td style="text-align:center; color:var(--warn)">' + s.leave + '</td>' +
       '<td style="text-align:center; color:var(--danger)">' + s.absent + '</td>' +
@@ -1495,3 +1496,15 @@ window.updateAccountRole = async function(docId, newRole) {
     window.showToast('เกิดข้อผิดพลาด', 'error');
   }
 };
+
+// Fix scrollbar clicking stealing focus and closing dropdown
+document.addEventListener('DOMContentLoaded', () => {
+  const dropdown = document.getElementById('globalMemberDropdown');
+  if (dropdown) {
+    dropdown.addEventListener('mousedown', (e) => {
+      // If clicking inside the custom-dropdown-item, it already preventDefaults
+      // If clicking on the scrollbar, we also need to preventDefault so focus isn't lost
+      e.preventDefault();
+    });
+  }
+});
