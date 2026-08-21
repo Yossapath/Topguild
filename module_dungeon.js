@@ -65,7 +65,7 @@ window.bookDungeonQueue = function() {
   });
   
   saveDungeonState();
-  if (window.writeSystemLog) window.writeSystemLog('dungeon', 'BOOK_QUEUE', name, dungeon, 'จองคิวลงดันเจี้ยน อาชีพ ' + job, null);
+  if (window.writeSystemLog) window.writeSystemLog('logs_dungeon', 'BOOK_QUEUE', name, dungeon, 'จองคิวลงดันเจี้ยน อาชีพ ' + job, null);
   
   document.getElementById('dqName').value = '';
   document.getElementById('dqClass').value = '';
@@ -82,7 +82,7 @@ window.changeDungeonQueueStatus = function(id, newStatus) {
 
 window.deleteDungeonQueue = function(id) {
   const q = dungeonData.queues.find(x => x.id === id);
-  if (window.writeSystemLog) window.writeSystemLog('dungeon', 'DELETE_QUEUE', q ? q.name : 'Unknown', q ? q.dungeon : '', 'ลบคิวจอง', q || null);
+  if (window.writeSystemLog) window.writeSystemLog('logs_dungeon', 'DELETE_QUEUE', q ? q.name : 'Unknown', q ? q.dungeon : '', 'ลบคิวจอง', q || null);
   dungeonData.queues = dungeonData.queues.filter(x => x.id !== id);
   saveDungeonState();
 };
@@ -94,7 +94,7 @@ window.clearDungeonTeam = function(teamId) {
   if (t) {
     const memberNames = (t.members || []).filter(m => m && m.name).map(m => m.name);
     if (window.backupDungeonData) window.backupDungeonData('ก่อนลงสำเร็จ: ทีม ' + (t.dungeonName || t.type));
-    if (window.writeSystemLog) window.writeSystemLog('dungeon', 'CLEAR_TEAM', '', t.type, 'ลงดันเจี้ยนสำเร็จ (ทีม ' + (t.dungeonName || t.type) + ')', { teamId: t.id, members: JSON.parse(JSON.stringify(t.members)) });
+    if (window.writeSystemLog) window.writeSystemLog('logs_dungeon', 'CLEAR_TEAM', '', t.type, 'ลงดันเจี้ยนสำเร็จ (ทีม ' + (t.dungeonName || t.type) + ')', { teamId: t.id, members: JSON.parse(JSON.stringify(t.members)) });
     t.members = Array(t.capacity).fill(null);
     saveDungeonState();
     window.showToast("เคลียร์ทีมเรียบร้อย", "success");
@@ -189,7 +189,7 @@ window.addDungeonTeam = function(dungeonName, capacity) {
     capacity,
     members: Array(capacity).fill(null)
   });
-  if (window.writeSystemLog) window.writeSystemLog('dungeon', 'CREATE_TEAM', '', window.currentDungeonTab, 'สร้างทีมดันเจี้ยน: ' + dungeonName, null);
+  if (window.writeSystemLog) window.writeSystemLog('logs_dungeon', 'CREATE_TEAM', '', window.currentDungeonTab, 'สร้างทีมดันเจี้ยน: ' + dungeonName, null);
   saveDungeonState();
 };
 
@@ -198,7 +198,7 @@ window.deleteDungeonTeam = function(id) {
   if (confirm("คุณต้องการลบทีมนี้ใช่หรือไม่?")) {
     const t = dungeonData.teams.find(x => x.id === id);
     if (window.backupDungeonData) window.backupDungeonData('ก่อนลบทีม: ' + (t ? t.dungeonName || t.type : id));
-    if (window.writeSystemLog) window.writeSystemLog('dungeon', 'DELETE_TEAM', '', t ? t.type : '', 'ลบทีมดันเจี้ยน: ' + (t ? t.dungeonName : ''), null);
+    if (window.writeSystemLog) window.writeSystemLog('logs_dungeon', 'DELETE_TEAM', '', t ? t.type : '', 'ลบทีมดันเจี้ยน: ' + (t ? t.dungeonName : ''), null);
     dungeonData.teams = dungeonData.teams.filter(x => x.id !== id);
     saveDungeonState();
   }
@@ -256,7 +256,7 @@ window.clearDungeonSlot = function(teamId, slotIdx) {
   const t = dungeonData.teams.find(x => x.id === teamId);
   if (t) {
     const removed = t.members[slotIdx];
-    if (window.writeSystemLog) window.writeSystemLog('dungeon', 'CLEAR_SLOT', removed ? removed.name : '', t.type, 'ถอดผู้เล่นออกจากช่องที่ ' + (slotIdx+1), null);
+    if (window.writeSystemLog) window.writeSystemLog('logs_dungeon', 'CLEAR_SLOT', removed ? removed.name : '', t.type, 'ถอดผู้เล่นออกจากช่องที่ ' + (slotIdx+1), null);
     t.members[slotIdx] = null;
     saveDungeonState();
   }
@@ -521,7 +521,7 @@ window.onDungeonSlotDrop = function(event, teamId, slotIdx) {
     const t = dungeonData.teams.find(x => x.id === teamId);
     if (t) {
       t.members[slotIdx] = { name: data.name, job: data.job, power: data.power ? Number(data.power) : null };
-      if (window.writeSystemLog) window.writeSystemLog('dungeon', 'DROP_TO_TEAM', data.name, t.type, 'จัด ' + data.name + ' ลงช่องที่ ' + (slotIdx+1), null);
+      if (window.writeSystemLog) window.writeSystemLog('logs_dungeon', 'DROP_TO_TEAM', data.name, t.type, 'จัด ' + data.name + ' ลงช่องที่ ' + (slotIdx+1), null);
       saveDungeonState();
     }
   } catch(e) { console.error(e); }
