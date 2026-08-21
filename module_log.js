@@ -8,15 +8,15 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
 (async function initLogModule() {
   try {
     // ---- WRITE LOG ----
-    window.writeSystemLog = async function(collectionName, action, targetName, dungeonName, detailText, rollbackData = null) {
+    window.writeSystemLog = async function(category, action, targetName, dungeonName, detailText, rollbackData = null) {
       if (!window.db) return;
       try {
         const actor = window.currentUser ? (window.currentUser.name || window.currentUser.username || 'System') : 'System';
-        const cName = collectionName || 'logs_system';
-        const logRef = collection(window.db, cName);
+        const logRef = collection(window.db, 'guild_system_logs'); // Combine back to single collection
         await addDoc(logRef, {
           timestamp: Date.now(),
           actor: actor,
+          category: category || 'system', // Use category to separate tabs (dungeon, leave)
           action: action,
           targetName: targetName || '',
           dungeonName: dungeonName || '',
@@ -25,11 +25,12 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
         });
       } catch(e) {
         console.warn('[Log] Failed to write log:', e);
+        if (window.showToast) window.showToast('เกิดข้อผิดพลาดในการบันทึก Log: ' + e.message, 'error');
       }
     };
 
     // ---- RESTORE LOG ITEM ----
-    window.restoreLogItem = async function(collectionName, logId, logStr) {
+    window.restoreLogItem = async function(category, logId, logStr) {
       if (!window.db) return;
       if (!confirm('ยืนยันการกู้คืนข้อมูลรายการนี้?')) return;
       try {
@@ -37,7 +38,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
         if (!log.rollbackData) return window.showToast('ไม่มีข้อมูลสำหรับกู้คืน', 'error');
         const rb = JSON.parse(log.rollbackData);
 
-        if (collectionName === 'logs_dungeon') {
+        if (category === 'dungeon') {
           if (!window.dungeonData) return window.showToast('ข้อมูลดันเจี้ยนยังไม่พร้อม', 'error');
           if (log.action === 'DELETE_QUEUE') {
             if (window.dungeonData.queues.find(q => q.id === rb.id)) {
@@ -56,11 +57,11 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
           }
           const dungRef = doc(window.db, 'guild_system', 'dungeons');
           await setDoc(dungRef, window.dungeonData);
-          await window.writeSystemLog('logs_dungeon', 'RESTORE_ITEM', log.targetName, log.dungeonName, 'กู้คืนข้อมูล: ' + log.detailText, null);
+          await window.writeSystemLog('dungeon', 'RESTORE_ITEM', log.targetName, log.dungeonName, 'กู้คืนข้อมูล: ' + log.detailText, null);
           window.showToast('กู้คืนข้อมูลสำเร็จ', 'success');
           window.renderLogPage(window._currentLogTab);
           
-        } else if (collectionName === 'logs_leave') {
+        } else if (category === 'leave') {
            if (log.action === 'DELETE_LEAVE') {
                const leaveRef = doc(window.db, 'guild_system', 'leaves');
                const currentLeaves = window.leavesData || [];
@@ -69,7 +70,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
                }
                currentLeaves.push(rb);
                await setDoc(leaveRef, { data: currentLeaves });
-               await window.writeSystemLog('logs_leave', 'RESTORE_ITEM', log.targetName, '', 'กู้คืนใบลา', null);
+               await window.writeSystemLog('leave', 'RESTORE_ITEM', log.targetName, '', 'กู้คืนใบลา', null);
                window.showToast('กู้คืนใบลาสำเร็จ', 'success');
                window.renderLogPage(window._currentLogTab);
            }
@@ -84,7 +85,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
       if (!window.db || !window.dungeonData) return;
       try {
         const snap = JSON.parse(JSON.stringify(window.dungeonData));
-        const backupRef = collection(window.db, 'backups_dungeon');
+        const backupRef = collection(window.db, 'guild_dungeon_backups');
         const actor = window.currentUser ? (window.currentUser.name || window.currentUser.username || 'System') : 'System';
         await addDoc(backupRef, {
           timestamp: Date.now(),
@@ -103,7 +104,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
         const backupData = JSON.parse(decodeURIComponent(backupDataStr));
         const dungRef = doc(window.db, 'guild_system', 'dungeons');
         await setDoc(dungRef, backupData);
-        await window.writeSystemLog('logs_dungeon', 'RESTORE_BACKUP', '', '', 'กู้คืน Backup แบบเต็มรูปแบบ', null);
+        await window.writeSystemLog('dungeon', 'RESTORE_BACKUP', '', '', 'กู้คืน Backup แบบเต็มรูปแบบ', null);
         window.showToast('กู้คืนข้อมูลสำเร็จ! ระบบจะโหลดข้อมูลใหม่', 'success');
       } catch(e) {
         window.showToast('กู้คืนล้มเหลว: ' + e.message, 'error');
@@ -112,7 +113,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
 
     // ---- RENDER LOG PAGE ----
     window.renderLogPage = async function(tab = 'dungeon') {
-      if (tab === 'logs') tab = 'dungeon'; // Fallback for old cached tab names
+      if (tab === 'logs') tab = 'dungeon'; // Fallback
       if (!window.isUserAdmin || !window.isUserAdmin()) return;
       window._currentLogTab = tab;
 
@@ -136,7 +137,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
         }
       });
 
-      body.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-lo);">กำลังโหลดข้อมูล...</div>';
+      body.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-lo);">กำลังเชื่อมต่อกับ Database...</div>';
 
       if (!window.db) {
          body.innerHTML = '<div style="text-align:center;padding:60px;color:var(--danger);">เกิดข้อผิดพลาด: ฐานข้อมูลยังไม่พร้อมใช้งาน (รอสักครู่แล้วกดรีเฟรช)</div>';
@@ -145,11 +146,14 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
 
       try {
         if (tab === 'dungeon' || tab === 'leave') {
-          const collectionName = (tab === 'dungeon') ? 'logs_dungeon' : 'logs_leave';
-          const q = query(collection(window.db, collectionName), orderBy('timestamp', 'desc'), limit(300));
+          // Fetch from unified guild_system_logs
+          const q = query(collection(window.db, 'guild_system_logs'), orderBy('timestamp', 'desc'), limit(500));
           const snap = await getDocs(q);
           
           let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+          // Local Category Filter
+          docs = docs.filter(d => d.category === tab);
 
           // Apply Search Filter locally
           if (searchText) {
@@ -187,13 +191,15 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
             <div style="display:flex;flex-direction:column;gap:8px;">
               ${docs.map(log => {
                 const al = actionLabel[log.action] || { label: log.action, color: '#64748b' };
-                const dt = new Date(log.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                // Handle older logs gracefully
+                const ts = log.timestamp || (log.detail ? log.detail.timestamp : Date.now());
+                const dt = new Date(ts).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 
                 // Show Restore Button only for certain destructive actions
                 let restoreBtn = '';
                 if (log.rollbackData && (log.action === 'DELETE_QUEUE' || log.action === 'CLEAR_TEAM' || log.action === 'DELETE_LEAVE')) {
                   const safeLog = encodeURIComponent(JSON.stringify(log));
-                  restoreBtn = \`<button onclick="window.restoreLogItem('\${collectionName}', '\${log.id}', '\${safeLog}')" style="background:#fef3c7;color:#d97706;border:1px solid #fcd34d;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">กู้คืนข้อมูลนี้</button>\`;
+                  restoreBtn = \`<button onclick="window.restoreLogItem('\${tab}', '\${log.id}', '\${safeLog}')" style="background:#fef3c7;color:#d97706;border:1px solid #fcd34d;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">กู้คืนข้อมูลนี้</button>\`;
                 }
 
                 return \`
@@ -217,7 +223,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
             </div>
           `;
         } else if (tab === 'backups') {
-          const q = query(collection(window.db, 'backups_dungeon'), orderBy('timestamp', 'desc'), limit(50));
+          const q = query(collection(window.db, 'guild_dungeon_backups'), orderBy('timestamp', 'desc'), limit(50));
           const snap = await getDocs(q);
           if (snap.empty) { body.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-lo);">ยังไม่มี Backup ในระบบ</div>'; return; }
 
@@ -254,11 +260,15 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
           `;
         }
       } catch(e) {
-        body.innerHTML = `<div style="text-align:center;padding:60px;color:var(--danger);">โหลดล้มเหลว: ${e.message}</div>`;
+        let msg = e.message;
+        if (msg.includes('Missing or insufficient permissions')) {
+          msg = 'Firebase ปฏิเสธการเข้าถึง (Permission Denied) กรุณาตรวจสอบ Security Rules';
+        }
+        body.innerHTML = `<div style="text-align:center;padding:60px;color:var(--danger);"><b>โหลดข้อมูลล้มเหลว:</b><br><br>${msg}</div>`;
       }
     };
 
-    console.log('[Module Log] ระบบ Log และ Backup พร้อมใช้งาน (No Emoji Edition)');
+    console.log('[Module Log] ระบบ Log และ Backup พร้อมใช้งาน (Cache V7)');
 
   } catch(err) {
     console.error('[Module Log] ระบบ Log มีปัญหา:', err);
