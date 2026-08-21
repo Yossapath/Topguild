@@ -567,7 +567,7 @@ function renderDungeonPage() {
     const badgeText = filledCount === t.capacity ? `ครบ ${filledCount}/${t.capacity}` : `ขาด ${t.capacity - filledCount} คน`;
 
     return `
-      <div class="team-card" style="min-width: 320px;">
+      <div class="team-card" style="min-width: 420px; max-width: 100%;">
         <div class="team-card-head" style="display:flex; justify-content:space-between; align-items:center; padding:12px;">
           <div class="team-title-group">
             <span style="font-size:16px;">🗡️ ${t.dungeonName}</span>
@@ -946,3 +946,14 @@ window.switchDungeonTab = function(type) {
 
   window.renderDungeonPage();
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('guild_current_user');
+  if (saved) {
+    try {
+      window.currentUser = JSON.parse(saved);
+      if (typeof showMainApp === 'function') showMainApp();
+      if (typeof applyRolePermissions === 'function') applyRolePermissions();
+    } catch(e) {}
+  }
+});

@@ -201,6 +201,11 @@
 <body>
 
 <!-- AUTHENTICATION PAGE -->
+<script>
+  if (localStorage.getItem('guild_current_user')) {
+    document.write('<style>#authWrap { display: none !important; } #appWrap { display: block !important; }</style>');
+  }
+</script>
 <div id="authWrap" style="display: grid; place-items: center; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: linear-gradient(135deg, #e3f2fd, #bbdefb); z-index: 10000; overflow: hidden; padding: 20px; box-sizing: border-box;">
   <div style="background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px; margin: 0 auto;">
     
@@ -372,7 +377,7 @@
           <button type="button" class="dungeon-tab" data-type="กระจก (Mirror)" onclick="switchDungeonTab('กระจก (Mirror)')" style="padding: 6px 16px; border: none; background: transparent; color: var(--text-lo); border-radius: 20px; font-weight: 600; cursor: pointer; transition: 0.2s;">กระจก (Mirror)</button>
         </div>
 
-        <div id="dungeonTeamsArea" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+        <div id="dungeonTeamsArea" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px;">
           <!-- จะมี JS วาดการ์ดของแต่ละดันเจี้ยนตรงนี้ -->
         </div>
       </div>
