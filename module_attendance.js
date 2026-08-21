@@ -1,0 +1,442 @@
+import { doc, getDoc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// ==========================================
+// MODULE: ATTENDANCE SYSTEM
+// ==========================================
+(async function initAttendanceModule() {
+  try {
+    // ====== ATTENDANCE SYSTEM ======
+// ==========================================
+
+let attendanceData = { dates: {} };
+let unsubAttendanceListener = null;
+
+async function setupAttendanceFirebase() {
+  // STEP 1: Render from localStorage instantly (avoids blank screen on refresh)
+  try {
+    const localAtt = localStorage.getItem('guild_attendance_data');
+    if (localAtt) {
+      const parsed = JSON.parse(localAtt);
+      if (parsed && parsed.dates && Object.keys(parsed.dates).length > 0) {
+        attendanceData = parsed;
+        setTimeout(renderAttendanceOptions, 50);
+      }
+    }
+  } catch(e) {}
+
+  // STEP 2: Firebase real-time listener (authoritative source)
+  if (!window.db) return;
+  try {
+    const attRef = doc(window.db, 'guild_system', 'attendance');
+    const snap = await getDoc(attRef);
+    if (!snap.exists()) {
+      await setDoc(attRef, { dates: {} });
+    }
+    unsubAttendanceListener = onSnapshot(attRef, (snapshot) => {
+      if (snapshot.exists()) {
+        attendanceData = snapshot.data();
+        if (!attendanceData.dates) attendanceData.dates = {};
+        // Keep localStorage in sync
+        try { localStorage.setItem('guild_attendance_data', JSON.stringify(attendanceData)); } catch(e2) {}
+        renderAttendanceOptions();
+      }
+    });
+  } catch(e) {
+    console.error('setupAttendanceFirebase error:', e);
+  }
+}
+// CRITICAL: Export so app.js can call window.setupAttendanceFirebase()
+window.setupAttendanceFirebase = setupAttendanceFirebase;
+
+async function saveAttendanceState() {
+  localStorage.setItem('guild_attendance_data', JSON.stringify(attendanceData));
+  if (!window.db) return;
+  try {
+    const attRef = doc(window.db, 'guild_system', 'attendance');
+    await setDoc(attRef, attendanceData, { merge: true });
+    console.log('Saved attendance data to Firebase successfully');
+  } catch(err) {
+    console.error('Failed to save attendance data:', err);
+    window.showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล (เช็คสิทธิ์ Database)', 'error');
+  }
+}
+
+
+window.autoGenerateAttendance = function() {
+  if (!window.currentUser || !window.isUserAdmin()) return;
+  if (!confirm('ต้องการสร้างตารางเช็คชื่อสำหรับ อังคาร พฤหัส อาทิตย์ ของสัปดาห์นี้อัตโนมัติหรือไม่?')) return;
+  
+  const today = new Date();
+  const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, ... 6 = Saturday
+  
+  // Calculate Monday of this week
+  const monday = new Date(today);
+  const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+  monday.setDate(today.getDate() + diffToMonday);
+  
+  const getFmtDate = (d) => {
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - tzOffset).toISOString().split('T')[0];
+  };
+
+  const datesToCreate = [];
+
+  // Tuesday
+  const tuesday = new Date(monday);
+  tuesday.setDate(monday.getDate() + 1);
+  datesToCreate.push(getFmtDate(tuesday) + " (อังคาร รอบ 1)");
+  datesToCreate.push(getFmtDate(tuesday) + " (อังคาร รอบ 2)");
+
+  // Thursday
+  const thursday = new Date(monday);
+  thursday.setDate(monday.getDate() + 3);
+  datesToCreate.push(getFmtDate(thursday) + " (พฤหัสบดี)");
+
+  // Sunday
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  datesToCreate.push(getFmtDate(sunday) + " (อาทิตย์)");
+
+  let createdCount = 0;
+  datesToCreate.forEach(d => {
+    if (!attendanceData.dates[d]) {
+      attendanceData.dates[d] = {};
+      createdCount++;
+    }
+  });
+
+  if (createdCount > 0) {
+    saveAttendanceState();
+    window.showToast('สร้างตารางอัตโนมัติสำเร็จ!', 'success');
+    setTimeout(renderAttendanceOptions, 500);
+  } else {
+    window.showToast('ตารางสัปดาห์นี้ถูกสร้างไว้แล้ว', 'warning');
+  }
+};
+
+window.createAttendanceDate = function() {
+  if (!window.currentUser || !window.isUserAdmin()) return;
+  const today = new Date().toISOString().split('T')[0];
+  const dateStr = prompt("ระบุวันที่สำหรับการเช็คชื่อ (YYYY-MM-DD):", today);
+  if (!dateStr) return;
+  
+  if (!attendanceData.dates[dateStr]) {
+    attendanceData.dates[dateStr] = {};
+    saveAttendanceState();
+    window.showToast(`สร้างวันที่ ${dateStr} เรียบร้อยแล้ว`, "success");
+    
+    setTimeout(() => {
+      const select = document.getElementById('attendanceDateSelect');
+      if (select) {
+        select.value = dateStr;
+        window.renderAttendanceTable();
+      }
+    }, 500);
+  } else {
+    window.showToast("วันที่นี้ถูกสร้างไว้แล้ว", "warning");
+  }
+};
+
+function renderAttendanceOptions() {
+  const select = document.getElementById('attendanceDateSelect');
+  if (!select) return;
+  
+  const currentVal = select.value;
+  const dates = Object.keys(attendanceData.dates).sort((a, b) => b.localeCompare(a));
+  
+  if (dates.length === 0) {
+    select.innerHTML = '<option value="">-- ไม่มีข้อมูล --</option>';
+  } else {
+    select.innerHTML = '<option value="">-- กรุณาเลือกวันที่ --</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
+    
+    const lastSelected = localStorage.getItem('guild_attendance_last_date');
+    
+    if (dates.includes(currentVal) && currentVal !== '') {
+      select.value = currentVal;
+    } else if (lastSelected && dates.includes(lastSelected)) {
+      select.value = lastSelected;
+    } else {
+      select.value = dates[0];
+    }
+  }
+  
+  // Attach onchange to save to localStorage
+  select.onchange = function() {
+    localStorage.setItem('guild_attendance_last_date', this.value);
+    window.renderAttendanceTable();
+  };
+  
+  window.renderAttendanceTable();
+}
+
+
+window.switchAttTab = function(tab) {
+  const dailyBtn = document.getElementById('btnAttTabDaily');
+  const statsBtn = document.getElementById('btnAttTabStats');
+  const dailyView = document.getElementById('attDailyView');
+  const statsView = document.getElementById('attStatsView');
+  
+  if (tab === 'daily') {
+    if (dailyBtn) dailyBtn.classList.add('active');
+    if (statsBtn) statsBtn.classList.remove('active');
+    if (dailyView) dailyView.style.display = 'block';
+    if (statsView) statsView.style.display = 'none';
+    window.renderAttendanceTable();
+  } else {
+    if (dailyBtn) dailyBtn.classList.remove('active');
+    if (statsBtn) statsBtn.classList.add('active');
+    if (dailyView) dailyView.style.display = 'none';
+    if (statsView) statsView.style.display = 'block';
+    window.renderAttendanceStats();
+  }
+};
+
+window.deleteAttendanceDate = function() {
+  const select = document.getElementById('attendanceDateSelect');
+  if (!select) return;
+  const dateStr = select.value;
+  if (!dateStr) return;
+  
+  if (confirm('คุณต้องการลบข้อมูลเช็คชื่อของวันที่ ' + dateStr + ' ใช่หรือไม่?')) {
+    delete attendanceData.dates[dateStr];
+    saveAttendanceState();
+    select.value = '';
+    renderAttendanceOptions();
+  }
+};
+
+
+window.renderAttendanceTable = function() {
+  const tbody = document.getElementById('attendanceTbody');
+  if (!tbody) return;
+  const select = document.getElementById('attendanceDateSelect');
+  if (!select) return;
+  const selectedDate = select.value;
+  
+  if (!selectedDate) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--text-lo);">กรุณาเลือกวันที่เพื่อดูข้อมูล</td></tr>';
+    const summaryDiv = document.getElementById('attendanceSummary');
+  if (summaryDiv) {
+    summaryDiv.innerHTML = `
+      <div style="display:flex; justify-content:center; align-items:center; flex-wrap:wrap; text-align:center; margin-bottom: 10px; background:var(--bg-soft); padding: 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 15px; font-weight: 600;">
+        <span style="color:var(--text-hi);">ทั้งหมด : ${totalCount} คน</span>
+        <span style="color:var(--line); margin: 0 20px;">|</span>
+        <span style="color:var(--ok);">มา : ${joinedCount} คน</span>
+        <span style="color:var(--line); margin: 0 20px;">|</span>
+        <span style="color:var(--warn);">ลา : ${leaveCount} คน</span>
+        <span style="color:var(--line); margin: 0 20px;">|</span>
+        <span style="color:var(--danger);">ขาด : ${absentCount} คน</span>
+      </div>
+    `;
+  }
+};
+
+window.updateAttendanceStatus = function(dateStr, name, status) {
+  if (!window.currentUser || !window.isUserAdmin()) return;
+  if (!attendanceData.dates[dateStr]) attendanceData.dates[dateStr] = {};
+  attendanceData.dates[dateStr][name] = status;
+  saveAttendanceState();
+};
+
+window.renderAttendanceStats = function() {
+  const tbody = document.getElementById('attStatsTbody');
+  if (!tbody) return;
+  
+  const searchInput = document.getElementById('attStatsSearch');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  
+  // Aggregate stats
+  const statsMap = {}; // { name: { joined:0, leave:0, absent:0 } }
+  const dates = Object.keys(attendanceData.dates);
+  
+  dates.forEach(d => {
+    const dayData = attendanceData.dates[d];
+    Object.keys(dayData).forEach(name => {
+      const status = dayData[name];
+      if (!statsMap[name]) statsMap[name] = { joined: 0, leave: 0, absent: 0 };
+      if (status === 'attended') statsMap[name].joined++;
+      if (status === 'leave') statsMap[name].leave++;
+      if (status === 'absent') statsMap[name].absent++;
+    });
+  });
+  
+  // Build stats table from guildRoster
+  let allMembers = [];
+  if (window.guildRoster) {
+    Object.keys(window.guildRoster).forEach(function(job) {
+      window.guildRoster[job].forEach(function(m) {
+        allMembers.push({ name: m.name, job: job, power: m.power || 0 });
+      });
+    });
+  }
+
+  allMembers.sort(function(a,b) { return b.power - a.power; });
+  if (query) allMembers = allMembers.filter(function(m) { return m.name.toLowerCase().includes(query); });
+
+  let html = '';
+  allMembers.forEach(function(m, i) {
+    const s = statsMap[m.name] || { joined: 0, leave: 0, absent: 0 };
+    const total = dates.length;
+    const pct = total > 0 ? Math.round((s.joined / total) * 100) : 0;
+    const eName = window.escapeHtml ? window.escapeHtml(m.name) : m.name;
+    html += '<tr>' +
+      '<td class="cell-rank">' + (i+1) + '</td>' +
+      '<td>' + eName + '</td>' +
+      '<td style="text-align:center; font-weight: 600; color:' + (window.JOB_COLORS && window.JOB_COLORS[m.job] ? window.JOB_COLORS[m.job] : 'var(--text-hi)') + ';">' + m.job + '</td>' +
+      '<td style="text-align:center; color:var(--ok)">' + s.joined + '</td>' +
+      '<td style="text-align:center; color:var(--warn)">' + s.leave + '</td>' +
+      '<td style="text-align:center; color:var(--danger)">' + s.absent + '</td>' +
+      '<td style="text-align:center;">' + pct + '%</td>' +
+      '</tr>';
+  });
+  tbody.innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-lo);">ไม่มีข้อมูลสถิติ</td></tr>';
+};
+
+
+document.addEventListener('input', (e) => {
+  if (e.target && e.target.classList.contains('autocomplete-member')) {
+    showGlobalDropdown(e.target, e.target.value.trim());
+  }
+});
+
+document.addEventListener('focusin', (e) => {
+  if (e.target && e.target.classList.contains('autocomplete-member')) {
+    showGlobalDropdown(e.target, e.target.value.trim());
+  }
+});
+
+document.addEventListener('focusout', (e) => {
+  if (e.target && e.target.classList.contains('autocomplete-member')) {
+    setTimeout(() => {
+      const dropdown = document.getElementById('globalMemberDropdown');
+      if (dropdown) dropdown.style.display = 'none';
+    }, 150);
+  }
+});
+
+// Update window scroll to hide dropdown
+window.addEventListener('scroll', (e) => {
+  const dropdown = document.getElementById('globalMemberDropdown');
+  if (dropdown && dropdown.style.display === 'block') {
+    if (!dropdown.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  }
+}, true);
+
+
+window.activeAutocompleteInput = null;
+
+function showGlobalDropdown(inputEl, filterText = '') {
+  try {
+    if (!window.guildRoster) return;
+    const dropdown = document.getElementById('globalMemberDropdown');
+    if (!dropdown) return;
+    
+    let allMembers = [];
+    Object.keys(window.guildRoster).forEach(job => {
+      window.guildRoster[job].forEach(m => {
+        allMembers.push({ name: m.name, job: job, power: m.power || 0 });
+      });
+    });
+    
+    const action = inputEl.getAttribute('data-action');
+    
+    // Apply specific filters
+    if (action === 'mainField') {
+      const slotKey = inputEl.getAttribute('data-slot');
+      const requiredJob = window.rowJobFilter ? window.rowJobFilter[slotKey] : '';
+      
+      allMembers = allMembers.filter(m => {
+        if (requiredJob && m.job !== requiredJob) return false;
+        const lowerName = m.name.toLowerCase();
+        if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
+          if (window.occupiedMap.get(lowerName) !== slotKey) return false;
+        }
+        return true;
+      });
+    } else if (action === 'dungeonTeam' && typeof window.dungeonData !== 'undefined') {
+      const currentTab = window.currentDungeonTab;
+      const teamId = inputEl.getAttribute('data-team-id');
+      const slotIdx = parseInt(inputEl.getAttribute('data-slot-idx'));
+      const inUseNames = new Set();
+      
+      window.dungeonData.teams.forEach(t => {
+        if (t.type === currentTab) {
+          t.members.forEach((m, idx) => {
+            if (m && m.name) {
+               if (t.id === teamId && idx === slotIdx) return; // Allow current occupant
+               inUseNames.add(m.name.toLowerCase());
+            }
+          });
+        }
+      });
+      allMembers = allMembers.filter(m => !inUseNames.has(m.name.toLowerCase()));
+    }
+    
+    const val = filterText.toLowerCase();
+    const filtered = allMembers.filter(m => m.name.toLowerCase().includes(val));
+    
+    if (filtered.length === 0) {
+      dropdown.innerHTML = '<div style="padding: 10px; text-align:center; color:var(--text-lo); font-size: 13px;">ไม่พบชื่อตัวละคร</div>';
+    } else {
+      dropdown.innerHTML = filtered.map(m => 
+        `<div class="custom-dropdown-item" data-name="${window.escapeHtml ? window.escapeHtml(m.name) : m.name}" data-job="${m.job}" data-power="${m.power}">
+          <strong style="color:var(--blue-700);">${window.escapeHtml ? window.escapeHtml(m.name) : m.name}</strong> 
+          <span style="opacity:0.7; font-size:12px;">- ${m.job} (${m.power})</span>
+        </div>`
+      ).join('');
+      
+      dropdown.querySelectorAll('.custom-dropdown-item').forEach(item => {
+        item.addEventListener('mousedown', (e) => {
+          e.preventDefault(); 
+          if (window.activeAutocompleteInput) {
+            const newName = item.getAttribute('data-name');
+            window.activeAutocompleteInput.value = newName;
+            
+            const action = window.activeAutocompleteInput.getAttribute('data-action');
+            if (action === 'mainField') {
+               const slot = window.activeAutocompleteInput.getAttribute('data-slot');
+               if (typeof handleNameChange === 'function') handleNameChange(slot, newName);
+            } else if (action === 'dungeonTeam') {
+               const teamId = window.activeAutocompleteInput.getAttribute('data-team-id');
+               const slotIdx = window.activeAutocompleteInput.getAttribute('data-slot-idx');
+               if (typeof updateDungeonTeamName === 'function') updateDungeonTeamName(teamId, parseInt(slotIdx), newName);
+            } else if (action === 'leaveForm') {
+               const job = item.getAttribute('data-job');
+               const leaveJob = document.getElementById('leaveJob');
+               if (leaveJob) leaveJob.value = job;
+            } else if (action === 'dungeonQueue') {
+               const job = item.getAttribute('data-job');
+               const dqClass = document.getElementById('dqClass');
+               if (dqClass) dqClass.value = job;
+            }
+          }
+          dropdown.style.display = 'none';
+        });
+      });
+    }
+    
+    const rect = inputEl.getBoundingClientRect();
+    dropdown.style.top = (rect.bottom + window.scrollY) + 'px';
+    dropdown.style.left = (rect.left + window.scrollX) + 'px';
+    dropdown.style.width = Math.max(200, rect.width) + 'px';
+    dropdown.style.display = 'block';
+    window.activeAutocompleteInput = inputEl;
+  } catch(e) {
+    console.error('Dropdown Error:', e);
+  }
+}
+
+
+// ==========================================
+
+    if (typeof setupAttendanceFirebase === 'function' && !window._attendanceReady) {
+      window._attendanceReady = true;
+      await setupAttendanceFirebase();
+    }
+  } catch(err) {
+    console.error('[Module Attendance] ระบบเช็คชื่อมีปัญหา:', err);
+    const area = document.getElementById('attendanceTbody');
+    if (area) area.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--danger);">ระบบเช็คชื่อขัดข้อง กรุณารีเฟรชหน้าจอ</td></tr>';
+  }
+})();
