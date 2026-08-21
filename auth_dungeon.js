@@ -950,7 +950,7 @@ window.switchDungeonTab = function(type) {
 document.addEventListener('DOMContentLoaded', () => {
   const dqNameInput = document.getElementById('dqName');
   if (dqNameInput) {
-    dqNameInput.addEventListener('input', (e) => {
+    dqNameInput.addEventListener('change', (e) => {
       const val = e.target.value.trim().toLowerCase();
       if (!val) return;
       if (window.guildRoster) {
