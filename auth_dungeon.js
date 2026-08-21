@@ -883,11 +883,12 @@ function renderAttendanceOptions() {
     select.innerHTML = '<option value="">-- ไม่มีข้อมูล --</option>';
   } else {
     select.innerHTML = '<option value="">-- กรุณาเลือกวันที่ --</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
-    if (dates.includes(currentVal)) {
+    if (dates.includes(currentVal) && currentVal !== '') {
       select.value = currentVal;
+    } else {
+      select.value = dates[0]; // Auto-select the most recent date
     }
   }
-  
   window.renderAttendanceTable();
 }
 
