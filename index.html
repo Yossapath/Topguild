@@ -368,7 +368,7 @@
     <button type="button" class="main-tab-btn" data-page="page-attendance" onclick="switchTab('page-attendance')">เช็คชื่อวอ</button>
     <button type="button" class="main-tab-btn" data-page="page-leave" onclick="switchTab('page-leave')">📝 แจ้งลาวอ</button>
     <button type="button" class="main-tab-btn" data-page="page-settings" onclick="switchTab('page-settings')" id="tabSettings">📦 จัดการข้อมูล</button>
-    <button type="button" class="main-tab-btn" data-page="page-logs" onclick="switchTab('page-logs'); window.renderLogPage && window.renderLogPage('logs')" id="tabLogs" style="display:none;">ประวัติระบบ</button>
+    <button type="button" class="main-tab-btn" data-page="page-logs" onclick="switchTab('page-logs'); window.renderLogPage && window.renderLogPage(window._currentLogTab || 'dungeon')" id="tabLogs" style="display:none;">ประวัติระบบ</button>
   </nav>
 
   <section id="page-roster" class="page active">

@@ -115,6 +115,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc, where 
 
     // ---- RENDER LOG PAGE ----
     window.renderLogPage = async function(tab = 'dungeon') {
+      if (tab === 'logs') tab = 'dungeon';
       if (!window.isUserAdmin || !window.isUserAdmin()) return;
       window._currentLogTab = tab;
 
@@ -143,10 +144,13 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc, where 
       if (tab === 'dungeon' || tab === 'leave') {
         try {
           // Fetch logs based on category
-          const q = query(collection(window.db, 'guild_system_logs'), where('category', '==', tab), orderBy('timestamp', 'desc'), limit(300));
+          if (!window.db) throw new Error("Firebase database not initialized yet");
+          const q = query(collection(window.db, 'guild_system_logs'), orderBy('timestamp', 'desc'), limit(500));
           const snap = await getDocs(q);
           
           let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          // Filter by category locally to avoid requiring Firebase composite indexes
+          docs = docs.filter(d => (d.category || 'system') === tab);
 
           // Apply Search Filter locally
           if (searchText) {
