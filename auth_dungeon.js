@@ -142,23 +142,9 @@ window.handleRegister = async function() {
       role: 'member'
     });
     
-    // Auto-add to Roster
-    if (window.guildRoster && window.saveState) {
-        let found = false;
-        Object.keys(window.guildRoster).forEach(jobKey => {
-            const existing = (window.guildRoster[jobKey] || []).find(m => m.name.toLowerCase() === u.toLowerCase());
-            if (existing) {
-                found = true;
-            }
-        });
-        
-        if (!found) {
-            if (!window.guildRoster[j]) window.guildRoster[j] = [];
-            window.guildRoster[j].push({ name: u, power: 0, fieldPref: 'any' });
-            window.saveState();
-            if (typeof window.renderAll === 'function') window.renderAll();
-        }
-    }
+    // ระบบจะไม่ทำการ Auto-add ผู้ใช้เข้า Roster อีกต่อไป 
+    // ต้องให้แอดมินหรือผู้มีสิทธิ์ไปกดเพิ่มชื่อในแท็บ "รายชื่อสมาชิก" ด้วยตัวเองเท่านั้น
+    // เพื่อป้องกันการมีชื่อขยะโผล่ไปล่างสุดของหน้าเช็คชื่อวอ
     
     window.showToast("สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ", "success");
     document.getElementById('regUsername').value = '';
