@@ -1516,6 +1516,7 @@ function handleTeamSearch() {
 }
 
 function renderAll() {
+  if (typeof buildFieldTabs === "function") buildFieldTabs();
   window.guildRoster = guildRoster;
   renderRoster();
   renderTeams();
