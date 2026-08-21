@@ -757,9 +757,23 @@ window.renderAttendanceStats = function() {
   // Prepare member list from guildRoster to show everyone (or those with stats)
   let allMembers = [];
   if (window.guildRoster) {
-    Object.keys(window.guildRoster).forEach(j => {
-      allMembers.push(...window.guildRoster[j]);
+    const seen = new Map();
+    Object.keys(window.guildRoster).forEach(job => {
+      (window.guildRoster[job] || []).forEach(m => {
+        const key = (m.name || '').toLowerCase().trim();
+        if (!key) return;
+        const currentPower = Number(m.power) || 0;
+        if (seen.has(key)) {
+          const existing = seen.get(key);
+          if (currentPower > (Number(existing.power) || 0)) {
+            seen.set(key, { name: m.name, job, power: m.power });
+          }
+        } else {
+          seen.set(key, { name: m.name, job, power: m.power });
+        }
+      });
     });
+    allMembers = Array.from(seen.values());
   }
   
   // If a member has no record, they will have 0/0/0
