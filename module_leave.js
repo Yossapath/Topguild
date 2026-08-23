@@ -88,8 +88,11 @@ window.submitLeave = async function() {
   const job = jobSelect ? jobSelect.value : '';
   const day = daySelect ? daySelect.value : '';
   const date = dateInput ? dateInput.value : '';
+  const reasonInput = document.getElementById('leaveReason');
+  const reason = reasonInput ? reasonInput.value.trim() : '';
 
-  if (!name || !job || !day || !date) {
+  if (!name || !job || !day || !date || !reason) {
+    if (!reason) return window.showToast('กรุณาระบุเหตุผลการลาทุกครั้ง', 'warning');
     return window.showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
   }
 
@@ -119,7 +122,7 @@ window.submitLeave = async function() {
 
   const entry = {
     id: Date.now().toString(),
-    name, job, day, date,
+    name, job, day, date, reason,
     submittedBy: window.currentUser.username,
     timestamp: Date.now()
   };
@@ -174,7 +177,7 @@ function renderLeaveList() {
   };
 
   if (displayed.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-lo);">ไม่มีรายการแจ้งลา</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-lo);">ไม่มีรายการแจ้งลา</td></tr>';
     return;
   }
 
@@ -186,6 +189,8 @@ function renderLeaveList() {
       '<td>' + dayLabel + '</td>' +
       '<td>' + eName + '</td>' +
       '<td>' + (l.job || '-') + '</td>' +
+        
+        '<td>' + window.escapeHtml(l.reason || '-') + '</td>' +
       '<td>' + (l.submittedBy || '-') + '</td>' +
       '<td style="text-align:center;"><button onclick="cancelLeave(\'' + l.id + '\')" style="background:var(--danger-light);color:var(--danger);border:1px solid var(--danger);padding:2px 8px;border-radius:6px;cursor:pointer;font-size:12px;">ยกเลิก</button></td>' +
       '</tr>';
