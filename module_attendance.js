@@ -66,9 +66,26 @@ window.bulkImportAttendance = function() {
     const select = document.getElementById('attendanceDateSelect');
     if (!select || !select.value) return window.showToast('กรุณาเลือกวันที่ก่อน', 'warning');
     
+    document.getElementById('bulkImportAttendanceText').value = '';
+    const modal = document.getElementById('bulkImportAttendanceModal');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.closeBulkImportAttendanceModal = function() {
+    const modal = document.getElementById('bulkImportAttendanceModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.processBulkImportAttendance = function() {
+    const select = document.getElementById('attendanceDateSelect');
+    if (!select || !select.value) return;
     const dateStr = select.value;
-    const text = prompt('วางรายชื่อที่เข้าร่วมทั้งหมดที่นี่ (คั่นด้วยบรรทัดใหม่):\n(คนที่มีรายชื่อจะถูกเปลี่ยนสถานะเป็น "เข้าร่วม" อัตโนมัติ)');
-    if (!text) return;
+    
+    const text = document.getElementById('bulkImportAttendanceText').value;
+    if (!text) {
+        window.closeBulkImportAttendanceModal();
+        return;
+    }
     
     const names = text.split('\n').map(n => n.trim()).filter(n => n);
     if (!attendanceData.dates[dateStr]) attendanceData.dates[dateStr] = {};
@@ -95,6 +112,7 @@ window.bulkImportAttendance = function() {
     
     saveAttendanceState();
     window.renderAttendanceTable();
+    window.closeBulkImportAttendanceModal();
     window.showToast('อัปเดตรายชื่อ ' + matchCount + ' คน เป็น "เข้าร่วม" แล้ว', 'success');
 };
 

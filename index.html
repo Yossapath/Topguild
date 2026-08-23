@@ -907,5 +907,26 @@
       </div>
     </div>
   </div>
+  <!-- BULK IMPORT ATTENDANCE MODAL -->
+  <div id="bulkImportAttendanceModal" style="display:none; position:fixed; inset:0; z-index:99998; align-items:center; justify-content:center;">
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55);" onclick="closeBulkImportAttendanceModal()"></div>
+    <div style="position:relative; background:var(--surface); border-radius:16px; padding:28px; width:90%; max-width:560px; box-shadow:0 8px 40px rgba(0,0,0,0.3); z-index:1;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0; color:var(--text-hi); font-size:18px;">กรอกรายชื่อผู้เข้าร่วม (ก๊อปวาง)</h3>
+        <button onclick="closeBulkImportAttendanceModal()" style="background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-lo);">✕</button>
+      </div>
+      <p style="color:var(--text-lo); font-size:13px; margin-bottom:12px;">
+        วางรายชื่อผู้เข้าร่วม <b>(ชื่ออย่างเดียว คั่นด้วยการขึ้นบรรทัดใหม่)</b><br>
+        ผู้เล่นที่มีรายชื่อจะถูกเปลี่ยนสถานะเป็น <b>"เข้าร่วม"</b> อัตโนมัติ
+      </p>
+      <textarea id="bulkImportAttendanceText" class="form-control" rows="12"
+        style="width:100%; box-sizing:border-box; font-family:monospace; font-size:14px; resize:vertical;"
+        placeholder="XxerrosS\nYuGi\nDMTz"></textarea>
+      <div style="display:flex; gap:10px; margin-top:16px; justify-content:flex-end;">
+        <button class="btn-secondary" onclick="closeBulkImportAttendanceModal()">ยกเลิก</button>
+        <button class="btn-primary" onclick="processBulkImportAttendance()">บันทึก</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
