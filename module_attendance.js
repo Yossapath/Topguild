@@ -91,8 +91,9 @@ window.processBulkImportAttendance = function() {
     if (!window.attendanceData.dates[dateStr]) window.attendanceData.dates[dateStr] = {};
     
     let matchCount = 0;
-    names.forEach(rawName => {
-        let found = false;
+      let notFoundNames = [];
+      names.forEach(rawName => {
+          let found = false;
         if (window.guildRoster) {
             Object.keys(window.guildRoster).forEach(job => {
                 window.guildRoster[job].forEach(m => {
@@ -105,15 +106,20 @@ window.processBulkImportAttendance = function() {
             });
         }
         if (!found) {
-            window.attendanceData.dates[dateStr][rawName] = 'attended';
-            matchCount++;
-        }
+              notFoundNames.push(rawName);
+              window.attendanceData.dates[dateStr][rawName] = 'attended';
+              matchCount++;
+          }
     });
     
     saveAttendanceState();
     window.renderAttendanceTable();
     window.closeBulkImportAttendanceModal();
-    window.showToast('อัปเดตรายชื่อ ' + matchCount + ' คน เป็น "เข้าร่วม" แล้ว', 'success');
+      if (notFoundNames.length > 0) {
+          alert("✅ อัปเดตรายชื่อสำเร็จ!\n\n⚠️ แจ้งเตือน: พบ " + notFoundNames.length + " คนที่ไม่มีรายชื่ออยู่ในระบบสมาชิกกิลด์:\n- " + notFoundNames.join("\n- "));
+      } else {
+          window.showToast('อัปเดตรายชื่อ ' + matchCount + ' คน เป็น "เข้าร่วม" แล้ว', 'success');
+      }
 };
 
 window.autoGenerateAttendance = function() {
