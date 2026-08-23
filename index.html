@@ -73,9 +73,13 @@
           p.classList.add('active');
         } else {
           p.classList.remove('active');
+          }
+        });
+        
+        if (pageId === 'page-attendance' && typeof window.renderAttendanceTable === 'function') {
+            window.renderAttendanceTable();
         }
-      });
-    }
+      }
 
     function openSettingsPage() {
       switchTab('page-settings');
