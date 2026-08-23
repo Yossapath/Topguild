@@ -521,7 +521,7 @@
         <select id="attendanceDateSelect" class="form-control" style="width: auto; min-width: 200px;">
           <option value="">-- ไม่มีข้อมูล --</option>
         </select>
-          <button id="btnImportAttendance" class="btn-primary" style="background: var(--blue-600); display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.bulkImportAttendance()">📝 กรอกรายชื่อผู้เข้าร่วม</button>
+          <button id="btnImportAttendance" class="btn-primary" style="background: var(--blue-600); display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.bulkImportAttendance()">กรอกรายชื่อผู้เข้าร่วม</button>
           <button id="btnDeleteAttendanceDate" class="btn-secondary" style="border-color: var(--danger); color: var(--danger); display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.deleteAttendanceDate()">ลบวันที่นี้</button>
       </div>
       <div style="display: flex; gap: 8px; align-items: center; flex: 1; justify-content: flex-end;">
@@ -910,17 +910,17 @@
   <!-- BULK IMPORT ATTENDANCE MODAL -->
   <div id="bulkImportAttendanceModal" style="display:none; position:fixed; inset:0; z-index:99998; align-items:center; justify-content:center;">
     <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55);" onclick="closeBulkImportAttendanceModal()"></div>
-    <div style="position:relative; background:var(--surface); border-radius:16px; padding:28px; width:90%; max-width:560px; box-shadow:0 8px 40px rgba(0,0,0,0.3); z-index:1;">
+    <div style="position:relative; background:#ffffff; border-radius:16px; padding:28px; width:90%; max-width:560px; box-shadow:0 8px 40px rgba(0,0,0,0.3); z-index:1;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <h3 style="margin:0; color:var(--text-hi); font-size:18px;">กรอกรายชื่อผู้เข้าร่วม (ก๊อปวาง)</h3>
-        <button onclick="closeBulkImportAttendanceModal()" style="background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-lo);">✕</button>
+        <h3 style="margin:0; color:#000000; font-size:18px;">กรอกรายชื่อผู้เข้าร่วม (ก๊อปวาง)</h3>
+        <button onclick="closeBulkImportAttendanceModal()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#555555;">✕</button>
       </div>
-      <p style="color:var(--text-lo); font-size:13px; margin-bottom:12px;">
+      <p style="color:#333333; font-size:13px; margin-bottom:12px;">
         วางรายชื่อผู้เข้าร่วม <b>(ชื่ออย่างเดียว คั่นด้วยการขึ้นบรรทัดใหม่)</b><br>
         ผู้เล่นที่มีรายชื่อจะถูกเปลี่ยนสถานะเป็น <b>"เข้าร่วม"</b> อัตโนมัติ
       </p>
-      <textarea id="bulkImportAttendanceText" class="form-control" rows="12"
-        style="width:100%; box-sizing:border-box; font-family:monospace; font-size:14px; resize:vertical;"
+      <textarea id="bulkImportAttendanceText" rows="12"
+        style="width:100%; box-sizing:border-box; font-family:monospace; font-size:14px; resize:vertical; background:#ffffff; color:#000000; border:1px solid #cccccc; border-radius:8px; padding:12px;"
         placeholder="XxerrosS\nYuGi\nDMTz"></textarea>
       <div style="display:flex; gap:10px; margin-top:16px; justify-content:flex-end;">
         <button class="btn-secondary" onclick="closeBulkImportAttendanceModal()">ยกเลิก</button>
