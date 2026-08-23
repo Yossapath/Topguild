@@ -114,7 +114,8 @@ window.handleLogin = async function() {
     }
     const data = snap.data();
     if (data.password !== p) {
-      window.showToast("รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง", "error");
+      alert("รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง");
+        window.showToast("รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง", "error");
       setBtnState(false);
       return;
     }
@@ -150,7 +151,8 @@ window.handleRegister = async function() {
     const userRef = doc(window.db, 'users', uLower);
     const snap = await getDoc(userRef);
     if (snap.exists()) {
-      window.showToast("Username นี้ถูกใช้งานแล้ว", "error");
+      alert("สมัครล้มเหลว: Username นี้มีคนใช้งานแล้ว!");
+        window.showToast("Username นี้ถูกใช้งานแล้ว", "error");
       return;
     }
 
@@ -161,7 +163,8 @@ window.handleRegister = async function() {
       role: 'member'
     });
 
-    window.showToast("สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ", "success");
+    alert("สมัครสมาชิกสำเร็จ! กำลังพากลับไปยังหน้าเข้าสู่ระบบ");
+      window.showToast("สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ", "success");
     document.getElementById('regUsername').value = '';
     document.getElementById('regJob').value = '';
     document.getElementById('regPassword').value = '';
@@ -169,7 +172,8 @@ window.handleRegister = async function() {
       window.toggleAuthMode('login');
     }
   } catch (err) {
-    window.showToast("เกิดข้อผิดพลาดในการสมัครสมาชิก", "error");
+    alert("เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่");
+      window.showToast("เกิดข้อผิดพลาดในการสมัครสมาชิก", "error");
     console.error(err);
   }
 };
