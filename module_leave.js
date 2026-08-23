@@ -9,7 +9,7 @@ import { doc, getDoc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from 
 
 
 
-let leaveData = [];
+window.leaveData = window.leaveData || [];
 let unsubLeaveListener = null;
 
 window.setupLeaveFirebase = async function() {
@@ -23,7 +23,7 @@ window.setupLeaveFirebase = async function() {
     unsubLeaveListener = onSnapshot(leaveRef, (snapshot) => {
       if (snapshot.exists()) {
         const d = snapshot.data();
-        leaveData = d.leaves || [];
+        window.leaveData = d.leaves || [];
         renderLeaveList();
       }
     });
@@ -35,7 +35,7 @@ window.setupLeaveFirebase = async function() {
 async function saveLeaveState() {
   if (!window.db) return;
   const leaveRef = doc(window.db, 'guild_system', 'leaves');
-  await setDoc(leaveRef, { leaves: leaveData });
+  await setDoc(leaveRef, { leaves: window.leaveData });
 }
 
 // Auto-fill leave form with current user's info when tab is shown
@@ -112,7 +112,7 @@ window.submitLeave = async function() {
   }
 
   // Check for duplicate leave
-  const isDup = leaveData.some(l =>
+  const isDup = window.leaveData.some(l =>
     l.name.toLowerCase() === name.toLowerCase() && l.day === day && l.date === date
   );
   if (isDup) return window.showToast('คุณได้แจ้งลาวันนี้และรอบนี้ไว้แล้ว', 'warning');
@@ -124,7 +124,7 @@ window.submitLeave = async function() {
     timestamp: Date.now()
   };
 
-  leaveData.push(entry);
+  window.leaveData.push(entry);
   await saveLeaveState();
   window.showToast('บันทึกการลาเรียบร้อยแล้ว', 'success');
 
@@ -138,7 +138,7 @@ window.submitLeave = async function() {
 window.cancelLeave = async function(leaveId) {
   if (!window.currentUser) return window.showToast('กรุณาเข้าสู่ระบบ', 'error');
   const isAdmin = window.isUserAdmin();
-  const entry = leaveData.find(l => l.id === leaveId);
+  const entry = window.leaveData.find(l => l.id === leaveId);
   if (!entry) return;
 
   // Only admin or the submitter can cancel
@@ -147,7 +147,7 @@ window.cancelLeave = async function(leaveId) {
   }
 
   if (!confirm('ยืนยันการยกเลิกการแจ้งลา?')) return;
-  leaveData = leaveData.filter(l => l.id !== leaveId);
+  window.leaveData = window.leaveData.filter(l => l.id !== leaveId);
   await saveLeaveState();
   window.showToast('ยกเลิกการลาเรียบร้อยแล้ว', 'success');
 };
@@ -159,7 +159,7 @@ function renderLeaveList() {
   const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
 
   // Sort by date desc
-  const sorted = [...leaveData].sort((a,b) => b.timestamp - a.timestamp);
+  const sorted = [...window.leaveData].sort((a,b) => b.timestamp - a.timestamp);
 
   // Non-admin only sees their own leaves
   const displayed = isAdmin

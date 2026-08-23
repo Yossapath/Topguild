@@ -521,6 +521,7 @@
         <select id="attendanceDateSelect" class="form-control" style="width: auto; min-width: 200px;">
           <option value="">-- ไม่มีข้อมูล --</option>
         </select>
+          <button id="btnImportAttendance" class="btn-primary" style="background: var(--blue-600); display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.bulkImportAttendance()">📝 กรอกรายชื่อผู้เข้าร่วม</button>
           <button id="btnDeleteAttendanceDate" class="btn-secondary" style="border-color: var(--danger); color: var(--danger); display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.deleteAttendanceDate()">ลบวันที่นี้</button>
       </div>
       <div style="display: flex; gap: 8px; align-items: center; flex: 1; justify-content: flex-end;">

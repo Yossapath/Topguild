@@ -61,6 +61,43 @@ async function saveAttendanceState() {
 }
 
 
+window.bulkImportAttendance = function() {
+    if (!window.currentUser || !window.isUserAdmin()) return window.showToast('ไม่มีสิทธิ์', 'error');
+    const select = document.getElementById('attendanceDateSelect');
+    if (!select || !select.value) return window.showToast('กรุณาเลือกวันที่ก่อน', 'warning');
+    
+    const dateStr = select.value;
+    const text = prompt('วางรายชื่อที่เข้าร่วมทั้งหมดที่นี่ (คั่นด้วยบรรทัดใหม่):\n(คนที่มีรายชื่อจะถูกเปลี่ยนสถานะเป็น "เข้าร่วม" อัตโนมัติ)');
+    if (!text) return;
+    
+    const names = text.split('\n').map(n => n.trim()).filter(n => n);
+    if (!attendanceData.dates[dateStr]) attendanceData.dates[dateStr] = {};
+    
+    let matchCount = 0;
+    names.forEach(rawName => {
+        let found = false;
+        if (window.guildRoster) {
+            Object.keys(window.guildRoster).forEach(job => {
+                window.guildRoster[job].forEach(m => {
+                    if (m.name.toLowerCase() === rawName.toLowerCase()) {
+                        attendanceData.dates[dateStr][m.name] = 'attended';
+                        found = true;
+                        matchCount++;
+                    }
+                });
+            });
+        }
+        if (!found) {
+            attendanceData.dates[dateStr][rawName] = 'attended';
+            matchCount++;
+        }
+    });
+    
+    saveAttendanceState();
+    window.renderAttendanceTable();
+    window.showToast('อัปเดตรายชื่อ ' + matchCount + ' คน เป็น "เข้าร่วม" แล้ว', 'success');
+};
+
 window.autoGenerateAttendance = function() {
   if (!window.currentUser || !window.isUserAdmin()) return;
   if (!confirm('ต้องการสร้างตารางเช็คชื่อสำหรับ อังคาร พฤหัส อาทิตย์ ของสัปดาห์นี้อัตโนมัติหรือไม่?')) return;
@@ -217,13 +254,17 @@ window.renderAttendanceTable = function() {
     const summaryDiv = document.getElementById('attendanceSummary');
     if (summaryDiv) summaryDiv.innerHTML = '';
     const btnDelete = document.getElementById('btnDeleteAttendanceDate');
+    const btnImport = document.getElementById('btnImportAttendance');
     if (btnDelete) btnDelete.style.display = 'none';
+    if (btnImport) btnImport.style.display = 'none';
     return;
   }
   
   const btnDelete = document.getElementById('btnDeleteAttendanceDate');
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
-  if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
+    const btnImport = document.getElementById('btnImportAttendance');
+    const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
+    if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
+    if (btnImport) btnImport.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
   
   const dayData = attendanceData.dates[selectedDate] || {};
   
@@ -248,9 +289,29 @@ window.renderAttendanceTable = function() {
   let totalCount = 0;
   
   let idx = 1;
-  allMembers.forEach(m => {
-     if (query && !m.name.toLowerCase().includes(query)) return;
-     const status = dayData[m.name] || 'none';
+    const todayStr = new Date().toLocaleString('sv').split(' ')[0]; // YYYY-MM-DD
+    const isPast = selectedDate < todayStr;
+    let needsSave = false;
+
+    allMembers.forEach(m => {
+       let status = dayData[m.name] || 'none';
+       
+       if ((!status || status === 'none') && window.leaveData) {
+           const isLeave = window.leaveData.some(l => l.name.toLowerCase() === m.name.toLowerCase() && l.date === selectedDate);
+           if (isLeave) {
+               status = 'leave';
+               dayData[m.name] = 'leave';
+               needsSave = true;
+           }
+       }
+       
+       if ((!status || status === 'none') && isPast) {
+           status = 'absent';
+           dayData[m.name] = 'absent';
+           needsSave = true;
+       }
+
+       if (query && !m.name.toLowerCase().includes(query)) return;
      totalCount++;
      if (status === 'attended') joinedCount++;
      else if (status === 'leave') leaveCount++;
