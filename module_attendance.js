@@ -115,8 +115,20 @@ window.processBulkImportAttendance = function() {
     saveAttendanceState();
     window.renderAttendanceTable();
     window.closeBulkImportAttendanceModal();
-      if (notFoundNames.length > 0) {
-          alert("✅ อัปเดตรายชื่อสำเร็จ!\n\n⚠️ แจ้งเตือน: พบ " + notFoundNames.length + " คนที่ไม่มีรายชื่ออยู่ในระบบสมาชิกกิลด์:\n- " + notFoundNames.join("\n- "));
+      const resultModal = document.getElementById('importResultModal');
+      const resultText = document.getElementById('importResultText');
+      const missingDiv = document.getElementById('importResultMissing');
+      const missingList = document.getElementById('importResultMissingList');
+      
+      if (resultModal && resultText && missingDiv && missingList) {
+          resultText.innerHTML = 'อัปเดตสถานะเป็น <b>"เข้าร่วม"</b> ทั้งหมด ' + matchCount + ' คนเรียบร้อยแล้ว';
+          if (notFoundNames.length > 0) {
+              missingDiv.style.display = 'block';
+              missingList.value = notFoundNames.join('\n');
+          } else {
+              missingDiv.style.display = 'none';
+          }
+          resultModal.style.display = 'flex';
       } else {
           window.showToast('อัปเดตรายชื่อ ' + matchCount + ' คน เป็น "เข้าร่วม" แล้ว', 'success');
       }
@@ -252,6 +264,43 @@ window.switchAttTab = function(tab) {
 };
 
 
+
+window.exportAbsentUsers = function() {
+    if (!window.currentUser || !window.isUserAdmin()) return;
+    const select = document.getElementById('attendanceDateSelect');
+    if (!select || !select.value) return window.showToast('กรุณาเลือกวันที่ก่อน', 'warning');
+    const dateStr = select.value;
+    const dayData = window.attendanceData.dates[dateStr];
+    if (!dayData) return window.showToast('ไม่มีข้อมูลสำหรับวันที่นี้', 'warning');
+
+    let absentNames = [];
+    if (window.guildRoster) {
+        Object.keys(window.guildRoster).forEach(job => {
+            window.guildRoster[job].forEach(m => {
+                if (dayData[m.name] === 'absent') {
+                    absentNames.push(m.name);
+                }
+            });
+        });
+    }
+
+    if (absentNames.length === 0) {
+        return window.showToast('ไม่มีคนขาดวอในวันที่ ' + dateStr, 'info');
+    }
+
+    const text = absentNames.join('\n');
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'absent_' + dateStr + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    window.showToast('ส่งออกรายชื่อคนขาด ' + absentNames.length + ' คนสำเร็จ', 'success');
+};
+
 window.archiveAttendanceDate = function() {
     if (!window.currentUser || !window.isUserAdmin()) return;
     const select = document.getElementById('attendanceDateSelect');
@@ -328,16 +377,20 @@ window.renderAttendanceTable = function() {
     const summaryDiv = document.getElementById('attendanceSummary');
     if (summaryDiv) summaryDiv.innerHTML = '';
     const btnArchive = document.getElementById('btnArchiveAttendanceDate');
+    const btnExport = document.getElementById('btnExportAbsent');
     const btnImport = document.getElementById('btnImportAttendance');
     if (btnArchive) btnArchive.style.display = 'none';
+    if (btnExport) btnExport.style.display = 'none';
     if (btnImport) btnImport.style.display = 'none';
     return;
   }
   
   const btnArchive = document.getElementById('btnArchiveAttendanceDate');
+    const btnExport = document.getElementById('btnExportAbsent');
     const btnImport = document.getElementById('btnImportAttendance');
     const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
     if (btnArchive) btnArchive.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
+    if (btnExport) btnExport.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
     if (btnImport) btnImport.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
   
   const dayData = window.attendanceData.dates[selectedDate] || {};

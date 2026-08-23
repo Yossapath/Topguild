@@ -527,6 +527,7 @@
           <option value="">-- ไม่มีข้อมูล --</option>
         </select>
           <button id="btnImportAttendance" style="background: #ffffff; color: #000000; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; font-size: 14px; display: none; padding: 6px 12px; margin-left: 8px; font-weight: 700; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onclick="window.bulkImportAttendance()" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#ffffff'">กรอกรายชื่อผู้เข้าร่วม</button>
+          <button id="btnExportAbsent" class="btn-secondary" style="border-color: var(--danger); color: var(--danger); display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.exportAbsentUsers()">📤 นำออกคนขาดวอ</button>
           <button id="btnArchiveAttendanceDate" class="btn-secondary" style="border-color: #f59e0b; color: #d97706; display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.archiveAttendanceDate()">📁 จัดเก็บประวัติ</button>
           
       </div>
@@ -947,5 +948,22 @@
 
 
   </div>
+
+  <!-- IMPORT RESULT MODAL -->
+  <div id="importResultModal" style="display:none; position:fixed; inset:0; z-index:99999; align-items:center; justify-content:center;">
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55);" onclick="document.getElementById('importResultModal').style.display='none'"></div>
+    <div style="position:relative; background:#ffffff; border-radius:16px; padding:28px; width:90%; max-width:500px; box-shadow:0 8px 40px rgba(0,0,0,0.3); z-index:1;">
+      <h3 style="margin:0 0 16px 0; color:#000000; font-size:18px;">สรุปผลการอัปเดตรายชื่อ</h3>
+      <p id="importResultText" style="color:#333333; font-size:14px; margin-bottom:12px;"></p>
+      <div id="importResultMissing" style="display:none;">
+          <p style="color:var(--danger); font-size:13px; font-weight:bold; margin-bottom:8px;">รายชื่อที่ไม่มีในระบบสมาชิกกิลด์ (เพิ่มเข้าไปแล้ว):</p>
+          <textarea id="importResultMissingList" rows="8" readonly style="width:100%; box-sizing:border-box; font-family:monospace; font-size:13px; resize:vertical; background:#fef2f2; color:var(--danger); border:1px solid #fca5a5; border-radius:8px; padding:12px;"></textarea>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+        <button class="btn-primary" onclick="document.getElementById('importResultModal').style.display='none'">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
