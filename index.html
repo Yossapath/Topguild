@@ -526,7 +526,8 @@
           <option value="">-- ไม่มีข้อมูล --</option>
         </select>
           <button id="btnImportAttendance" style="background: #ffffff; color: #000000; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; font-size: 14px; display: none; padding: 6px 12px; margin-left: 8px; font-weight: 700; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onclick="window.bulkImportAttendance()" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#ffffff'">กรอกรายชื่อผู้เข้าร่วม</button>
-          <button id="btnDeleteAttendanceDate" class="btn-secondary" style="border-color: var(--danger); color: var(--danger); display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.deleteAttendanceDate()">ลบวันที่นี้</button>
+          <button id="btnArchiveAttendanceDate" class="btn-secondary" style="border-color: #f59e0b; color: #d97706; display: none; padding: 6px 12px; margin-left: 8px;" onclick="window.archiveAttendanceDate()">📁 จัดเก็บประวัติ</button>
+          <button id="btnViewArchivedDates" class="btn-secondary" style="padding: 6px 12px; margin-left: 8px;" onclick="window.viewArchivedDates()">ประวัติที่จัดเก็บแล้ว</button>
       </div>
       <div style="display: flex; gap: 8px; align-items: center; flex: 1; justify-content: flex-end;">
         <input type="text" id="attendanceSearch" class="form-control" placeholder="ค้นหารายชื่อ..." style="max-width: 250px;" onkeyup="renderAttendanceTable()">
@@ -929,6 +930,19 @@
       <div style="display:flex; gap:10px; margin-top:16px; justify-content:flex-end;">
         <button class="btn-secondary" onclick="closeBulkImportAttendanceModal()">ยกเลิก</button>
         <button class="btn-primary" onclick="processBulkImportAttendance()">บันทึก</button>
+      </div>
+    </div>
+  </div>
+  <!-- ARCHIVED ATTENDANCE MODAL -->
+  <div id="archivedAttendanceModal" style="display:none; position:fixed; inset:0; z-index:99998; align-items:center; justify-content:center;">
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55);" onclick="document.getElementById('archivedAttendanceModal').style.display='none'"></div>
+    <div style="position:relative; background:#ffffff; border-radius:16px; padding:28px; width:90%; max-width:600px; box-shadow:0 8px 40px rgba(0,0,0,0.3); z-index:1;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0; color:#000000; font-size:18px;">ประวัติตารางเช็คชื่อที่จัดเก็บแล้ว</h3>
+        <button onclick="document.getElementById('archivedAttendanceModal').style.display='none'" style="background:none; border:none; font-size:22px; cursor:pointer; color:#555555;">✕</button>
+      </div>
+      <div id="archivedDatesList" style="max-height:400px; overflow-y:auto;">
+         <!-- List goes here -->
       </div>
     </div>
   </div>

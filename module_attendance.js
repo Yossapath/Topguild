@@ -245,20 +245,71 @@ window.switchAttTab = function(tab) {
   }
 };
 
-window.deleteAttendanceDate = function() {
-  const select = document.getElementById('attendanceDateSelect');
-  if (!select) return;
-  const dateStr = select.value;
-  if (!dateStr) return;
-  
-  if (confirm('คุณต้องการลบข้อมูลเช็คชื่อของวันที่ ' + dateStr + ' ใช่หรือไม่?')) {
-    delete window.attendanceData.dates[dateStr];
-    saveAttendanceState();
-    select.value = '';
-    renderAttendanceOptions();
-  }
+
+window.archiveAttendanceDate = function() {
+    if (!window.currentUser || !window.isUserAdmin()) return;
+    const select = document.getElementById('attendanceDateSelect');
+    if (!select) return;
+    const dateStr = select.value;
+    if (!dateStr) return;
+    
+    if (confirm('คุณต้องการจัดเก็บข้อมูลเช็คชื่อของวันที่ ' + dateStr + ' ลงประวัติหรือไม่?\n(ข้อมูลจะถูกเก็บไว้ใช้คำนวณบทลงโทษต่อ แต่จะไม่แสดงในหน้านี้แล้ว)')) {
+      if (!window.attendanceData.archived) window.attendanceData.archived = {};
+      window.attendanceData.archived[dateStr] = window.attendanceData.dates[dateStr];
+      delete window.attendanceData.dates[dateStr];
+      
+      saveAttendanceState();
+      
+      window.showToast("จัดเก็บวันที่ " + dateStr + " ลงประวัติเรียบร้อยแล้ว", "success");
+      
+      select.value = '';
+      localStorage.removeItem('guild_attendance_last_date');
+      window.renderAttendanceTable();
+    }
 };
 
+window.viewArchivedDates = function() {
+    if (!window.currentUser || !window.isUserAdmin()) return;
+    const modal = document.getElementById('archivedAttendanceModal');
+    const listDiv = document.getElementById('archivedDatesList');
+    if (!modal || !listDiv) return;
+    
+    const archived = window.attendanceData.archived || {};
+    const dates = Object.keys(archived).sort((a, b) => b.localeCompare(a));
+    
+    if (dates.length === 0) {
+        listDiv.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-lo);">ไม่มีประวัติการจัดเก็บ</div>';
+    } else {
+        listDiv.innerHTML = dates.map(d => {
+            const count = Object.keys(archived[d]).length;
+            return '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid var(--line);">' +
+                   '<span><strong>' + d + '</strong> <small>(' + count + ' คน)</small></span>' +
+                   '<button class="btn-secondary" onclick="window.restoreArchivedDate(\'' + d + '\')" style="font-size:12px; padding:4px 8px;">นำกลับมา</button>' +
+                   '</div>';
+        }).join('');
+    }
+    
+    modal.style.display = 'flex';
+};
+
+window.restoreArchivedDate = function(dateStr) {
+    if (!window.currentUser || !window.isUserAdmin()) return;
+    if (!window.attendanceData.archived || !window.attendanceData.archived[dateStr]) return;
+    
+    window.attendanceData.dates[dateStr] = window.attendanceData.archived[dateStr];
+    delete window.attendanceData.archived[dateStr];
+    
+    saveAttendanceState();
+    window.showToast("นำวันที่ " + dateStr + " กลับมาแล้ว", "success");
+    document.getElementById('archivedAttendanceModal').style.display = 'none';
+    
+    const select = document.getElementById('attendanceDateSelect');
+    if (select) {
+        select.value = dateStr;
+        localStorage.setItem('guild_attendance_last_date', dateStr);
+        window.renderAttendanceTable();
+    }
+};
 
 window.renderAttendanceTable = function() {
   const tbody = document.getElementById('attendanceTbody');
@@ -271,17 +322,21 @@ window.renderAttendanceTable = function() {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--text-lo);">กรุณาเลือกวันที่เพื่อดูข้อมูล</td></tr>';
     const summaryDiv = document.getElementById('attendanceSummary');
     if (summaryDiv) summaryDiv.innerHTML = '';
-    const btnDelete = document.getElementById('btnDeleteAttendanceDate');
+    const btnArchive = document.getElementById('btnArchiveAttendanceDate');
+    const btnViewArchive = document.getElementById('btnViewArchivedDates');
     const btnImport = document.getElementById('btnImportAttendance');
-    if (btnDelete) btnDelete.style.display = 'none';
+    if (btnArchive) btnArchive.style.display = 'none';
+    if (btnViewArchive) btnViewArchive.style.display = window.isUserAdmin() ? 'inline-block' : 'none';
     if (btnImport) btnImport.style.display = 'none';
     return;
   }
   
-  const btnDelete = document.getElementById('btnDeleteAttendanceDate');
+  const btnArchive = document.getElementById('btnArchiveAttendanceDate');
+    const btnViewArchive = document.getElementById('btnViewArchivedDates');
     const btnImport = document.getElementById('btnImportAttendance');
     const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
-    if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
+    if (btnArchive) btnArchive.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
+    if (btnViewArchive) btnViewArchive.style.display = isAdmin ? 'inline-block' : 'none';
     if (btnImport) btnImport.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
   
   const dayData = window.attendanceData.dates[selectedDate] || {};
@@ -585,10 +640,24 @@ function showGlobalDropdown(inputEl, filterText = '') {
 })();
 
 window.getUserAbsentCount = function(username) {
-    if (!window.attendanceData || !window.attendanceData.dates) return 0;
-    let count = 0;
-    Object.values(window.attendanceData.dates).forEach(dayData => {
-        if (dayData[username] === 'absent') count++;
-    });
-    return count;
+    if (!window.attendanceData) return 0;
+    let joined = 0, leave = 0, absent = 0;
+    
+    const countStats = (datesObj) => {
+        if (!datesObj) return;
+        Object.values(datesObj).forEach(dayData => {
+            const status = dayData[username];
+            if (status === 'attended') joined++;
+            if (status === 'leave') leave++;
+            if (status === 'absent') absent++;
+        });
+    };
+    
+    countStats(window.attendanceData.dates);
+    countStats(window.attendanceData.archived);
+    
+    if ((joined + leave) > absent) {
+        return 0; // Penalty lifted
+    }
+    return absent;
 };
