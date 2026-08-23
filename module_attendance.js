@@ -270,26 +270,23 @@ window.archiveAttendanceDate = function() {
 
 window.viewArchivedDates = function() {
     if (!window.currentUser || !window.isUserAdmin()) return;
-    const modal = document.getElementById('archivedAttendanceModal');
-    const listDiv = document.getElementById('archivedDatesList');
-    if (!modal || !listDiv) return;
+    const listDiv = document.getElementById('archivedDatesPageList');
+    if (!listDiv) return;
     
     const archived = window.attendanceData.archived || {};
     const dates = Object.keys(archived).sort((a, b) => b.localeCompare(a));
     
     if (dates.length === 0) {
-        listDiv.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-lo);">ไม่มีประวัติการจัดเก็บ</div>';
+        listDiv.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-lo); background:var(--bg-soft); border-radius:8px;">ไม่มีประวัติการจัดเก็บ</div>';
     } else {
         listDiv.innerHTML = dates.map(d => {
             const count = Object.keys(archived[d]).length;
-            return '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid var(--line);">' +
-                   '<span><strong>' + d + '</strong> <small>(' + count + ' คน)</small></span>' +
-                   '<button class="btn-secondary" onclick="window.restoreArchivedDate(\'' + d + '\')" style="font-size:12px; padding:4px 8px;">นำกลับมา</button>' +
+            return '<div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--bg-soft); border-radius:8px; margin-bottom:8px;">' +
+                   '<span style="font-size:15px; color:var(--text-hi);"><strong>' + d + '</strong> <small style="color:var(--text-lo); margin-left:8px;">(' + count + ' คน)</small></span>' +
+                   '<button class="btn-secondary" onclick="window.restoreArchivedDate(\'' + d + '\')" style="font-size:13px; padding:6px 12px; border-color:var(--blue-500); color:var(--blue-600);">นำกลับมาใช้งาน</button>' +
                    '</div>';
         }).join('');
     }
-    
-    modal.style.display = 'flex';
 };
 
 window.restoreArchivedDate = function(dateStr) {
@@ -301,14 +298,16 @@ window.restoreArchivedDate = function(dateStr) {
     
     saveAttendanceState();
     window.showToast("นำวันที่ " + dateStr + " กลับมาแล้ว", "success");
-    document.getElementById('archivedAttendanceModal').style.display = 'none';
     
+    // Switch to attendance tab and select the restored date
+    if (typeof switchTab === 'function') switchTab('page-attendance');
     const select = document.getElementById('attendanceDateSelect');
     if (select) {
         select.value = dateStr;
         localStorage.setItem('guild_attendance_last_date', dateStr);
         window.renderAttendanceTable();
     }
+    window.viewArchivedDates(); // re-render list if they switch back
 };
 
 window.renderAttendanceTable = function() {
@@ -323,20 +322,16 @@ window.renderAttendanceTable = function() {
     const summaryDiv = document.getElementById('attendanceSummary');
     if (summaryDiv) summaryDiv.innerHTML = '';
     const btnArchive = document.getElementById('btnArchiveAttendanceDate');
-    const btnViewArchive = document.getElementById('btnViewArchivedDates');
     const btnImport = document.getElementById('btnImportAttendance');
     if (btnArchive) btnArchive.style.display = 'none';
-    if (btnViewArchive) btnViewArchive.style.display = window.isUserAdmin() ? 'inline-block' : 'none';
     if (btnImport) btnImport.style.display = 'none';
     return;
   }
   
   const btnArchive = document.getElementById('btnArchiveAttendanceDate');
-    const btnViewArchive = document.getElementById('btnViewArchivedDates');
     const btnImport = document.getElementById('btnImportAttendance');
     const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
     if (btnArchive) btnArchive.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
-    if (btnViewArchive) btnViewArchive.style.display = isAdmin ? 'inline-block' : 'none';
     if (btnImport) btnImport.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
   
   const dayData = window.attendanceData.dates[selectedDate] || {};

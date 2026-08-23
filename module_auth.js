@@ -214,7 +214,10 @@ function applyRolePermissions() {
   if (btnAdminAutoAtt) btnAdminAutoAtt.style.display = isAdmin ? 'block' : 'none';
 
   const tabSettings = document.getElementById('tabSettings');
-  if (tabSettings) tabSettings.style.display = isAdmin ? 'block' : 'none';
+  if (tabSettings) tabSettings.style.display = isAdmin ? 'inline-block' : 'none';
+  
+  const tabArchive = document.getElementById('tabArchive');
+  if (tabArchive) tabArchive.style.display = isAdmin ? 'inline-block' : 'none';
 
   const clearBtn = document.getElementById('btnClearCurrentFieldTeamsBtn');
   if (clearBtn) clearBtn.style.display = isAdmin ? 'block' : 'none';
