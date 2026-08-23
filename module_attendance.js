@@ -7,7 +7,7 @@ import { doc, getDoc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from 
     // ====== ATTENDANCE SYSTEM ======
 // ==========================================
 
-let attendanceData = { dates: {} };
+window.attendanceData = window.attendanceData || { dates: {} };
 let unsubAttendanceListener = null;
 
 async function setupAttendanceFirebase() {
@@ -34,9 +34,9 @@ async function setupAttendanceFirebase() {
     unsubAttendanceListener = onSnapshot(attRef, (snapshot) => {
       if (snapshot.exists()) {
         attendanceData = snapshot.data();
-        if (!attendanceData.dates) attendanceData.dates = {};
+        if (!window.attendanceData.dates) window.attendanceData.dates = {};
         // Keep localStorage in sync
-        try { localStorage.setItem('guild_attendance_data', JSON.stringify(attendanceData)); } catch(e2) {}
+        try { localStorage.setItem('guild_attendance_data', JSON.stringify(window.attendanceData)); } catch(e2) {}
         renderAttendanceOptions();
       }
     });
@@ -48,7 +48,7 @@ async function setupAttendanceFirebase() {
 window.setupAttendanceFirebase = setupAttendanceFirebase;
 
 async function saveAttendanceState() {
-  localStorage.setItem('guild_attendance_data', JSON.stringify(attendanceData));
+  localStorage.setItem('guild_attendance_data', JSON.stringify(window.attendanceData));
   if (!window.db) return;
   try {
     const attRef = doc(window.db, 'guild_system', 'attendance');
@@ -88,7 +88,7 @@ window.processBulkImportAttendance = function() {
     }
     
     const names = text.split('\n').map(n => n.trim()).filter(n => n);
-    if (!attendanceData.dates[dateStr]) attendanceData.dates[dateStr] = {};
+    if (!window.attendanceData.dates[dateStr]) window.attendanceData.dates[dateStr] = {};
     
     let matchCount = 0;
     names.forEach(rawName => {
@@ -97,7 +97,7 @@ window.processBulkImportAttendance = function() {
             Object.keys(window.guildRoster).forEach(job => {
                 window.guildRoster[job].forEach(m => {
                     if (m.name.toLowerCase() === rawName.toLowerCase()) {
-                        attendanceData.dates[dateStr][m.name] = 'attended';
+                        window.attendanceData.dates[dateStr][m.name] = 'attended';
                         found = true;
                         matchCount++;
                     }
@@ -105,7 +105,7 @@ window.processBulkImportAttendance = function() {
             });
         }
         if (!found) {
-            attendanceData.dates[dateStr][rawName] = 'attended';
+            window.attendanceData.dates[dateStr][rawName] = 'attended';
             matchCount++;
         }
     });
@@ -153,8 +153,8 @@ window.autoGenerateAttendance = function() {
 
   let createdCount = 0;
   datesToCreate.forEach(d => {
-    if (!attendanceData.dates[d]) {
-      attendanceData.dates[d] = {};
+    if (!window.attendanceData.dates[d]) {
+      window.attendanceData.dates[d] = {};
       createdCount++;
     }
   });
@@ -174,8 +174,8 @@ window.createAttendanceDate = function() {
   const dateStr = prompt("ระบุวันที่สำหรับการเช็คชื่อ (YYYY-MM-DD):", today);
   if (!dateStr) return;
   
-  if (!attendanceData.dates[dateStr]) {
-    attendanceData.dates[dateStr] = {};
+  if (!window.attendanceData.dates[dateStr]) {
+    window.attendanceData.dates[dateStr] = {};
     saveAttendanceState();
     window.showToast(`สร้างวันที่ ${dateStr} เรียบร้อยแล้ว`, "success");
     
@@ -196,7 +196,7 @@ function renderAttendanceOptions() {
   if (!select) return;
   
   const currentVal = select.value;
-  const dates = Object.keys(attendanceData.dates).sort((a, b) => b.localeCompare(a));
+  const dates = Object.keys(window.attendanceData.dates).sort((a, b) => b.localeCompare(a));
   
   if (dates.length === 0) {
     select.innerHTML = '<option value="">-- ไม่มีข้อมูล --</option>';
@@ -252,7 +252,7 @@ window.deleteAttendanceDate = function() {
   if (!dateStr) return;
   
   if (confirm('คุณต้องการลบข้อมูลเช็คชื่อของวันที่ ' + dateStr + ' ใช่หรือไม่?')) {
-    delete attendanceData.dates[dateStr];
+    delete window.attendanceData.dates[dateStr];
     saveAttendanceState();
     select.value = '';
     renderAttendanceOptions();
@@ -284,7 +284,7 @@ window.renderAttendanceTable = function() {
     if (btnDelete) btnDelete.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
     if (btnImport) btnImport.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
   
-  const dayData = attendanceData.dates[selectedDate] || {};
+  const dayData = window.attendanceData.dates[selectedDate] || {};
   
   let allMembers = [];
   if (window.guildRoster) {
@@ -375,8 +375,8 @@ window.renderAttendanceTable = function() {
 
 window.updateAttendanceStatus = function(dateStr, name, status) {
   if (!window.currentUser || !window.isUserAdmin()) return;
-  if (!attendanceData.dates[dateStr]) attendanceData.dates[dateStr] = {};
-  attendanceData.dates[dateStr][name] = status;
+  if (!window.attendanceData.dates[dateStr]) window.attendanceData.dates[dateStr] = {};
+  window.attendanceData.dates[dateStr][name] = status;
   saveAttendanceState();
 };
 
@@ -389,10 +389,10 @@ window.renderAttendanceStats = function() {
   
   // Aggregate stats
   const statsMap = {}; // { name: { joined:0, leave:0, absent:0 } }
-  const dates = Object.keys(attendanceData.dates);
+  const dates = Object.keys(window.attendanceData.dates);
   
   dates.forEach(d => {
-    const dayData = attendanceData.dates[d];
+    const dayData = window.attendanceData.dates[d];
     Object.keys(dayData).forEach(name => {
       const status = dayData[name];
       if (!statsMap[name]) statsMap[name] = { joined: 0, leave: 0, absent: 0 };
@@ -583,3 +583,12 @@ function showGlobalDropdown(inputEl, filterText = '') {
     if (area) area.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--danger);">ระบบเช็คชื่อขัดข้อง กรุณารีเฟรชหน้าจอ</td></tr>';
   }
 })();
+
+window.getUserAbsentCount = function(username) {
+    if (!window.attendanceData || !window.attendanceData.dates) return 0;
+    let count = 0;
+    Object.values(window.attendanceData.dates).forEach(dayData => {
+        if (dayData[username] === 'absent') count++;
+    });
+    return count;
+};

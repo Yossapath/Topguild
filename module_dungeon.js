@@ -45,7 +45,16 @@ async function saveDungeonState() {
 window.bookDungeonQueue = function() {
   if (!window.currentUser) return window.showToast("กรุณาเข้าสู่ระบบ", "error");
   const name = document.getElementById('dqName').value.trim();
-  const job = document.getElementById('dqClass').value;
+    const job = document.getElementById('dqClass').value;
+    
+    // Check absent count
+    if (window.getUserAbsentCount) {
+        const absentCount = window.getUserAbsentCount(name);
+        if (absentCount >= 2) {
+            alert("❌ ไม่มีสิทธิ์จองคิวลงดันเจี้ยน!\n\n(ขาดวอ " + absentCount + " ครั้ง)\n\nเพื่อปลดโทษ กรุณาเข้าร่วมกิจกรรมทุกครั้ง และหากไม่สะดวกให้แจ้งลาวอพร้อมเหตุผล");
+            return;
+        }
+    }
   const dungeon = document.getElementById('dqDungeon').value;
   
   if (!name || !job || !dungeon) return window.showToast("กรุณากรอกข้อมูลให้ครบถ้วน", "warning");
