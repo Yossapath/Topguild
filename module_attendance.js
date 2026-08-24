@@ -216,10 +216,15 @@ function renderAttendanceOptions() {
   const currentVal = select.value;
   const dates = Object.keys(window.attendanceData.dates).sort((a, b) => b.localeCompare(a));
   
-  if (dates.length === 0) {
-    select.innerHTML = '<option value="">-- ไม่มีข้อมูล --</option>';
-  } else {
-    select.innerHTML = '<option value="">-- กรุณาเลือกวันที่ --</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
+  const newHtml = dates.length === 0 
+    ? '<option value="">-- ไม่มีข้อมูล --</option>'
+    : '<option value="">-- กรุณาเลือกวันที่ --</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join('');
+
+  if (select.innerHTML !== newHtml) {
+      select.innerHTML = newHtml;
+  }
+  
+  if (dates.length > 0) {
     
     const lastSelected = localStorage.getItem('guild_attendance_last_date');
     
@@ -497,7 +502,12 @@ window.updateAttendanceStatus = function(dateStr, name, status) {
   if (!window.currentUser || !window.isUserAdmin()) return;
   if (!window.attendanceData.dates[dateStr]) window.attendanceData.dates[dateStr] = {};
   window.attendanceData.dates[dateStr][name] = status;
-  saveAttendanceState();
+  
+  // Wrap in setTimeout to prevent Chrome PagePopupController crash 
+  // (happens when <select> DOM is destroyed while native popup is closing)
+  setTimeout(() => {
+      saveAttendanceState();
+  }, 150);
 };
 
 window.renderAttendanceStats = function() {
@@ -779,13 +789,4 @@ window.getUserScore = function(username) {
     
     return score;
 };
-window.getUserAbsentCount = window.getUserScore; // alias so we don't break existing calls that expect an integer, but now it's a score! Wait, no, getUserAbsentCount was expected to be a positive number of absences. Let's make sure app.js and dungeon.js use getUserScore.
-
-    countStats(window.attendanceData.dates);
-    countStats(window.attendanceData.archived);
-    
-    if ((joined + leave) > absent) {
-        return 0; // Penalty lifted
-    }
-    return absent;
-};
+window.getUserAbsentCount = window.getUserScore;
