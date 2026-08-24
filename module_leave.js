@@ -167,7 +167,7 @@ function renderLeaveList() {
   // Non-admin only sees their own leaves
   const displayed = isAdmin
     ? sorted
-    : sorted.filter(l => l.submittedBy === window.currentUser.username);
+    : sorted.filter(l => window.currentUser && l.submittedBy === window.currentUser.username);
 
   const dayLabels = {
     'Tuesday_1': 'อังคาร รอบ 1 (21:30)',
