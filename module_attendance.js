@@ -310,8 +310,19 @@ window.archiveAttendanceDate = function() {
     
     if (confirm('คุณต้องการจัดเก็บข้อมูลเช็คชื่อของวันที่ ' + dateStr + ' ลงประวัติหรือไม่?\n(ข้อมูลจะถูกเก็บไว้ใช้คำนวณบทลงโทษต่อ แต่จะไม่แสดงในหน้านี้แล้ว)')) {
       if (!window.attendanceData.archived) window.attendanceData.archived = {};
-      window.attendanceData.archived[dateStr] = window.attendanceData.dates[dateStr];
-      delete window.attendanceData.dates[dateStr];
+        const dayDataToArchive = window.attendanceData.dates[dateStr];
+        if (window.guildRoster) {
+            Object.keys(window.guildRoster).forEach(job => {
+                window.guildRoster[job].forEach(m => {
+                    const status = dayDataToArchive[m.name];
+                    if (!status || status === 'none') {
+                        dayDataToArchive[m.name] = 'absent';
+                    }
+                });
+            });
+        }
+        window.attendanceData.archived[dateStr] = dayDataToArchive;
+        delete window.attendanceData.dates[dateStr];
       
       saveAttendanceState();
       
