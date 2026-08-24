@@ -160,7 +160,11 @@ function getMasterMemberList() {
   const list = [];
   Object.keys(guildRoster).forEach(job => {
     (guildRoster[job] || []).forEach(m => {
-      list.push({ name: m.name, job, power: m.power });
+      let fp = m.fieldPref || 'any';
+      if (window.getUserScore && window.getUserScore(m.name) <= -3) {
+          fp = 'sub';
+      }
+      list.push({ name: m.name, job, power: m.power, fieldPref: fp });
     });
   });
   return list;
@@ -470,7 +474,7 @@ function renderRoster() {
     const rows = list.map((m, i) => `
       <tr>
         <td class="rank">${i + 1}</td>
-        <td><b>${escapeHtml(m.name)}</b></td>
+        <td><b>${escapeHtml(m.name)}</b>${(window.getUserScore && window.getUserScore(m.name) <= -3) ? '<span style="font-size:10px; background:var(--danger); color:white; padding:2px 6px; border-radius:10px; margin-left:6px;" title="คะแนนพฤติกรรม '+window.getUserScore(m.name)+'">⚠️ ขาดวอหลายครั้ง</span>' : ''}</td>
         <td class="power num-col">${m.power != null ? m.power.toLocaleString('en-US') : '-'}</td>
         <td class="actions" style="text-align:center;">
           <button class="btn-secondary edit-btn" style="padding:3px 10px;font-size:12px;border-radius:6px;" data-job="${escapeHtml(job)}" data-name="${escapeHtml(m.name)}" data-power="${m.power || ''}" data-fieldpref="${m.fieldPref || 'any'}">แก้ไข</button>

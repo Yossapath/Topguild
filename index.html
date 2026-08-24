@@ -571,7 +571,8 @@
                 <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--ok);">🟢 เข้าร่วม</th>
                 <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--warn);">🟡 ลา</th>
                 <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--danger);">🔴 ขาด</th>
-                <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--blue-900);">% มา</th>
+                  <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--blue-900);">⭐ คะแนน</th>
+                  <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--blue-900);">% มา</th>
             </tr>
           </thead>
           <tbody id="attStatsTbody">
@@ -621,8 +622,12 @@
         <div>
           <label style="display: block; font-size: 12px; color: var(--text-lo); margin-bottom: 4px;">วันที่ลา (ปฏิทิน)</label>
           <input type="date" id="leaveDate" class="form-control">
+          </div>
+          <div style="grid-column: 1 / -1; margin-top: 10px;">
+            <label style="display: block; font-size: 12px; color: var(--text-lo); margin-bottom: 4px;">เหตุผลการลา <span style="color:var(--danger);">*</span></label>
+            <input type="text" id="leaveReason" class="form-control" placeholder="ระบุเหตุผลที่ขอลา (บังคับใส่)">
+          </div>
         </div>
-      </div>
       <button class="btn-primary" id="btnSubmitLeave" onclick="submitLeave()">บันทึกการลา</button>
     </div>
 
@@ -636,7 +641,9 @@
               <th>วัน</th>
               <th>ชื่อตัวละคร</th>
               <th>อาชีพ</th>
-              <th style="width: 60px;">จัดการ</th>
+                <th>ผู้แจ้งลา</th>
+                <th>เหตุผล</th>
+                <th style="width: 60px;">จัดการ</th>
             </tr>
           </thead>
           <tbody id="leaveListTbody">

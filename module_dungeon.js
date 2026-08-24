@@ -48,10 +48,10 @@ window.bookDungeonQueue = function() {
     const job = document.getElementById('dqClass').value;
     
     // Check absent count
-    if (window.getUserAbsentCount) {
-        const absentCount = window.getUserAbsentCount(name);
-        if (absentCount >= 2) {
-            alert("❌ ไม่มีสิทธิ์จองคิวลงดันเจี้ยน!\n\n(ขาดวอ " + absentCount + " ครั้ง)\n\nเพื่อปลดโทษ กรุณาเข้าร่วมกิจกรรมทุกครั้ง และหากไม่สะดวกให้แจ้งลาวอพร้อมเหตุผล");
+    if (window.getUserScore) {
+        const score = window.getUserScore(name);
+        if (score <= -2) {
+            alert("❌ ไม่มีสิทธิ์จองคิวลงดันเจี้ยน!\n\n(คะแนนกิจกรรม: " + score + " คะแนน)\n\nเพื่อปลดโทษ กรุณาทำคะแนนให้มากกว่าหรือเท่ากับ 0 โดยการเข้าร่วมกิจกรรม");
             return;
         }
     }

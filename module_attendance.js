@@ -490,21 +490,70 @@ window.updateAttendanceStatus = function(dateStr, name, status) {
 };
 
 window.renderAttendanceStats = function() {
-  const tbody = document.getElementById('attStatsTbody');
-  if (!tbody) return;
+    const tbody = document.getElementById('attStatsTbody');
+    if (!tbody) return;
+    
+    const searchInput = document.getElementById('attStatsSearch');
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    
+    const statsMap = {};
+    let datesCount = 0;
+    
+    const aggregate = (datesObj) => {
+        if (!datesObj) return;
+        const keys = Object.keys(datesObj);
+        datesCount += keys.length;
+        keys.forEach(d => {
+            let weight = 1;
+            if (d.includes('อังคาร')) weight = 1;
+            else if (d.includes('พฤหัส')) weight = 1;
+            else if (d.includes('อาทิตย์')) weight = 2;
+            
+            const dayData = datesObj[d];
+            Object.keys(dayData).forEach(name => {
+                const status = dayData[name];
+                if (!statsMap[name]) statsMap[name] = { joined: 0, leave: 0, absent: 0, score: 0 };
+                if (status === 'attended') { statsMap[name].joined++; statsMap[name].score += weight; }
+                if (status === 'leave') { statsMap[name].leave++; }
+                if (status === 'absent') { statsMap[name].absent++; statsMap[name].score -= weight; }
+            });
+        });
+    };
+    
+    aggregate(window.attendanceData.dates);
+    aggregate(window.attendanceData.archived);
+    
+    let allMembers = [];
+    if (window.guildRoster) {
+      Object.keys(window.guildRoster).forEach(function(job) {
+        window.guildRoster[job].forEach(function(m) {
+          allMembers.push({ name: m.name, job: job, power: m.power || 0 });
+        });
+      });
+    }
   
-  const searchInput = document.getElementById('attStatsSearch');
-  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    allMembers.sort(function(a,b) { return b.power - a.power; });
+    if (query) allMembers = allMembers.filter(function(m) { return m.name.toLowerCase().includes(query); });
   
-  // Aggregate stats
-  const statsMap = {}; // { name: { joined:0, leave:0, absent:0 } }
-  const dates = Object.keys(window.attendanceData.dates);
-  
-  dates.forEach(d => {
-    const dayData = window.attendanceData.dates[d];
-    Object.keys(dayData).forEach(name => {
-      const status = dayData[name];
-      if (!statsMap[name]) statsMap[name] = { joined: 0, leave: 0, absent: 0 };
+    let html = '';
+    allMembers.forEach(function(m, i) {
+      const s = statsMap[m.name] || { joined: 0, leave: 0, absent: 0, score: 0 };
+      const total = datesCount;
+      const pct = total > 0 ? Math.round((s.joined / total) * 100) : 0;
+      const eName = window.escapeHtml ? window.escapeHtml(m.name) : m.name;
+      html += '<tr>' +
+        '<td class="cell-rank">' + (i+1) + '</td>' +
+        '<td>' + eName + '</td>' +
+        '<td style="text-align:center; font-weight: 600; color:' + (window.JOB_COLORS && window.JOB_COLORS[m.job] ? window.JOB_COLORS[m.job] : 'var(--text-hi)') + ';">' + m.job + '</td>' +
+        '<td style="text-align:center; color:var(--ok)">' + s.joined + '</td>' +
+        '<td style="text-align:center; color:var(--warn)">' + s.leave + '</td>' +
+        '<td style="text-align:center; color:var(--danger)">' + s.absent + '</td>' +
+        '<td style="text-align:center; font-weight:bold; color:var(--blue-600)">' + s.score + '</td>' +
+        '<td style="text-align:center;">' + pct + '%</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-lo);">ไม่มีข้อมูลสถิติ</td></tr>';
+};
       if (status === 'attended') statsMap[name].joined++;
       if (status === 'leave') statsMap[name].leave++;
       if (status === 'absent') statsMap[name].absent++;
@@ -693,20 +742,34 @@ function showGlobalDropdown(inputEl, filterText = '') {
   }
 })();
 
-window.getUserAbsentCount = function(username) {
+
+window.getUserScore = function(username) {
     if (!window.attendanceData) return 0;
-    let joined = 0, leave = 0, absent = 0;
+    let score = 0;
     
-    const countStats = (datesObj) => {
+    const calculateStats = (datesObj) => {
         if (!datesObj) return;
-        Object.values(datesObj).forEach(dayData => {
-            const status = dayData[username];
-            if (status === 'attended') joined++;
-            if (status === 'leave') leave++;
-            if (status === 'absent') absent++;
+        Object.keys(datesObj).forEach(dateStr => {
+            const status = datesObj[dateStr][username];
+            if (!status) return;
+            
+            let weight = 1;
+            if (dateStr.includes('อังคาร')) weight = 1;
+            else if (dateStr.includes('พฤหัส')) weight = 1;
+            else if (dateStr.includes('อาทิตย์')) weight = 2;
+            
+            if (status === 'attended') score += weight;
+            else if (status === 'absent') score -= weight;
         });
     };
     
+    calculateStats(window.attendanceData.dates);
+    calculateStats(window.attendanceData.archived);
+    
+    return score;
+};
+window.getUserAbsentCount = window.getUserScore; // alias so we don't break existing calls that expect an integer, but now it's a score! Wait, no, getUserAbsentCount was expected to be a positive number of absences. Let's make sure app.js and dungeon.js use getUserScore.
+
     countStats(window.attendanceData.dates);
     countStats(window.attendanceData.archived);
     
