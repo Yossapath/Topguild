@@ -1808,7 +1808,7 @@ function initApp() {
 
   const modalDeleteBtn = document.getElementById('btnDeleteMemberModal');
   if (modalDeleteBtn) {
-    modalDeleteBtn.addEventListener('click', () => {
+    modalDeleteBtn.addEventListener('click', async () => {
       const origName = document.getElementById('editOriginalName').value;
       const job = document.getElementById('modalMemberJob').value;
       if (origName) {
@@ -1860,7 +1860,7 @@ function initApp() {
   }
 
   if (btnRunAutoModal) {
-    btnRunAutoModal.addEventListener('click', () => {
+    btnRunAutoModal.addEventListener('click', async () => {
       const raw = customMainListText ? customMainListText.value : '';
       const parsedNames = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 

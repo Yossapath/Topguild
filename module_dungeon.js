@@ -42,7 +42,7 @@ async function saveDungeonState() {
     await setDoc(dungRef, dungeonData);
 }
 
-window.bookDungeonQueue = function() {
+window.bookDungeonQueue = async function() {
   if (!window.currentUser) return window.showToast("กรุณาเข้าสู่ระบบ", "error");
   const name = document.getElementById('dqName').value.trim();
     const job = document.getElementById('dqClass').value;
@@ -209,7 +209,7 @@ window.addDungeonTeam = function(dungeonName, capacity) {
   saveDungeonState();
 };
 
-window.deleteDungeonTeam = function(id) {
+window.deleteDungeonTeam = async function(id) {
   if (!window.currentUser || !window.isUserAdmin()) return;
   if (await window.UI.confirm("คุณต้องการลบทีมนี้ใช่หรือไม่?")) {
     const t = dungeonData.teams.find(x => x.id === id);
