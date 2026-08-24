@@ -467,7 +467,7 @@ window.renderAttendanceTable = function() {
        <td style="text-align:center; font-weight: 600; color:${window.JOB_COLORS && window.JOB_COLORS[m.job] ? window.JOB_COLORS[m.job] : "var(--text-hi)"};">${m.job}</td>
          <td style="text-align:center;"><small style="color:var(--text-lo)">${m.power}</small></td>
        <td style="text-align:center;">
-         <select class="form-control" style="width:100%; min-width:100px; padding:4px;" ${isAdmin ? '' : 'disabled'} onchange="updateAttendanceStatus('${selectedDate}', '${escapedName}', this.value)">
+         <select class="form-control" style="width:100%; min-width:100px; padding:4px;" ${isAdmin ? '' : 'disabled'} data-date="${selectedDate}" data-name="${escapedName}" onchange="updateAttendanceStatus(this.dataset.date, this.dataset.name, this.value)">
            <option value="none" ${!status || status === 'none' ? 'selected' : ''}>--- เว้นว่าง ---</option>
            <option value="attended" ${status === 'attended' ? 'selected' : ''}>เข้าร่วม</option>
            <option value="absent" ${status === 'absent' ? 'selected' : ''}>ขาด</option>
