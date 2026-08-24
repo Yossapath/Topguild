@@ -157,9 +157,11 @@ window.cancelLeave = async function(leaveId) {
 
 function renderLeaveList() {
   const tbody = document.getElementById('leaveListTbody');
+  const historyTbody = document.getElementById('leaveHistoryTbody');
   if (!tbody) return;
 
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : '';
+  const isAdmin = window.isUserAdmin();
 
   // Sort by date desc
   const sorted = [...window.leaveData].sort((a,b) => b.timestamp - a.timestamp);
@@ -176,25 +178,42 @@ function renderLeaveList() {
     'Sunday': 'อาทิตย์ (21:00)'
   };
 
-  if (displayed.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-lo);">ไม่มีรายการแจ้งลา</td></tr>';
-    return;
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+
+  const upcomingLeaves = [];
+  const pastLeaves = [];
+
+  displayed.forEach(l => {
+    if (l.date && l.date < todayStr) {
+      pastLeaves.push(l);
+    } else {
+      upcomingLeaves.push(l);
+    }
+  });
+
+  function generateRows(list) {
+    if (list.length === 0) {
+      return '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-lo);">ไม่มีรายการแจ้งลา</td></tr>';
+    }
+    return list.map(l => {
+      const eName = window.escapeHtml ? window.escapeHtml(l.name) : l.name;
+      const dayLabel = dayLabels[l.day] || l.day;
+      return '<tr>' +
+        '<td>' + (l.date || '-') + '</td>' +
+        '<td>' + dayLabel + '</td>' +
+        '<td>' + eName + '</td>' +
+        '<td>' + (l.job || '-') + '</td>' +
+        '<td>' + (l.submittedBy || '-') + '</td>' +
+        '<td>' + window.escapeHtml(l.reason || '-') + '</td>' +
+        '<td style="text-align:center;"><button onclick="cancelLeave(\'' + l.id + '\')" style="background:var(--danger-light);color:var(--danger);border:1px solid var(--danger);padding:2px 8px;border-radius:6px;cursor:pointer;font-size:12px;">ยกเลิก</button></td>' +
+        '</tr>';
+    }).join('');
   }
 
-  tbody.innerHTML = displayed.map(l => {
-    const eName = window.escapeHtml ? window.escapeHtml(l.name) : l.name;
-    const dayLabel = dayLabels[l.day] || l.day;
-    return '<tr>' +
-      '<td>' + (l.date || '-') + '</td>' +
-      '<td>' + dayLabel + '</td>' +
-      '<td>' + eName + '</td>' +
-      '<td>' + (l.job || '-') + '</td>' +
-        
-        '<td>' + window.escapeHtml(l.reason || '-') + '</td>' +
-      '<td>' + (l.submittedBy || '-') + '</td>' +
-      '<td style="text-align:center;"><button onclick="cancelLeave(\'' + l.id + '\')" style="background:var(--danger-light);color:var(--danger);border:1px solid var(--danger);padding:2px 8px;border-radius:6px;cursor:pointer;font-size:12px;">ยกเลิก</button></td>' +
-      '</tr>';
-  }).join('');
+  tbody.innerHTML = generateRows(upcomingLeaves);
+  if (historyTbody) {
+    historyTbody.innerHTML = generateRows(pastLeaves);
+  }
 }
 
 // ==========================================
