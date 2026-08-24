@@ -32,7 +32,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
     // ---- RESTORE LOG ITEM ----
     window.restoreLogItem = async function(category, logId, logStr) {
       if (!window.db) return;
-      if (!confirm('ยืนยันการกู้คืนข้อมูลรายการนี้?')) return;
+      if (!await window.UI.confirm('ยืนยันการกู้คืนข้อมูลรายการนี้?')) return;
       try {
         const log = JSON.parse(decodeURIComponent(logStr));
         if (!log.rollbackData) return window.showToast('ไม่มีข้อมูลสำหรับกู้คืน', 'error');
@@ -109,7 +109,7 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
     // ---- RESTORE BACKUP ----
     window.restoreDungeonBackup = async function(backupId, backupDataStr) {
       if (!window.db) return;
-      if (!confirm('คำเตือน! ยืนยันการกู้คืนข้อมูลทีมและคิวทั้งหมด? ข้อมูลปัจจุบันจะถูกแทนที่ด้วย Backup ชุดนี้')) return;
+      if (!await window.UI.confirm('คำเตือน! ยืนยันการกู้คืนข้อมูลทีมและคิวทั้งหมด? ข้อมูลปัจจุบันจะถูกแทนที่ด้วย Backup ชุดนี้')) return;
       try {
         const backupData = JSON.parse(decodeURIComponent(backupDataStr));
         const dungRef = doc(window.db, 'guild_system', 'dungeons');

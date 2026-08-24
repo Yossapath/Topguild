@@ -134,9 +134,9 @@ window.processBulkImportAttendance = function() {
       }
 };
 
-window.autoGenerateAttendance = function() {
+window.autoGenerateAttendance = async function() {
   if (!window.currentUser || !window.isUserAdmin()) return;
-  if (!confirm('ต้องการสร้างตารางเช็คชื่อสำหรับ อังคาร พฤหัส อาทิตย์ ของสัปดาห์นี้อัตโนมัติหรือไม่?')) return;
+  if (!await window.UI.confirm('ต้องการสร้างตารางเช็คชื่อสำหรับ อังคาร พฤหัส อาทิตย์ ของสัปดาห์นี้อัตโนมัติหรือไม่?')) return;
   
   const today = new Date();
   const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, ... 6 = Saturday
@@ -189,7 +189,7 @@ window.autoGenerateAttendance = function() {
 window.createAttendanceDate = function() {
   if (!window.currentUser || !window.isUserAdmin()) return;
   const today = new Date().toISOString().split('T')[0];
-  const dateStr = prompt("ระบุวันที่สำหรับการเช็คชื่อ (YYYY-MM-DD):", today);
+  const dateStr = await window.UI.prompt("ระบุวันที่สำหรับการเช็คชื่อ (YYYY-MM-DD):", today);
   if (!dateStr) return;
   
   if (!window.attendanceData.dates[dateStr]) {
@@ -306,14 +306,14 @@ window.exportAbsentUsers = function() {
     window.showToast('ส่งออกรายชื่อคนขาด ' + absentNames.length + ' คนสำเร็จ', 'success');
 };
 
-window.archiveAttendanceDate = function() {
+window.archiveAttendanceDate = async function() {
     if (!window.currentUser || !window.isUserAdmin()) return;
     const select = document.getElementById('attendanceDateSelect');
     if (!select) return;
     const dateStr = select.value;
     if (!dateStr) return;
     
-    if (confirm('คุณต้องการจัดเก็บข้อมูลเช็คชื่อของวันที่ ' + dateStr + ' ลงประวัติหรือไม่?\n(ข้อมูลจะถูกเก็บไว้ใช้คำนวณบทลงโทษต่อ แต่จะไม่แสดงในหน้านี้แล้ว)')) {
+    if (await window.UI.confirm('คุณต้องการจัดเก็บข้อมูลเช็คชื่อของวันที่ ' + dateStr + ' ลงประวัติหรือไม่?\n(ข้อมูลจะถูกเก็บไว้ใช้คำนวณบทลงโทษต่อ แต่จะไม่แสดงในหน้านี้แล้ว)')) {
       if (!window.attendanceData.archived) window.attendanceData.archived = {};
         const dayDataToArchive = window.attendanceData.dates[dateStr];
         if (window.guildRoster) {

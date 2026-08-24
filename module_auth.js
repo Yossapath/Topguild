@@ -114,7 +114,7 @@ window.handleLogin = async function() {
     }
     const data = snap.data();
     if (data.password !== p) {
-      alert("รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง");
+      await window.UI.alert("รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง");
         window.showToast("รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง", "error");
       setBtnState(false);
       return;
@@ -151,7 +151,7 @@ window.handleRegister = async function() {
     const userRef = doc(window.db, 'users', uLower);
     const snap = await getDoc(userRef);
     if (snap.exists()) {
-      alert("สมัครล้มเหลว: Username นี้มีคนใช้งานแล้ว!");
+      await window.UI.alert("สมัครล้มเหลว: Username นี้มีคนใช้งานแล้ว!");
         window.showToast("Username นี้ถูกใช้งานแล้ว", "error");
       return;
     }
@@ -163,7 +163,7 @@ window.handleRegister = async function() {
       role: 'member'
     });
 
-    alert("สมัครสมาชิกสำเร็จ! กำลังพากลับไปยังหน้าเข้าสู่ระบบ");
+    await window.UI.alert("สมัครสมาชิกสำเร็จ! กำลังพากลับไปยังหน้าเข้าสู่ระบบ");
       window.showToast("สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ", "success");
     document.getElementById('regUsername').value = '';
     document.getElementById('regJob').value = '';
@@ -172,7 +172,7 @@ window.handleRegister = async function() {
       window.toggleAuthMode('login');
     }
   } catch (err) {
-    alert("เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่");
+    await window.UI.alert("เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่");
       window.showToast("เกิดข้อผิดพลาดในการสมัครสมาชิก", "error");
     console.error(err);
   }
@@ -384,7 +384,7 @@ window.updateAccountRole = async function(docId, newRole) {
 };
 
 window.deleteAccount = async function(docId) {
-  if (!confirm('ยืนยันการลบบัญชีผู้ใช้นี้? จะไม่สามารถกู้คืนได้')) return;
+  if (!await window.UI.confirm('ยืนยันการลบบัญชีผู้ใช้นี้? จะไม่สามารถกู้คืนได้')) return;
   if (!window.db) return;
   try {
     await deleteDoc(doc(window.db, 'users', docId));

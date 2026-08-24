@@ -1048,7 +1048,7 @@ function saveMemberFromModal(origName, name, job, power, fieldPref = 'any') {
   console.log(`[Member DB Log] Update Name: ${name}, fieldPref: ${fieldPref}`);
 }
 
-function deleteMember(job, name, triggerSave = true) {
+async function deleteMember(job, name, triggerSave = true) {
   Object.keys(guildRoster).forEach(j => {
     guildRoster[j] = (guildRoster[j] || []).filter(m => m.name.toLowerCase() !== name.toLowerCase());
   });
@@ -1196,7 +1196,7 @@ window.closeAutoMatchModal = function() {
 };
 
 /* Custom Guild Team Optimization Algorithm */
-function autoOptimizeTeams(customMainNames = null, mode = 'both') {
+async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
   const masterList = getMasterMemberList();
 
   if (mode === 'both') {
@@ -1292,7 +1292,7 @@ function autoOptimizeTeams(customMainNames = null, mode = 'both') {
 
     // Validation: Check if Priests in Main Field names are sufficient
     if (mainPriests.length < neededPriests) {
-      const confirmProceed = confirm(`⚠️ Priest มีรายชื่อในสนามหลักไม่เพียงพอ\n(ต้องการอย่างน้อย ${neededPriests} คนสำหรับสนามหลัก แต่พบในรายชื่อเพียง ${mainPriests.length} คน)\n\nคุณต้องการยืนยันจัดทีมต่อไปหรือไม่?`);
+      const confirmProceed = await window.UI.confirm(`⚠️ Priest มีรายชื่อในสนามหลักไม่เพียงพอ\n(ต้องการอย่างน้อย ${neededPriests} คนสำหรับสนามหลัก แต่พบในรายชื่อเพียง ${mainPriests.length} คน)\n\nคุณต้องการยืนยันจัดทีมต่อไปหรือไม่?`);
       if (!confirmProceed) {
         return false; // Abort operation
       }
@@ -1434,8 +1434,8 @@ function autoOptimizeTeams(customMainNames = null, mode = 'both') {
 }
 
 /* Clear All Main Field Teams */
-function clearMainFieldTeams() {
-  if (!confirm("⚠️ คุณต้องการล้างสมาชิกสนามหลักทั้งหมด (12 ทีม) ใช่หรือไม่?\n(สมาชิกทั้งหมดจะถูกคืนกลับเข้าสู่ลิสต์ส่วนกลาง)")) {
+async function clearMainFieldTeams() {
+  if (!await window.UI.confirm("⚠️ คุณต้องการล้างสมาชิกสนามหลักทั้งหมด (12 ทีม) ใช่หรือไม่?\n(สมาชิกทั้งหมดจะถูกคืนกลับเข้าสู่ลิสต์ส่วนกลาง)")) {
     return;
   }
 
@@ -1460,8 +1460,8 @@ function clearMainFieldTeams() {
 }
 
 /* Clear All Sub Field Teams */
-function clearSubFieldTeams() {
-  if (!confirm("⚠️ คุณต้องการล้างสมาชิกสนามรองทั้งหมดใช่หรือไม่?\n(สมาชิกทั้งหมดจะถูกคืนกลับเข้าสู่ลิสต์ส่วนกลาง)")) {
+async function clearSubFieldTeams() {
+  if (!await window.UI.confirm("⚠️ คุณต้องการล้างสมาชิกสนามรองทั้งหมดใช่หรือไม่?\n(สมาชิกทั้งหมดจะถูกคืนกลับเข้าสู่ลิสต์ส่วนกลาง)")) {
     return;
   }
 
@@ -1538,7 +1538,7 @@ function warpToFoundTeam() {
   }
 }
 
-function handleTeamSearch() {
+async function handleTeamSearch() {
   const inputEl = document.getElementById('teamSearchInput');
   const resultEl = document.getElementById('teamSearchResult');
   if (!inputEl || !resultEl) return;
@@ -1692,7 +1692,7 @@ function addNewTeam() {
   showToast(`เพิ่ม "${newTeamName}" (5 คน) ใน${fieldTitle}เรียบร้อยแล้ว!`, 'success');
 }
 
-function removeSpecificTeam(targetTeamName) {
+async function removeSpecificTeam(targetTeamName) {
   const fm = fieldMeta[currentFieldIdx];
   if (!fm || !fm.teamNames || fm.teamNames.length === 0) return;
 
@@ -1703,7 +1703,7 @@ function removeSpecificTeam(targetTeamName) {
 
   const fieldTitle = fm.isMain ? "สนามหลัก" : "สนามรอง";
 
-  if (confirm(`คุณต้องการลบ "${targetTeamName}" (พร้อมสมาชิกในทีมนี้) ออกจาก${fieldTitle}ใช่หรือไม่?`)) {
+  if (await window.UI.confirm(`คุณต้องการลบ "${targetTeamName}" (พร้อมสมาชิกในทีมนี้) ออกจาก${fieldTitle}ใช่หรือไม่?`)) {
     const cap = fm.capacity[targetTeamName] || 5;
 
     for (let i = 0; i < cap; i++) {
@@ -1724,7 +1724,7 @@ function removeSpecificTeam(targetTeamName) {
   }
 }
 
-function removeLastTeam() {
+async function removeLastTeam() {
   const fm = fieldMeta[currentFieldIdx];
   if (!fm || !fm.teamNames || fm.teamNames.length === 0) return;
   const sortedNames = sortTeamNames(fm.teamNames);
@@ -1812,7 +1812,7 @@ function initApp() {
       const origName = document.getElementById('editOriginalName').value;
       const job = document.getElementById('modalMemberJob').value;
       if (origName) {
-        if (confirm(`คุณต้องการลบสมาชิก "${origName}" ออกจากกิลด์ใช่หรือไม่?`)) {
+        if (await window.UI.confirm(`คุณต้องการลบสมาชิก "${origName}" ออกจากกิลด์ใช่หรือไม่?`)) {
           deleteMember(job, origName);
           closeMemberModal();
         }
@@ -1865,7 +1865,7 @@ function initApp() {
       const parsedNames = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 
       if (parsedNames.length === 0) {
-        alert('กรุณาวางหรือระบุรายชื่อตัวละครสนามหลักอย่างน้อย 1 ชื่อ');
+        await window.UI.alert('กรุณาวางหรือระบุรายชื่อตัวละครสนามหลักอย่างน้อย 1 ชื่อ');
         return;
       }
 
@@ -2012,8 +2012,8 @@ function handleDisconnectFirebase() {
   showToast("ยกเลิกการเชื่อมต่อ Firebase แล้ว", "info");
 }
 
-function handleSeedDefaultData() {
-  if (confirm("คุณต้องการโหลดข้อมูลเริ่มต้น (Default Guild Data) มาแทนที่ข้อมูลปัจจุบันใช่หรือไม่?")) {
+async function handleSeedDefaultData() {
+  if (await window.UI.confirm("คุณต้องการโหลดข้อมูลเริ่มต้น (Default Guild Data) มาแทนที่ข้อมูลปัจจุบันใช่หรือไม่?")) {
     guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
     initTeamStructure(INITIAL_TEAMS);
     renderAll();
@@ -2040,8 +2040,8 @@ function handleImportJSON() {
   if (importInput) importInput.click();
 }
 
-function handleClearAllData() {
-  if (confirm("⚠️ คำเตือน: คุณต้องการลบข้อมูลสมาชิกและการจัดทีมทั้งหมดใช่หรือไม่?")) {
+async function handleClearAllData() {
+  if (await window.UI.confirm("⚠️ คำเตือน: คุณต้องการลบข้อมูลสมาชิกและการจัดทีมทั้งหมดใช่หรือไม่?")) {
     guildRoster = {};
     initTeamStructure([]);
     renderAll();

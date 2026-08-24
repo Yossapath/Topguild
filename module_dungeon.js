@@ -51,7 +51,7 @@ window.bookDungeonQueue = function() {
     if (window.getUserScore) {
         const score = window.getUserScore(name);
         if (score <= -2) {
-            alert("❌ ไม่มีสิทธิ์จองคิวลงดันเจี้ยน!\n\n(คะแนนกิจกรรม: " + score + " คะแนน)\n\nเพื่อปลดโทษ กรุณาทำคะแนนให้มากกว่าหรือเท่ากับ 0 โดยการเข้าร่วมกิจกรรม");
+            await window.UI.alert("❌ ไม่มีสิทธิ์จองคิวลงดันเจี้ยน!\n\n(คะแนนกิจกรรม: " + score + " คะแนน)\n\nเพื่อปลดโทษ กรุณาทำคะแนนให้มากกว่าหรือเท่ากับ 0 โดยการเข้าร่วมกิจกรรม");
             return;
         }
     }
@@ -97,8 +97,8 @@ window.deleteDungeonQueue = function(id) {
 };
 
 
-window.clearDungeonTeam = function(teamId) {
-  if (!confirm("ยืนยันว่าทีมนี้ลงดันเจี้ยนสำเร็จ และต้องการเคลียร์รายชื่อทั้งหมด?")) return;
+window.clearDungeonTeam = async function(teamId) {
+  if (!await window.UI.confirm("ยืนยันว่าทีมนี้ลงดันเจี้ยนสำเร็จ และต้องการเคลียร์รายชื่อทั้งหมด?")) return;
   const t = dungeonData.teams.find(x => x.id === teamId);
   if (t) {
     const memberNames = (t.members || []).filter(m => m && m.name).map(m => m.name);
@@ -211,7 +211,7 @@ window.addDungeonTeam = function(dungeonName, capacity) {
 
 window.deleteDungeonTeam = function(id) {
   if (!window.currentUser || !window.isUserAdmin()) return;
-  if (confirm("คุณต้องการลบทีมนี้ใช่หรือไม่?")) {
+  if (await window.UI.confirm("คุณต้องการลบทีมนี้ใช่หรือไม่?")) {
     const t = dungeonData.teams.find(x => x.id === id);
     if (window.backupDungeonData) window.backupDungeonData('ก่อนลบทีม: ' + (t ? t.dungeonName || t.type : id));
     if (window.writeSystemLog) window.writeSystemLog('dungeon', 'DELETE_TEAM', '', t ? t.type : '', 'ลบทีมดันเจี้ยน: ' + (t ? t.dungeonName : ''), null);

@@ -149,7 +149,7 @@ window.cancelLeave = async function(leaveId) {
     return window.showToast('คุณไม่มีสิทธิ์ยกเลิกการลาของคนอื่น', 'error');
   }
 
-  if (!confirm('ยืนยันการยกเลิกการแจ้งลา?')) return;
+  if (!await window.UI.confirm('ยืนยันการยกเลิกการแจ้งลา?')) return;
   window.leaveData = window.leaveData.filter(l => l.id !== leaveId);
   await saveLeaveState();
   window.showToast('ยกเลิกการลาเรียบร้อยแล้ว', 'success');
