@@ -31,7 +31,8 @@ window.setupLeaveFirebase = async function() {
       if (snapshot.exists()) {
         const d = snapshot.data();
         window.leaveData = d.leaves || [];
-        renderLeaveList();
+          renderLeaveList();
+          if (typeof window.renderAll === 'function') window.renderAll();
       }
     });
     
@@ -79,7 +80,7 @@ function fillLeaveForm() {
     if (window.guildRoster) {
       Object.keys(window.guildRoster).forEach(job => {
         const found = (window.guildRoster[job] || []).find(
-          m => m.name && m.name.toLowerCase() === window.currentUser.username.toLowerCase()
+          m => m.name && m.name?.toLowerCase() === window.currentUser.username?.toLowerCase()
         );
         if (found) { charName = found.name; charJob = job; }
       });
@@ -147,19 +148,19 @@ window.submitLeave = async function() {
     if (window.guildRoster) {
       Object.keys(window.guildRoster).forEach(job => {
         const found = (window.guildRoster[job] || []).find(
-          m => m.name && m.name.toLowerCase() === window.currentUser.username.toLowerCase()
+          m => m.name && m.name?.toLowerCase() === window.currentUser.username?.toLowerCase()
         );
         if (found) myCharName = found.name;
       });
     }
-    if (!myCharName || myCharName.toLowerCase() !== name.toLowerCase()) {
+    if (!myCharName || myCharName?.toLowerCase() !== name?.toLowerCase()) {
       return window.showToast('คุณสามารถแจ้งลาได้เฉพาะชื่อตัวละครของตัวเองเท่านั้น', 'error');
     }
   }
 
   // Check for duplicate leave
   const isDup = window.leaveData.some(l =>
-    l.name.toLowerCase() === name.toLowerCase() && l.day === day && l.date === date
+    l.name?.toLowerCase() === name?.toLowerCase() && l.day === day && l.date === date
   );
   if (isDup) return window.showToast('คุณได้แจ้งลาวันนี้และรอบนี้ไว้แล้ว', 'warning');
 
@@ -252,7 +253,7 @@ function renderLeaveList() {
   const tbody = document.getElementById('leaveListTbody');
   if (!tbody) return;
 
-  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : '';
+  const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '')?.toLowerCase() : '';
   const isAdmin = window.isUserAdmin();
 
   // Sort by date desc

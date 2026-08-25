@@ -98,7 +98,7 @@ window.processBulkImportAttendance = function() {
         if (window.guildRoster) {
             Object.keys(window.guildRoster).forEach(job => {
                 window.guildRoster[job].forEach(m => {
-                    if (m.name.toLowerCase() === rawName.toLowerCase()) {
+                    if (m.name?.toLowerCase() === rawName?.toLowerCase()) {
                         window.attendanceData.dates[dateStr][m.name] = 'attended';
                         found = true;
                         matchCount++;
@@ -404,7 +404,7 @@ window.renderAttendanceTable = function() {
   const btnArchive = document.getElementById('btnArchiveAttendanceDate');
     const btnExport = document.getElementById('btnExportAbsent');
     const btnImport = document.getElementById('btnImportAttendance');
-    const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '').toLowerCase() : ''; const isAdmin = window.isUserAdmin();
+    const userRole = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '')?.toLowerCase() : ''; const isAdmin = window.isUserAdmin();
     if (btnArchive) btnArchive.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
     if (btnExport) btnExport.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
     if (btnImport) btnImport.style.display = (isAdmin && selectedDate) ? 'inline-block' : 'none';
@@ -423,7 +423,7 @@ window.renderAttendanceTable = function() {
   allMembers.sort((a,b) => b.power - a.power);
   
   const searchInput = document.getElementById('attendanceSearch');
-  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  const query = searchInput ? searchInput.value?.toLowerCase().trim() : '';
   
   let html = '';
   let joinedCount = 0;
@@ -440,7 +440,7 @@ window.renderAttendanceTable = function() {
        let status = dayData[m.name] || 'none';
        
        if ((!status || status === 'none') && window.leaveData) {
-           const isLeave = window.leaveData.some(l => l.name.toLowerCase() === m.name.toLowerCase() && l.date === selectedDate);
+           const isLeave = window.leaveData.some(l => l.name?.toLowerCase() === m.name?.toLowerCase() && l.date === selectedDate);
            if (isLeave) {
                status = 'leave';
                dayData[m.name] = 'leave';
@@ -454,7 +454,7 @@ window.renderAttendanceTable = function() {
            needsSave = true;
        }
 
-       if (query && !m.name.toLowerCase().includes(query)) return;
+       if (query && !m.name?.toLowerCase()?.includes(query)) return;
      totalCount++;
      if (status === 'attended') joinedCount++;
      else if (status === 'leave') leaveCount++;
@@ -517,7 +517,7 @@ window.renderAttendanceStats = function() {
     const btnReset = document.getElementById('btnResetStats');
     if (btnReset) btnReset.style.display = (window.currentUser && window.isUserAdmin()) ? 'block' : 'none';
     const searchInput = document.getElementById('attStatsSearch');
-    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const query = searchInput ? searchInput.value?.toLowerCase().trim() : '';
     
     const statsMap = {};
     let datesCount = 0;
@@ -556,7 +556,7 @@ window.renderAttendanceStats = function() {
     }
   
     allMembers.sort(function(a,b) { return b.power - a.power; });
-    if (query) allMembers = allMembers.filter(function(m) { return m.name.toLowerCase().includes(query); });
+    if (query) allMembers = allMembers.filter(function(m) { return m.name?.toLowerCase()?.includes(query); });
   
     let html = '';
     allMembers.forEach(function(m, i) {
@@ -635,7 +635,7 @@ function showGlobalDropdown(inputEl, filterText = '') {
       
       allMembers = allMembers.filter(m => {
         if (requiredJob && m.job !== requiredJob) return false;
-        const lowerName = m.name.toLowerCase();
+        const lowerName = m.name?.toLowerCase();
         if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
           if (window.occupiedMap.get(lowerName) !== slotKey) return false;
         }
@@ -652,16 +652,16 @@ function showGlobalDropdown(inputEl, filterText = '') {
           t.members.forEach((m, idx) => {
             if (m && m.name) {
                if (t.id === teamId && idx === slotIdx) return; // Allow current occupant
-               inUseNames.add(m.name.toLowerCase());
+               inUseNames.add(m.name?.toLowerCase());
             }
           });
         }
       });
-      allMembers = allMembers.filter(m => !inUseNames.has(m.name.toLowerCase()));
+      allMembers = allMembers.filter(m => !inUseNames.has(m.name?.toLowerCase()));
     }
     
-    const val = filterText.toLowerCase();
-    const filtered = allMembers.filter(m => m.name.toLowerCase().includes(val));
+    const val = filterText?.toLowerCase();
+    const filtered = allMembers.filter(m => m.name?.toLowerCase()?.includes(val));
     
     if (filtered.length === 0) {
       dropdown.innerHTML = '<div style="padding: 10px; text-align:center; color:var(--text-lo); font-size: 13px;">ไม่พบชื่อตัวละคร</div>';

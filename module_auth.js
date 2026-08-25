@@ -39,7 +39,7 @@ async function checkAuth() {
     // Refresh user role from DB to be safe
     if (window.db) {
       try {
-        const snap = await getDoc(doc(window.db, 'users', window.currentUser.username.toLowerCase()));
+        const snap = await getDoc(doc(window.db, 'users', window.currentUser.username?.toLowerCase()));
         if (snap.exists()) {
           window.currentUser.role = snap.data().role || 'member';
           delete window.currentUser.password;
@@ -269,7 +269,7 @@ window.renderAdminUsers = function() {
 
   let filtered = cachedAdminUsers;
   if (term) {
-    filtered = filtered.filter(d => d.username && d.username.toLowerCase().includes(term));
+    filtered = filtered.filter(d => d.username && d.username?.toLowerCase()?.includes(term));
   }
 
   if (filtered.length === 0) {
@@ -281,7 +281,7 @@ window.renderAdminUsers = function() {
   let lastRole = null;
 
   filtered.forEach((d, index) => {
-    const isMe = window.currentUser && d.username && d.username.toLowerCase() === window.currentUser.username.toLowerCase();
+    const isMe = window.currentUser && d.username && d.username?.toLowerCase() === window.currentUser.username?.toLowerCase();
     const role = (d.role || 'member').toLowerCase();
     const roleColor = role === 'admin' ? '#eab308' : 'var(--blue-500)';
 
@@ -419,7 +419,7 @@ function showGlobalDropdown(inputEl, filterText = '') {
       const requiredJob = window.rowJobFilter ? window.rowJobFilter[slotKey] : '';
       allMembers = allMembers.filter(m => {
         if (requiredJob && m.job !== requiredJob) return false;
-        const lowerName = m.name.toLowerCase();
+        const lowerName = m.name?.toLowerCase();
         if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
           if (window.occupiedMap.get(lowerName) !== slotKey) return false;
         }
@@ -436,17 +436,17 @@ function showGlobalDropdown(inputEl, filterText = '') {
             t.members.forEach((m, idx) => {
               if (m && m.name) {
                 if (t.id === teamId && idx === slotIdx) return;
-                inUseNames.add(m.name.toLowerCase());
+                inUseNames.add(m.name?.toLowerCase());
               }
             });
           }
         });
       }
-      allMembers = allMembers.filter(m => !inUseNames.has(m.name.toLowerCase()));
+      allMembers = allMembers.filter(m => !inUseNames.has(m.name?.toLowerCase()));
     }
 
     const val = filterText.toLowerCase();
-    const filtered = allMembers.filter(m => m.name.toLowerCase().includes(val));
+    const filtered = allMembers.filter(m => m.name?.toLowerCase()?.includes(val));
 
     if (filtered.length === 0) {
       dropdown.innerHTML = '<div style="padding: 10px; text-align:center; color:var(--text-lo); font-size: 13px;">ไม่พบชื่อตัวละคร</div>';
