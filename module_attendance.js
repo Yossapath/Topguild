@@ -514,6 +514,8 @@ window.renderAttendanceStats = function() {
     const tbody = document.getElementById('attStatsTbody');
     if (!tbody) return;
     
+    const btnReset = document.getElementById('btnResetStats');
+    if (btnReset) btnReset.style.display = (window.currentUser && window.isUserAdmin()) ? 'block' : 'none';
     const searchInput = document.getElementById('attStatsSearch');
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
     
@@ -560,7 +562,7 @@ window.renderAttendanceStats = function() {
     allMembers.forEach(function(m, i) {
       const s = statsMap[m.name] || { joined: 0, leave: 0, absent: 0, score: 0 };
       const total = datesCount;
-      const pct = total > 0 ? Math.round((s.joined / total) * 100) : 0;
+      
       const eName = window.escapeHtml ? window.escapeHtml(m.name) : m.name;
       html += '<tr>' +
         '<td class="cell-rank">' + (i+1) + '</td>' +
@@ -570,7 +572,7 @@ window.renderAttendanceStats = function() {
         '<td style="text-align:center; color:var(--warn)">' + s.leave + '</td>' +
         '<td style="text-align:center; color:var(--danger)">' + s.absent + '</td>' +
         '<td style="text-align:center; font-weight:bold; color:var(--blue-600)">' + s.score + '</td>' +
-        '<td style="text-align:center;">' + pct + '%</td>' +
+        
         '</tr>';
     });
     tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-lo);">ไม่มีข้อมูลสถิติ</td></tr>';

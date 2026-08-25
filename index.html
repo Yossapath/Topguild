@@ -558,7 +558,10 @@
 
     <div id="attStatsView" style="display: none;">
       <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin:0; color:var(--text-hi);">สถิติการเช็คชื่อทั้งหมด</h3>
+        <div style="display:flex; align-items:center; gap:12px;">
+    <h3 style="margin:0; color:var(--text-hi);">สถิติการเช็คชื่อทั้งหมด</h3>
+    <button id="btnResetStats" class="btn-danger" style="display:none; padding:4px 8px; font-size:11px;" onclick="if(confirm('ยืนยันล้างข้อมูลสถิติ (เซ็ตเป็น 0 ทั้งหมด) หรือไม่?')) { window.attendanceData.dates = {}; window.attendanceData.archived = {}; window.saveAttendanceState(); window.renderAttendanceStats(); window.showToast('ล้างข้อมูลเรียบร้อย', 'success'); }">ล้างข้อมูลสถิติ</button>
+  </div>
         <input type="text" id="attStatsSearch" class="form-control" placeholder="ค้นหารายชื่อ..." style="max-width: 250px;" onkeyup="window.renderAttendanceStats()">
       </div>
       <div style="background: var(--surface); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; overflow-x: auto;">
@@ -572,7 +575,7 @@
                 <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--warn);">🟡 ลา</th>
                 <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--danger);">🔴 ขาด</th>
                   <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--blue-900);">⭐ คะแนน</th>
-                  <th style="padding: 12px 16px; text-align: center; font-family: var(--font-display); color: var(--blue-900);">% มา</th>
+                  
             </tr>
           </thead>
           <tbody id="attStatsTbody">

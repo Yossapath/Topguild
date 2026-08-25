@@ -56,8 +56,15 @@ window.bookDungeonQueue = async function() {
         }
     }
   const dungeon = document.getElementById('dqDungeon').value;
-  
-  if (!name || !job || !dungeon) return window.showToast("กรุณากรอกข้อมูลให้ครบถ้วน", "warning");
+    
+    if (!name || !job || !dungeon) return window.showToast("กรุณากรอกข้อมูลให้ครบถ้วน", "warning");
+
+    const isAlreadyInQueue = dungeonData.queues.some(q => q.name.toLowerCase() === name.toLowerCase() && q.dungeon === dungeon);
+    const isAlreadyInTeam = dungeonData.teams.some(t => t.dungeon === dungeon && t.members && t.members.some(m => m && m.name.toLowerCase() === name.toLowerCase()));
+    
+    if (isAlreadyInQueue || isAlreadyInTeam) {
+      return window.showToast("คุณได้ทำการจองคิวหรืออยู่ในทีมของดันเจี้ยนนี้ไปแล้ว", "error");
+    }
 
   // Get power from roster
   let power = 0;
