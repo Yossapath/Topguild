@@ -95,9 +95,10 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
       if (!window.db || !window.dungeonData) return;
       try {
         const snap = JSON.parse(JSON.stringify(window.dungeonData));
-        const backupRef = collection(window.db, 'guild_dungeon_backups');
+        const backupDocId = 'backup_' + Date.now().toString();
+        const backupRef = doc(window.db, 'guild_dungeon_backups', backupDocId);
         const actor = window.currentUser ? (window.currentUser.name || window.currentUser.username || 'System') : 'System';
-        await addDoc(backupRef, {
+        await setDoc(backupRef, {
           timestamp: Date.now(),
           actor: actor,
           reason: reason,
@@ -155,7 +156,48 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
       }
 
       try {
-        if (tab === 'dungeon' || tab === 'leave') {
+        if (tab === 'leave') {
+          let docs = window.leaveHistoryData || [];
+          docs.sort((a,b) => b.timestamp - a.timestamp);
+          if (searchText) {
+             docs = docs.filter(l => (l.name||'').toLowerCase().includes(searchText) || (l.reason||'').toLowerCase().includes(searchText));
+          }
+          const dayLabels = { 'Tuesday': 'อังคาร', 'Thursday': 'พฤหัสบดี', 'Sunday': 'อาทิตย์' };
+          body.innerHTML = `
+            <div class="table-responsive">
+              <table class="team-table" style="width: 100%;">
+                <thead>
+                  <tr>
+                    <th>วันที่ลา</th>
+                    <th>วัน</th>
+                    <th>ชื่อตัวละคร</th>
+                    <th>อาชีพ</th>
+                    <th>ผู้แจ้งลา</th>
+                    <th>เหตุผล</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${docs.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-lo);">ไม่มีประวัติการลา</td></tr>' : 
+                    docs.map(l => {
+                      const eName = window.escapeHtml ? window.escapeHtml(l.name) : l.name;
+                      const dayLabel = dayLabels[l.day] || l.day;
+                      return '<tr>' +
+                        '<td>' + (l.date || '-') + '</td>' +
+                        '<td>' + dayLabel + '</td>' +
+                        '<td>' + eName + '</td>' +
+                        '<td>' + (l.job || '-') + '</td>' +
+                        '<td>' + (l.submittedBy || '-') + '</td>' +
+                        '<td>' + window.escapeHtml(l.reason || '-') + '</td>' +
+                        '</tr>';
+                    }).join('')
+                  }
+                </tbody>
+              </table>
+            </div>`;
+          return;
+        }
+
+        if (tab === 'dungeon') {
           // Fetch from unified guild_system_logs
           const q = query(collection(window.db, 'guild_system_logs'), orderBy('timestamp', 'desc'), limit(500));
           const snap = await getDocs(q);
@@ -163,21 +205,16 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
           let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
           // Local Category Filter
-          docs = docs.filter(d => d.category === tab);
+          /* Show all audit logs here */
 
           // Apply Search Filter locally
           if (searchText) {
-            docs = docs.filter(d => 
-              (d.targetName && d.targetName.toLowerCase().includes(searchText)) ||
-              (d.dungeonName && d.dungeonName.toLowerCase().includes(searchText)) ||
-              (d.detailText && d.detailText.toLowerCase().includes(searchText)) ||
-              (d.actor && d.actor.toLowerCase().includes(searchText))
+            docs = docs.filter(log => 
+              (log.actor && log.actor.toLowerCase().includes(searchText)) ||
+              (log.targetName && log.targetName.toLowerCase().includes(searchText)) ||
+              (log.dungeonName && log.dungeonName.toLowerCase().includes(searchText)) ||
+              (log.action && log.action.toLowerCase().includes(searchText))
             );
-          }
-
-          if (docs.length === 0) {
-            body.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-lo);">ไม่พบข้อมูลประวัติ (ถ้าเพิ่งเริ่มใช้งาน ข้อมูลเก่าอาจไม่อยู่ในหมวดหมู่นี้แล้ว)</div>';
-            return;
           }
 
           const actionLabel = {
@@ -201,34 +238,26 @@ import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from 
             <div style="display:flex;flex-direction:column;gap:8px;">
               ${docs.map(log => {
                 const al = actionLabel[log.action] || { label: log.action, color: '#64748b' };
-                // Handle older logs gracefully
                 const ts = log.timestamp || (log.detail ? log.detail.timestamp : Date.now());
                 const dt = new Date(ts).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 
-                // Show Restore Button only for certain destructive actions
                 let restoreBtn = '';
                 if (log.rollbackData && (log.action === 'DELETE_QUEUE' || log.action === 'CLEAR_TEAM' || log.action === 'DELETE_LEAVE' || log.action === 'CLEAR_SLOT')) {
                   const safeLog = encodeURIComponent(JSON.stringify(log));
                   restoreBtn = `<button onclick="window.restoreLogItem('${tab}', '${log.id}', '${safeLog}')" style="background:#fef3c7;color:#d97706;border:1px solid #fcd34d;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">กู้คืนข้อมูลนี้</button>`;
                 }
 
-                return `
-                  <div style="background:var(--surface,#fff);border-radius:8px;padding:14px;border-left:4px solid ${al.color};display:flex;justify-content:space-between;align-items:flex-start;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
-                    <div style="flex:1;min-width:0;">
-                      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px;">
-                        <span style="background:${al.color}22;color:${al.color};font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;">${al.label}</span>
-                        <span style="font-size:12px;color:var(--text-hi);">ผู้บันทึก: <b>${log.actor}</b></span>
-                        <span style="font-size:12px;color:var(--text-lo);">${dt}</span>
-                      </div>
-                      <div style="display:flex;flex-direction:column;gap:4px;">
-                        ${log.dungeonName ? `<div style="font-size:13px;color:var(--text-hi);"><b>ดันเจี้ยน:</b> ${log.dungeonName}</div>` : ''}
-                        ${log.targetName ? `<div style="font-size:13px;color:var(--text-hi);"><b>เป้าหมาย:</b> ${log.targetName}</div>` : ''}
-                        <div style="font-size:13px;color:var(--text-hi);"><b>รายละเอียด:</b> ${log.detailText}</div>
-                      </div>
+                return `<div style="background:var(--surface,#fff);border-radius:8px;padding:12px;border:1px solid var(--line);display:flex;gap:12px;align-items:flex-start;">
+                  <div style="background:${al.color}15;color:${al.color};padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;">${al.label}</div>
+                  <div style="flex:1;">
+                    <div style="font-size:13px;color:var(--text-hi);margin-bottom:4px;">
+                      <strong>${window.escapeHtml ? window.escapeHtml(log.actor) : log.actor}</strong> ${log.action === 'CREATE_TEAM' ? 'สร้าง' : 'จัดการ'} ${window.escapeHtml ? window.escapeHtml(log.targetName || log.dungeonName) : (log.targetName || log.dungeonName)}
                     </div>
-                    ${restoreBtn ? `<div>${restoreBtn}</div>` : ''}
+                    ${log.detailText ? `<div style="font-size:12px;color:var(--text-lo);margin-bottom:6px;">${window.escapeHtml ? window.escapeHtml(log.detailText) : log.detailText}</div>` : ''}
+                    <div style="font-size:11px;color:#94a3b8;">${dt}</div>
                   </div>
-                `;
+                  ${restoreBtn ? `<div>${restoreBtn}</div>` : ''}
+                </div>`;
               }).join('')}
             </div>
           `;
