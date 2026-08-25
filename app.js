@@ -2188,6 +2188,39 @@ window.exportMainFieldPDF = function() {
   const teamNames = mainFm.teamNames || [];
   const assignments = teamsAssignments || {};
 
+  // Custom Leader Finder
+  const getTeamLeader = (tName) => {
+    let members = [];
+    for(let j = 0; j < 5; j++) {
+      const k = '0|' + tName + '|' + j;
+      if (assignments[k] && assignments[k].name) members.push(assignments[k].name);
+    }
+    if (members.length === 0) return 'ว่าง';
+    
+    // Hardcoded per user request
+    if (tName.includes('1')) {
+      const top = members.find(m => m.toLowerCase() === 'topgameth');
+      if (top) return top;
+    }
+    if (tName.includes('2')) {
+      const lin = members.find(m => m.toLowerCase() === 'linping');
+      if (lin) return lin;
+    }
+    return members[0];
+  };
+
+  const block1Teams = [];
+  const block2Teams = [];
+  teamNames.forEach(tName => {
+    const numMatch = tName.match(/\d+/);
+    const num = numMatch ? parseInt(numMatch[0]) : 0;
+    if (num % 2 === 0 && num !== 0) {
+      block2Teams.push(tName); // Even numbers (2,4,6,8,10,12)
+    } else {
+      block1Teams.push(tName); // Odd numbers (1,3,5,7,9,11) or unnumbered
+    }
+  });
+
   let htmlContent = `
     <html>
       <head>
@@ -2195,7 +2228,7 @@ window.exportMainFieldPDF = function() {
         <style> @media print { @page { size: landscape; margin: 5mm; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
           body { font-family: 'Sarabun', 'Prompt', sans-serif; padding: 20px; color: #333; }
           h2 { text-align: center; color: #1e3a8a; }
-          .container { display: flex; gap: 20px; justify-content: center; }
+          .container { display: flex; gap: 20px; justify-content: center; align-items: flex-start; }
           .main-team { flex: 1; border: 2px solid #2563eb; border-radius: 8px; padding: 10px; background: #f8fafc; }
           .main-team-title { text-align: center; font-size: 18px; font-weight: bold; background: #2563eb; color: white; padding: 8px; border-radius: 6px; margin-top: 0; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 8px; page-break-inside: avoid; background: white; font-size: 12px; }
@@ -2209,50 +2242,39 @@ window.exportMainFieldPDF = function() {
         <div class="container">
   `;
 
-  const renderHalf = (startIndex, endIndex, mainTeamTitle) => {
-    let result = `<div class="main-team"><h3 class="main-team-title">${mainTeamTitle} (30 คน)</h3>`;
-    for (let i = startIndex; i < endIndex; i++) {
-      if (i >= teamNames.length) break;
-      const tName = teamNames[i];
+  const renderBlock = (teamsArray, mainTeamTitle) => {
+    let result = `<div class="main-team"><h3 class="main-team-title">${mainTeamTitle}</h3>`;
+    teamsArray.forEach(tName => {
       const cap = mainFm.capacity[tName] || 5;
-      
-      let leaderName = 'ว่าง';
-      const slot0Key = 0 + '|' + tName + '|0';
-      if (assignments[slot0Key] && assignments[slot0Key].name) {
-        leaderName = assignments[slot0Key].name;
-      }
+      let leaderName = getTeamLeader(tName);
 
       result += `<table>
         <tr><td colspan="3" class="party-title">${tName} (หัวตี้: ${leaderName})</td></tr>
         <tr><th>ลำดับ</th><th>ชื่อตัวละคร</th><th>อาชีพ</th></tr>`;
         
       for (let j = 0; j < cap; j++) {
-        const key = 0 + '|' + tName + '|' + j;
+        const key = '0|' + tName + '|' + j;
         const member = assignments[key];
         result += `<tr>
           <td style="width: 40px;">${j + 1}</td>
-          <td>${member && member.name ? member.name : '-'}</td>
+          <td>${member && member.name ? window.escapeHtml(member.name) : '-'}</td>
           <td>${member && member.job ? member.job : '-'}</td>
         </tr>`;
       }
       result += `</table>`;
-    }
-    result += `</div>`;
+    });
+    result += '</div>';
     return result;
   };
 
-  const getLeaderOf = (partyIndex) => {
-    if (partyIndex >= teamNames.length) return 'ว่าง';
-    const tName = teamNames[partyIndex];
-    const key = '0|' + tName + '|0';
-    return (assignments[key] && assignments[key].name) ? assignments[key].name : 'ว่าง';
-  };
-  
-  const leader1 = getLeaderOf(0);
-  const leader2 = getLeaderOf(6);
+  const leader1 = block1Teams.length > 0 ? getTeamLeader(block1Teams[0]) : 'ว่าง';
+  const leader2 = block2Teams.length > 0 ? getTeamLeader(block2Teams[0]) : 'ว่าง';
 
-  htmlContent += renderHalf(0, 6, 'ทีมที่ 1 (หัวตี้: ' + leader1 + ')');
-  htmlContent += renderHalf(6, 12, 'ทีมที่ 2 (หัวตี้: ' + leader2 + ')');
+  const count1 = block1Teams.reduce((sum, t) => sum + (mainFm.capacity[t]||5), 0);
+  const count2 = block2Teams.reduce((sum, t) => sum + (mainFm.capacity[t]||5), 0);
+
+  htmlContent += renderBlock(block1Teams, `ทีมที่ 1 (หัวตี้: ${leader1}) (${count1} คน)`);
+  htmlContent += renderBlock(block2Teams, `ทีมที่ 2 (หัวตี้: ${leader2}) (${count2} คน)`);
 
   htmlContent += `
         </div>
