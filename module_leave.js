@@ -16,14 +16,29 @@ window.setupLeaveFirebase = async function() {
   if (!window.db) return;
   try {
     const leaveRef = doc(window.db, 'guild_system', 'leaves');
+    const histRef = doc(window.db, 'guild_system', 'leave_history');
+    
     const snap = await getDoc(leaveRef);
     if (!snap.exists()) {
       await setDoc(leaveRef, { leaves: [] });
     }
+    const histSnap = await getDoc(histRef);
+    if (!histSnap.exists()) {
+      await setDoc(histRef, { leaves: [] });
+    }
+    
     unsubLeaveListener = onSnapshot(leaveRef, (snapshot) => {
       if (snapshot.exists()) {
         const d = snapshot.data();
         window.leaveData = d.leaves || [];
+        renderLeaveList();
+      }
+    });
+    
+    unsubLeaveHistoryListener = onSnapshot(histRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const d = snapshot.data();
+        window.leaveHistoryData = d.leaves || [];
         renderLeaveList();
       }
     });
@@ -76,6 +91,34 @@ function fillLeaveForm() {
   }
 }
 
+window.archiveOldLeaves = async function() {
+  if (!window.currentUser || !window.isUserAdmin()) return;
+  if (!await window.UI.confirm('ยืนยันการจัดเก็บประวัติการลาที่เลยกำหนดแล้วเข้าสู่ฐานข้อมูล?')) return;
+  
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+  const toArchive = window.leaveData.filter(l => l.date && l.date < todayStr);
+  const remaining = window.leaveData.filter(l => !l.date || l.date >= todayStr);
+  
+  if (toArchive.length === 0) {
+    return window.showToast('ไม่มีรายการแจ้งลาที่เลยกำหนด', 'info');
+  }
+
+  try {
+    window.leaveHistoryData = [...window.leaveHistoryData, ...toArchive];
+    window.leaveData = remaining;
+    
+    const leaveRef = doc(window.db, 'guild_system', 'leaves');
+    const historyRef = doc(window.db, 'guild_system', 'leave_history');
+    await setDoc(leaveRef, { leaves: window.leaveData });
+    await setDoc(historyRef, { leaves: window.leaveHistoryData }, { merge: true });
+    
+    window.showToast('จัดเก็บประวัติการลาสำเร็จ ' + toArchive.length + ' รายการ', 'success');
+  } catch(err) {
+    console.error(err);
+    window.showToast('เกิดข้อผิดพลาดในการจัดเก็บประวัติ', 'error');
+  }
+};
+
 window.submitLeave = async function() {
   if (!window.currentUser) return window.showToast('กรุณาเข้าสู่ระบบ', 'error');
 
@@ -127,8 +170,33 @@ window.submitLeave = async function() {
     timestamp: Date.now()
   };
 
+  
   window.leaveData.push(entry);
   await saveLeaveState();
+  
+  // --- Auto-Sync with Attendance ---
+  try {
+    const dayLabelsMap = {
+      'Tuesday': 'อังคาร',
+      'Thursday': 'พฤหัสบดี',
+      'Sunday': 'อาทิตย์'
+    };
+    const mappedDay = dayLabelsMap[day] || day;
+    const attKey = date + " (" + mappedDay + ")";
+    
+    if (window.attendanceData) {
+      if (!window.attendanceData.dates) window.attendanceData.dates = {};
+      if (!window.attendanceData.dates[attKey]) window.attendanceData.dates[attKey] = {};
+      window.attendanceData.dates[attKey][name] = 'leave';
+      if (typeof window.saveAttendanceState === 'function') {
+        await window.saveAttendanceState();
+        console.log('Auto-synced leave to attendance');
+      }
+    }
+  } catch(e) {
+    console.error("Auto-sync leave to attendance failed:", e);
+  }
+
   window.showToast('บันทึกการลาเรียบร้อยแล้ว', 'success');
 
   // Clear form
@@ -150,8 +218,33 @@ window.cancelLeave = async function(leaveId) {
   }
 
   if (!await window.UI.confirm('ยืนยันการยกเลิกการแจ้งลา?')) return;
+  
   window.leaveData = window.leaveData.filter(l => l.id !== leaveId);
   await saveLeaveState();
+  
+  // --- Auto-Sync with Attendance ---
+  try {
+    const dayLabelsMap = {
+      'Tuesday': 'อังคาร',
+      'Thursday': 'พฤหัสบดี',
+      'Sunday': 'อาทิตย์'
+    };
+    const mappedDay = dayLabelsMap[entry.day] || entry.day;
+    const attKey = entry.date + " (" + mappedDay + ")";
+    
+    if (window.attendanceData && window.attendanceData.dates && window.attendanceData.dates[attKey]) {
+      if (window.attendanceData.dates[attKey][entry.name] === 'leave') {
+        window.attendanceData.dates[attKey][entry.name] = 'none'; // Revert
+        if (typeof window.saveAttendanceState === 'function') {
+          await window.saveAttendanceState();
+          console.log('Auto-unsynced leave from attendance');
+        }
+      }
+    }
+  } catch(e) {
+    console.error("Auto-unsync leave from attendance failed:", e);
+  }
+
   window.showToast('ยกเลิกการลาเรียบร้อยแล้ว', 'success');
 };
 
@@ -172,10 +265,9 @@ function renderLeaveList() {
     : sorted.filter(l => window.currentUser && l.submittedBy === window.currentUser.username);
 
   const dayLabels = {
-    'Tuesday_1': 'อังคาร รอบ 1 (21:30)',
-    'Tuesday_2': 'อังคาร รอบ 2 (22:00)',
-    'Thursday': 'พฤหัส (22:00)',
-    'Sunday': 'อาทิตย์ (21:00)'
+    'Tuesday': 'อังคาร',
+    'Thursday': 'พฤหัสบดี',
+    'Sunday': 'อาทิตย์'
   };
 
   const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
@@ -190,6 +282,16 @@ function renderLeaveList() {
       upcomingLeaves.push(l);
     }
   });
+
+  const displayedHistory = isAdmin
+    ? (window.leaveHistoryData || [])
+    : (window.leaveHistoryData || []).filter(l => window.currentUser && l.submittedBy === window.currentUser.username);
+  
+  pastLeaves.push(...displayedHistory);
+  pastLeaves.sort((a,b) => b.timestamp - a.timestamp);
+
+  const btnArchive = document.getElementById('btnArchiveLeave');
+  if (btnArchive) btnArchive.style.display = (isAdmin && pastLeaves.length > 0) ? 'inline-block' : 'none';
 
   function generateRows(list) {
     if (list.length === 0) {
