@@ -1,4 +1,20 @@
 
+global.window = {
+  location: { search: '' },
+  addEventListener: () => {},
+  document: {
+    addEventListener: () => {},
+    getElementById: () => ({ addEventListener: () => {}, style: {}, classList: { add: () => {}, remove: () => {} }, querySelectorAll: () => [] }),
+    querySelectorAll: () => [],
+    createElement: () => ({ style: {}, classList: { add: () => {}, remove: () => {} } })
+  },
+  localStorage: { getItem: () => null, setItem: () => {} },
+  navigator: { userAgent: '' },
+  exportMainFieldPDF: null
+};
+global.document = window.document;
+global.localStorage = window.localStorage;
+
 window.isUserAdmin = function() {
   const r = window.currentUser ? (window.currentUser.role || window.currentUser.Role || '')?.toLowerCase() : '';
   return r === 'admin' || r === 'owner' || r === 'หัวหน้ากิลด์';
@@ -1610,13 +1626,6 @@ async function handleTeamSearch() {
 }
 
 function renderAll() {
-  const activeEl = document.activeElement;
-  if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('name-input')) {
-    window.guildRoster = guildRoster;
-    window.teamsAssignments = teamsAssignments;
-    if (typeof renderRoster === 'function') renderRoster();
-    return; 
-  }
   if (typeof buildFieldTabs === "function") buildFieldTabs();
   window.guildRoster = guildRoster;
   window.handleNameChange = handleNameChange;
@@ -2268,10 +2277,6 @@ window.exportMainFieldPDF = function() {
   `;
 
   const printWin = window.open('', '_blank');
-  if (!printWin) {
-    alert('กรุณาอนุญาต Pop-up (Pop-up Blocker) สำหรับเว็บไซต์นี้ เพื่อดู PDF');
-    return;
-  }
   printWin.document.open();
   printWin.document.write(htmlContent);
   printWin.document.close();

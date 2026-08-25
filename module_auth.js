@@ -463,7 +463,7 @@ function showGlobalDropdown(inputEl, filterText = '') {
           e.preventDefault();
           if (window.activeAutocompleteInput) {
             const newName = item.getAttribute('data-name');
-            window.activeAutocompleteInput.value = newName;
+            window.activeAutocompleteInput.value = newName; window.activeAutocompleteInput.blur();
             const act = window.activeAutocompleteInput.getAttribute('data-action');
             if (act === 'mainField') {
               const slot = window.activeAutocompleteInput.getAttribute('data-slot');
