@@ -2192,16 +2192,16 @@ window.exportMainFieldPDF = function() {
     <html>
       <head>
         <title>สนามหลัก - แบ่ง 2 ทีม (30 คน)</title>
-        <style> @media print { @page { size: landscape; margin: 1cm; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+        <style> @media print { @page { size: landscape; margin: 5mm; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
           body { font-family: 'Sarabun', 'Prompt', sans-serif; padding: 20px; color: #333; }
           h2 { text-align: center; color: #1e3a8a; }
           .container { display: flex; gap: 20px; justify-content: center; }
           .main-team { flex: 1; border: 2px solid #2563eb; border-radius: 8px; padding: 10px; background: #f8fafc; }
           .main-team-title { text-align: center; font-size: 18px; font-weight: bold; background: #2563eb; color: white; padding: 8px; border-radius: 6px; margin-top: 0; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: white; font-size: 13px; }
-          th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 8px; page-break-inside: avoid; background: white; font-size: 12px; }
+          th, td { border: 1px solid #cbd5e1; padding: 3px 6px; text-align: center; }
           th { background: #e2e8f0; font-weight: bold; }
-          .party-title { background: #bfdbfe; font-weight: bold; text-align: left; padding: 6px; }
+          .party-title { background: #bfdbfe; font-weight: bold; text-align: left; padding: 3px 6px; }
         </style>
       </head>
       <body>
@@ -2217,7 +2217,7 @@ window.exportMainFieldPDF = function() {
       const cap = mainFm.capacity[tName] || 5;
       
       let leaderName = 'ว่าง';
-      const slot0Key = 0 + '_' + tName + '_0';
+      const slot0Key = 0 + '|' + tName + '|0';
       if (assignments[slot0Key] && assignments[slot0Key].name) {
         leaderName = assignments[slot0Key].name;
       }
@@ -2227,7 +2227,7 @@ window.exportMainFieldPDF = function() {
         <tr><th>ลำดับ</th><th>ชื่อตัวละคร</th><th>อาชีพ</th></tr>`;
         
       for (let j = 0; j < cap; j++) {
-        const key = 0 + '_' + tName + '_' + j;
+        const key = 0 + '|' + tName + '|' + j;
         const member = assignments[key];
         result += `<tr>
           <td style="width: 40px;">${j + 1}</td>
@@ -2244,7 +2244,7 @@ window.exportMainFieldPDF = function() {
   const getLeaderOf = (partyIndex) => {
     if (partyIndex >= teamNames.length) return 'ว่าง';
     const tName = teamNames[partyIndex];
-    const key = '0_' + tName + '_0';
+    const key = '0|' + tName + '|0';
     return (assignments[key] && assignments[key].name) ? assignments[key].name : 'ว่าง';
   };
   
