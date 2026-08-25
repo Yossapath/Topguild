@@ -2182,11 +2182,11 @@ if (!document.getElementById('btnExportPDF')) {
 }
 
 window.exportMainFieldPDF = function() {
-  const mainFm = window.fieldMeta && window.fieldMeta[0];
+  const mainFm = fieldMeta && fieldMeta[0];
   if (!mainFm) return alert('ไม่พบข้อมูลสนามหลัก');
 
   const teamNames = mainFm.teamNames || [];
-  const assignments = window.teamsAssignments || {};
+  const assignments = teamsAssignments || {};
 
   let htmlContent = `
     <html>
