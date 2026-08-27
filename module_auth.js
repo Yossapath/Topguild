@@ -114,8 +114,9 @@ window.handleLogin = async function() {
     }
     const data = snap.data();
     if (data.password !== p) {
-      await window.UI.alert("รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง");
-        window.showToast("รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง", "error");
+      window.showToast("รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง", "error");
+      const pwInput = document.getElementById('loginPassword');
+      if (pwInput) { pwInput.value = ''; pwInput.focus(); }
       setBtnState(false);
       return;
     }
@@ -445,6 +446,22 @@ function showGlobalDropdown(inputEl, filterText = '') {
       allMembers = allMembers.filter(m => !inUseNames.has(m.name?.toLowerCase()));
     }
 
+    // กรองคนที่ลาวันนี้ออกจาก dropdown (ทุก action ยกเว้นดึงชื่อเพื่อดูประวัติ)
+    if (action === 'mainField' || action === 'dungeonTeam' || action === 'dungeonQueue') {
+      const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+      const todayDay = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+      if (window.leaveData && window.leaveData.length > 0) {
+        allMembers = allMembers.filter(m => {
+          const isOnLeave = window.leaveData.some(l =>
+            l.name?.trim().toLowerCase() === m.name?.trim().toLowerCase() &&
+            (l.date === todayStr || l.day === todayDay)
+          );
+          return !isOnLeave;
+        });
+      }
+    }
+
+
     const val = filterText.toLowerCase();
     const filtered = allMembers.filter(m => m.name?.toLowerCase()?.includes(val));
 
@@ -480,6 +497,7 @@ function showGlobalDropdown(inputEl, filterText = '') {
               const job = item.getAttribute('data-job');
               const dqClass = document.getElementById('dqClass');
               if (dqClass) dqClass.value = job;
+              if (typeof window.updateDungeonScoreDisplay === "function") window.updateDungeonScoreDisplay(newName);
             }
           }
           dropdown.style.display = 'none';
@@ -498,13 +516,16 @@ function showGlobalDropdown(inputEl, filterText = '') {
   }
 }
 
-// Close dropdown on click outside
+// Close dropdown on click outside (no capture:true — ให้ mousedown ของ item ยิงก่อน)
 document.addEventListener('click', (e) => {
   const dropdown = document.getElementById('globalMemberDropdown');
-  if (dropdown && !dropdown.contains(e.target)) {
-    dropdown.style.display = 'none';
+  if (dropdown && dropdown.style.display === 'block') {
+    // ปิดเฉพาะเมื่อคลิกนอก dropdown และนอก input ที่กำลังใช้งาน
+    if (!dropdown.contains(e.target) && !e.target.classList.contains('autocomplete-member')) {
+      dropdown.style.display = 'none';
+    }
   }
-}, true);
+});
 
 // ==========================================
 // ====== GLOBAL EXPORTS ======

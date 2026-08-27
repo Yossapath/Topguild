@@ -405,6 +405,39 @@ function getRosterTotalCount(rosterObj) {
 
 /* RENDERERS */
 
+
+/* ============================
+   LEAVE PANEL — แสดงคนลาวันนี้
+   ============================ */
+function renderLeavePanel() {
+  var panel = document.getElementById('leavePanelTeams');
+  if (!panel) return;
+
+  var todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+  var todayDay = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+
+  var leaveList = window.leaveData && Array.isArray(window.leaveData)
+    ? window.leaveData.filter(function(l) {
+        return l.date === todayStr || l.day === todayDay;
+      })
+    : [];
+
+  if (leaveList.length === 0) {
+    panel.style.display = 'none';
+    panel.innerHTML = '';
+    return;
+  }
+
+  panel.style.display = 'flex';
+  panel.innerHTML = '<div class="leave-panel-header">🏖️ คนลาวันนี้ (' + leaveList.length + ' คน) — <small style="font-weight:400;">รายชื่อเหล่านี้จะไม่ถูกจัดทีมอัตโนมัติ</small></div>' +
+    leaveList.map(function(l) {
+      var name = window.escapeHtml ? window.escapeHtml(l.name) : l.name;
+      var reason = l.reason ? (' — ' + (window.escapeHtml ? window.escapeHtml(l.reason) : l.reason)) : '';
+      return '<span class="leave-badge">🔴 ' + name + '<small>' + reason + '</small></span>';
+    }).join('');
+}
+window.renderLeavePanel = renderLeavePanel;
+
 function renderRoster() {
   const masterList = getMasterMemberList();
   const datalist = document.getElementById('rosterDatalist');
@@ -843,6 +876,7 @@ function renderSidebar() {
   }
 
   missing.sort((a, b) => (b.power || 0) - (a.power || 0));
+  if (sidebarSearchQuery) { missing = missing.filter(function(m) { return m.name && m.name.toLowerCase().includes(sidebarSearchQuery.toLowerCase()); }); }
 
   if (missing.length === 0) {
     sidebarBody.innerHTML = `<div class="sidebar-empty"><span>ครบทุกคนแล้ว</span>ไม่มีสมาชิกที่ตกหล่นจากตาราง</div>`;
@@ -1195,18 +1229,6 @@ window.openAutoMatchModal = function() {
 window.closeAutoMatchModal = function() {
   const modal = document.getElementById('autoMatchModal');
   if (modal) {
-    modal.classList.remove('show');
-  }
-};
-
-/* Custom Guild Team Optimization Algorithm */
-async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
-  const masterList = getMasterMemberList();
-
-  if (mode === 'both') {
-    teamsAssignments = {};
-    occupiedMap.clear();
-  } else if (mode === 'main') {
     const mainFm = fieldMeta[0];
     if (mainFm) {
       mainFm.teamNames.forEach(teamName => {
@@ -1611,12 +1633,26 @@ async function handleTeamSearch() {
 
 function renderAll() {
   const activeEl = document.activeElement;
-  if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('name-input')) {
+  // Guard: user กำลังพิมพ์ใน autocomplete input → อัปเดต memory เท่านั้น ไม่ render DOM ทับ
+  if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('autocomplete-member')) {
     window.guildRoster = guildRoster;
     window.teamsAssignments = teamsAssignments;
+    window.occupiedMap = occupiedMap;
     if (typeof renderRoster === 'function') renderRoster();
-    return; 
+    if (typeof renderSidebar === 'function') renderSidebar();
+    if (typeof renderLeavePanel === 'function') renderLeavePanel();
+    return;
   }
+
+  // Rebuild occupiedMap จาก teamsAssignments เพื่อให้ถูกต้องหลัง Firebase sync
+  occupiedMap.clear();
+  Object.keys(teamsAssignments).forEach(function(key) {
+    var a = teamsAssignments[key];
+    if (a && a.name) {
+      occupiedMap.set(a.name.trim().toLowerCase(), key);
+    }
+  });
+
   if (typeof buildFieldTabs === "function") buildFieldTabs();
   window.guildRoster = guildRoster;
   window.handleNameChange = handleNameChange;
@@ -1625,6 +1661,7 @@ function renderAll() {
   window.teamsAssignments = teamsAssignments;
   renderRoster();
   renderTeams();
+  if (typeof renderLeavePanel === 'function') renderLeavePanel();
 }
 
 
@@ -2212,6 +2249,16 @@ window.exportMainFieldPDF = function() {
   const block1Teams = [];
   const block2Teams = [];
   teamNames.forEach(tName => {
+    // Check if team has members
+    let hasMembers = false;
+    for(let j = 0; j < 5; j++) {
+      if (assignments['0|' + tName + '|' + j]?.name) {
+        hasMembers = true;
+        break;
+      }
+    }
+    if (!hasMembers) return; // Skip empty teams
+
     const numMatch = tName.match(/\d+/);
     const num = numMatch ? parseInt(numMatch[0]) : 0;
     if (num % 2 === 0 && num !== 0) {

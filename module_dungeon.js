@@ -50,13 +50,56 @@ import {
       await setDoc(dungRef, dungeonData);
     }
 
+    
+    window.updateDungeonScoreDisplay = function(nameStr) {
+      var display = document.getElementById('dqScoreDisplay');
+      if (!display) return;
+      var name = (nameStr || '').trim();
+      if (!name) {
+        display.style.display = 'none';
+        return;
+      }
+      if (typeof window.getUserScore === 'function') {
+        var score = window.getUserScore(name);
+        var color = score < 0 ? 'var(--danger)' : 'var(--ok)';
+        var text = score <= -2 ? ' (ไม่มีสิทธิ์จองคิว)' : '';
+        display.innerHTML = 'คะแนนกิจกรรม: <span style="color:' + color + ';">' + score + text + '</span>';
+        display.style.display = 'block';
+      }
+    };
+
+    var dqNameEl = document.getElementById('dqName');
+    if (dqNameEl) {
+      dqNameEl.addEventListener('input', function(e) {
+        window.updateDungeonScoreDisplay(e.target.value);
+      });
+    }
+
     window.bookDungeonQueue = async function () {
       if (!window.currentUser)
         return window.showToast("กรุณาเข้าสู่ระบบ", "error");
       const name = document.getElementById("dqName").value.trim();
       const job = document.getElementById("dqClass").value;
+      const dungeon = document.getElementById("dqDungeon").value;
 
-      // Check absent count
+      if (!name || !job || !dungeon)
+        return window.showToast("กรุณากรอกข้อมูลให้ครบถ้วน (ชื่อ / อาชีพ / ดันเจี้ยน)", "warning");
+
+      // ตรวจสอบว่าชื่อมีในระบบกิลด์
+      let nameInRoster = false;
+      if (window.guildRoster) {
+        for (const j in window.guildRoster) {
+          if ((window.guildRoster[j] || []).some(m => m.name?.trim().toLowerCase() === name.toLowerCase())) {
+            nameInRoster = true;
+            break;
+          }
+        }
+      }
+      if (!nameInRoster) {
+        return window.showToast("ชื่อนี้ไม่มีในระบบกิลด์ กรุณาเลือกจากรายชื่อ", "error");
+      }
+
+      // ตรวจสอบคะแนนกิจกรรม
       if (window.getUserScore) {
         const score = window.getUserScore(name);
         if (score <= -2) {
@@ -68,16 +111,18 @@ import {
           return;
         }
       }
-      const dungeon = document.getElementById("dqDungeon").value;
 
-      if (!name || !job || !dungeon)
-        return window.showToast("กรุณากรอกข้อมูลให้ครบถ้วน", "warning");
-
-      const isAlreadyInQueue = dungeonData.queues.some((q) => q.name?.toLowerCase() === name?.toLowerCase());
-      const isAlreadyInTeam = dungeonData.teams.some((t) => t.members && t.members.some((m) => m && m.name?.toLowerCase() === name?.toLowerCase()));
+      // เช็คซ้ำ: scope เฉพาะ dungeon ที่กำลังจอง (ไม่ใช่ทั้งหมด)
+      const isAlreadyInQueue = dungeonData.queues.some((q) =>
+        q.name?.trim().toLowerCase() === name.toLowerCase() && q.dungeon === dungeon
+      );
+      const isAlreadyInTeam = dungeonData.teams.some((t) =>
+        t.type === dungeon &&
+        t.members && t.members.some((m) => m && m.name?.trim().toLowerCase() === name.toLowerCase())
+      );
       if (isAlreadyInQueue || isAlreadyInTeam) {
         return window.showToast(
-          "คุณได้ทำการจองคิวหรืออยู่ในทีมของดันเจี้ยนอื่นไปแล้ว โปรดยกเลิกและจองใหม่",
+          `คุณได้จองคิวหรืออยู่ในทีม "${dungeon}" แล้ว หากต้องการเปลี่ยน กรุณายกเลิกก่อน`,
           "error",
         );
       }
@@ -86,7 +131,7 @@ import {
       let power = 0;
       if (window.guildRoster && window.guildRoster[job]) {
         const found = window.guildRoster[job].find(
-          (m) => m.name?.toLowerCase() === name?.toLowerCase(),
+          (m) => m.name?.toLowerCase() === name.toLowerCase(),
         );
         if (found) power = found.power || 0;
       }
@@ -98,6 +143,7 @@ import {
         dungeon,
         power,
         status: "waiting",
+
         timestamp: Date.now(),
       });
 
@@ -113,6 +159,7 @@ import {
         );
 
       document.getElementById("dqName").value = "";
+      window.updateDungeonScoreDisplay("");
       document.getElementById("dqClass").value = "";
       window.showToast("จองคิวสำเร็จ!", "success");
     };
@@ -711,7 +758,8 @@ import {
               onchange="updateDungeonTeamName('${t.id}',${i},this.value)"
               data-team-id="${t.id}" data-slot-idx="${i}" data-action="dungeonTeam"
               value="${memberName ? eName : ""}" placeholder="พิมพ์/คลิก..." autocomplete="off"
-              style="width:100%;min-width:140px;font-size:14px;padding:6px;">
+              style="width:100%;min-width:140px;font-size:14px;padding:6px;"
+              ${isAdmin ? '' : 'disabled'}>
           </td>
           <td>
             <select class="cell-input job-input ${memberJob ? "" : "empty"}" onchange="updateDungeonTeamJob('${t.id}',${i},this.value)" style="width:100%;min-width:120px;font-size:14px;padding:6px;--job-color:${jobColor};">
@@ -763,8 +811,7 @@ import {
           <tbody>${mHtml}</tbody>
         </table>
         <div style="display:flex;gap:8px;margin-top:8px;">
-          ${!isAdmin ? '<button class="btn-primary" style="flex:1;border-radius:8px;padding:6px;font-size:13px;" onclick="memberJoinTeam(\'' + t.id + "')\">เข้าร่วมทีม</button>" : ""}
-          ${isAdmin ? '<button class="btn-secondary" style="flex:1;border-radius:8px;padding:6px;font-size:13px;border-color:var(--ok);color:var(--ok);" onclick="clearDungeonTeam(\'' + t.id + "')\">ลงสำเร็จ</button>" : ""}
+          ${isAdmin ? '<button class="btn-secondary" style="flex:1;border-radius:8px;padding:6px;font-size:13px;border-color:var(--ok);color:var(--ok);" onclick="clearDungeonTeam(\'' + t.id + '\')\">ลงสำเร็จ</button>' : ""}
         </div>
       </div>
     </div>`;
