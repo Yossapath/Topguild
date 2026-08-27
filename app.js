@@ -760,7 +760,10 @@ function isTeamLocked(fieldIdx, teamName) {
   const missingPriestTeams = [];
   const sortedTeamNames = sortTeamNames(fm.teamNames);
 
-  teamsGrid.innerHTML = sortedTeamNames.map(teamName => {
+  
+    const teamHTMLMap = {};
+    sortedTeamNames.forEach(teamName => {
+      
     const capacity = fm.capacity[teamName];
     let filled = 0, hasPriest = false, matchInTeam = false, teamPowerSum = 0;
     const rows = [];
@@ -809,7 +812,8 @@ function isTeamLocked(fieldIdx, teamName) {
 
     const cardDim = activeJobFilter && !matchInTeam ? 'dim' : '';
       const locked = isTeamLocked(currentFieldIdx, teamName);
-    return `
+    
+      teamHTMLMap[teamName] = `
         <div class="team-card ${cardDim}${locked?' locked-team':''}">
         <div class="team-card-head">
           <div class="team-title-group">
@@ -828,7 +832,38 @@ function isTeamLocked(fieldIdx, teamName) {
           <tbody>${rows.join('')}</tbody>
         </table>
       </div>`;
-  }).join('');
+    });
+
+    if (currentFieldIdx === 0) {
+      const zone1Names = [];
+      const zone2Names = [];
+      sortedTeamNames.forEach(tName => {
+        const numMatch = tName.match(/\d+/);
+        const num = numMatch ? parseInt(numMatch[0]) : 0;
+        if (num % 2 === 0 && num !== 0) {
+          zone2Names.push(tName);
+        } else {
+          zone1Names.push(tName);
+        }
+      });
+
+      const zone1HTML = zone1Names.map(t => teamHTMLMap[t]).join('');
+      const zone2HTML = zone2Names.map(t => teamHTMLMap[t]).join('');
+
+      teamsGrid.innerHTML = `
+        <div class="zone-column" style="display:flex; flex-direction:column; gap:16px;">
+          <h3 style="margin:0; text-align:center; background:var(--blue-700); color:white; padding:8px; border-radius:8px;">โซน 1 (ซ้าย)</h3>
+          ${zone1HTML}
+        </div>
+        <div class="zone-column" style="display:flex; flex-direction:column; gap:16px;">
+          <h3 style="margin:0; text-align:center; background:var(--blue-700); color:white; padding:8px; border-radius:8px;">โซน 2 (ขวา)</h3>
+          ${zone2HTML}
+        </div>
+      `;
+    } else {
+      teamsGrid.innerHTML = sortedTeamNames.map(t => teamHTMLMap[t]).join('');
+    }
+  
 
   // Status Bar
   
@@ -2361,8 +2396,8 @@ window.exportMainFieldPDF = function() {
   const count1 = block1Teams.reduce((sum, t) => sum + (mainFm.capacity[t]||5), 0);
   const count2 = block2Teams.reduce((sum, t) => sum + (mainFm.capacity[t]||5), 0);
 
-  htmlContent += renderBlock(block1Teams, `ทีมที่ 1 (หัวตี้: ${leader1}) (${count1} คน)`);
-  htmlContent += renderBlock(block2Teams, `ทีมที่ 2 (หัวตี้: ${leader2}) (${count2} คน)`);
+  htmlContent += renderBlock(block1Teams, `โซน 1 (ซ้าย) - หัวตี้: ${leader1}) (${count1} คน)`);
+  htmlContent += renderBlock(block2Teams, `โซน 2 (ขวา) - หัวตี้: ${leader2}) (${count2} คน)`);
 
   htmlContent += `
         </div>
