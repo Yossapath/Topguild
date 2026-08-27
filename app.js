@@ -950,6 +950,10 @@ function isTeamLocked(fieldIdx, teamName) {
   const btnSub = document.getElementById('btnAutoOptimizeSub');
   
   if (btnMain) btnMain.style.display = (isAdmin && currentFieldIdx === 0) ? 'block' : 'none';
+    const btnAddTeamBtn = document.getElementById('btnAddTeamBtn');
+    const btnRemoveTeamBtn = document.getElementById('btnRemoveTeamBtn');
+    if (btnAddTeamBtn) btnAddTeamBtn.innerText = currentFieldIdx === 2 ? '+ เพิ่ม 10 ช่อง' : '+ เพิ่มทีม';
+    if (btnRemoveTeamBtn) btnRemoveTeamBtn.innerText = currentFieldIdx === 2 ? '- ลบ 10 ช่อง' : '- ลบทีมล่าสุด';
   if (btnSub) btnSub.style.display = (isAdmin && currentFieldIdx === 1) ? 'block' : 'none';
 
   attachRowListeners();
@@ -1784,7 +1788,7 @@ async function handleTeamSearch() {
     memberName: foundMember.name
   };
 
-  const fieldTitle = fieldMeta[foundFieldIdx].isMain ? "สนามหลัก" : "สนามรอง";
+  const fieldTitle = foundFieldIdx === 2 ? "ออฟไลน์" : (fieldMeta[foundFieldIdx].isMain ? "สนามหลัก" : "สนามรอง");
 
   resultEl.innerHTML = `
     <div class="team-found-badge">
@@ -1875,7 +1879,15 @@ window.runAutoOptimizeSub = function() {
 
 /* Dynamic Team Addition & Removal */
 function addNewTeam() {
-  const fm = fieldMeta[currentFieldIdx];
+    const fm = fieldMeta[currentFieldIdx];
+    if (!fm) return;
+    if (currentFieldIdx === 2) {
+      const teamName = fm.teamNames[0] || 'ทีม 1';
+      fm.capacity[teamName] = (fm.capacity[teamName] || 20) + 10;
+      saveState();
+      renderAll();
+      return;
+    }
   if (!fm) return;
 
   // Cap Main Field at 12 teams max (60 players)
@@ -1940,7 +1952,16 @@ async function removeSpecificTeam(targetTeamName) {
 }
 
 async function removeLastTeam() {
-  const fm = fieldMeta[currentFieldIdx];
+    const fm = fieldMeta[currentFieldIdx];
+    if (!fm) return;
+    if (currentFieldIdx === 2) {
+      const teamName = fm.teamNames[0] || 'ทีม 1';
+      if ((fm.capacity[teamName] || 20) <= 10) return;
+      fm.capacity[teamName] = (fm.capacity[teamName] || 20) - 10;
+      saveState();
+      renderAll();
+      return;
+    }
   if (!fm || !fm.teamNames || fm.teamNames.length === 0) return;
   const sortedNames = sortTeamNames(fm.teamNames);
   const lastTeamName = sortedNames[sortedNames.length - 1];
