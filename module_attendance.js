@@ -643,10 +643,10 @@ function showGlobalDropdown(inputEl, filterText = '') {
               (l.date === todayStr || l.day === todayDay)
             );
             return !isOnLeave;
-          });
-        }
-        }
+        });
       }
+    }
+    }
       
       if (action === 'mainField') {
       const slotKey = inputEl.getAttribute('data-slot');

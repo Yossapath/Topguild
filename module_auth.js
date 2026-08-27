@@ -464,6 +464,7 @@ function showGlobalDropdown(inputEl, filterText = '') {
           return !isOnLeave;
         });
       }
+        }
     }
 
 
