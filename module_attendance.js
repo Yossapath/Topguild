@@ -655,8 +655,9 @@ function showGlobalDropdown(inputEl, filterText = '') {
       allMembers = allMembers.filter(m => {
         if (requiredJob && m.job !== requiredJob) return false;
         const lowerName = m.name?.toLowerCase();
-        if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
-          if (window.occupiedMap.get(lowerName) !== slotKey) return false;
+          if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
+            const occKey = window.occupiedMap.get(lowerName);
+            if (occKey !== slotKey && !(slotKey && slotKey.startsWith('2|'))) return false;
         }
         return true;
       });

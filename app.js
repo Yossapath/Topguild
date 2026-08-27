@@ -855,7 +855,7 @@ function isTeamLocked(fieldIdx, teamName) {
         if (a && a.name) offlineCount++;
         
         // Render 5 extra empty slots below the last filled one
-        if (!a && i > offlineCount + 5) continue;
+        if (!a && i > offlineCount + 15) continue;
 
         const job = rowJobFilter[key] || (a ? a.job : '') || '';
         htmlRows += `
