@@ -629,7 +629,21 @@ function showGlobalDropdown(inputEl, filterText = '') {
     const action = inputEl.getAttribute('data-action');
     
     // Apply specific filters
-    if (action === 'mainField') {
+      if (action === 'mainField' || action === 'dungeonTeam' || action === 'dungeonQueue') {
+        const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+        const todayDay = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+        if (window.leaveData && window.leaveData.length > 0) {
+          allMembers = allMembers.filter(m => {
+            const isOnLeave = window.leaveData.some(l =>
+              l.name?.trim().toLowerCase() === m.name?.trim().toLowerCase() &&
+              (l.date === todayStr || l.day === todayDay)
+            );
+            return !isOnLeave;
+          });
+        }
+      }
+      
+      if (action === 'mainField') {
       const slotKey = inputEl.getAttribute('data-slot');
       const requiredJob = window.rowJobFilter ? window.rowJobFilter[slotKey] : '';
       
