@@ -851,11 +851,11 @@ function isTeamLocked(fieldIdx, teamName) {
       const zone2HTML = zone2Names.map(t => teamHTMLMap[t]).join('');
 
       teamsGrid.innerHTML = `
-        <div class="zone-column" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="zone-column" style="display:flex; flex-direction:column; gap:16px; border: 3px solid var(--blue-700); border-radius: 16px; padding: 16px; background: rgba(37, 99, 235, 0.03); box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
           <h3 style="margin:0; text-align:center; background:var(--blue-700); color:white; padding:8px; border-radius:8px;">โซน 1 (ซ้าย)</h3>
           ${zone1HTML}
         </div>
-        <div class="zone-column" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="zone-column" style="display:flex; flex-direction:column; gap:16px; border: 3px solid var(--blue-700); border-radius: 16px; padding: 16px; background: rgba(37, 99, 235, 0.03); box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
           <h3 style="margin:0; text-align:center; background:var(--blue-700); color:white; padding:8px; border-radius:8px;">โซน 2 (ขวา)</h3>
           ${zone2HTML}
         </div>
