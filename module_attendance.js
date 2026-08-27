@@ -630,6 +630,10 @@ function showGlobalDropdown(inputEl, filterText = '') {
     
     // Apply specific filters
       if (action === 'mainField' || action === 'dungeonTeam' || action === 'dungeonQueue') {
+        const slotKeyForLeave = inputEl.getAttribute('data-slot');
+        if (slotKeyForLeave && slotKeyForLeave.startsWith('2|')) {
+          // skip leave filter for Offline tab
+        } else {
         const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
         const todayDay = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
         if (window.leaveData && window.leaveData.length > 0) {
@@ -640,6 +644,7 @@ function showGlobalDropdown(inputEl, filterText = '') {
             );
             return !isOnLeave;
           });
+        }
         }
       }
       

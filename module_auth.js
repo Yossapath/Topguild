@@ -422,7 +422,8 @@ function showGlobalDropdown(inputEl, filterText = '') {
         if (requiredJob && m.job !== requiredJob) return false;
         const lowerName = m.name?.toLowerCase();
         if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
-          if (window.occupiedMap.get(lowerName) !== slotKey) return false;
+          const occKey = window.occupiedMap.get(lowerName);
+            if (occKey !== slotKey && !(slotKey && slotKey.startsWith('2|'))) return false;
         }
         return true;
       });
@@ -448,6 +449,10 @@ function showGlobalDropdown(inputEl, filterText = '') {
 
     // กรองคนที่ลาวันนี้ออกจาก dropdown (ทุก action ยกเว้นดึงชื่อเพื่อดูประวัติ)
     if (action === 'mainField' || action === 'dungeonTeam' || action === 'dungeonQueue') {
+        const slotKeyForLeave = inputEl.getAttribute('data-slot');
+        if (slotKeyForLeave && slotKeyForLeave.startsWith('2|')) {
+          // skip leave filter for Offline tab
+        } else {
       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
       const todayDay = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
       if (window.leaveData && window.leaveData.length > 0) {
