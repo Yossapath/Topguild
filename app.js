@@ -193,11 +193,20 @@ function initTeamStructure(rawTeamsData) {
 
   let safeTeamsData = teamsData;
   if (!safeTeamsData || safeTeamsData.length === 0) {
-     safeTeamsData = [];
+    safeTeamsData = [{
+      "title": "สนามหลัก",
+      "teams": { "ทีม 1": [{},{},{},{},{}] }
+    }];
   }
   if (safeTeamsData.length === 1) {
     safeTeamsData.push({
       "title": "สนามรอง",
+      "teams": { "ทีม 1": [{},{},{},{},{}] }
+    });
+  }
+  if (safeTeamsData.length === 2) {
+    safeTeamsData.push({
+      "title": "ออฟไลน์",
       "teams": { "ทีม 1": [{},{},{},{},{}] }
     });
   }
@@ -1302,8 +1311,19 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
   }
 
   if (mode === 'both') {
-    teamsAssignments = {};
+    // Only clear Field 0 (Main) and Field 1 (Sub), preserve Field 2 (Offline)
+    Object.keys(teamsAssignments).forEach(key => {
+      if (key.startsWith('0|') || key.startsWith('1|')) {
+        delete teamsAssignments[key];
+        delete rowJobFilter[key];
+      }
+    });
+    // Rebuild occupiedMap
     occupiedMap.clear();
+    Object.keys(teamsAssignments).forEach(key => {
+       const a = teamsAssignments[key];
+       if (a && a.name) occupiedMap.set(a.name.trim().toLowerCase(), key);
+    });
   } else if (mode === 'main') {
     const mainFm = fieldMeta[0];
     if (mainFm) {
