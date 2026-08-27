@@ -862,14 +862,14 @@ function isTeamLocked(fieldIdx, teamName) {
         <tr>
           <td style="width: 40px; text-align: center; color:var(--text-lo); font-size:12px;">${i+1}</td>
           <td>
-            <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField" value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="พิมพ์ชื่อคนออฟไลน์..." autocomplete="off">
+            <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField" ondragover="if(window.isUserAdmin && window.isUserAdmin()) event.preventDefault();" ondrop="if(window.isUserAdmin && window.isUserAdmin()) { event.preventDefault(); window.onTeamSlotDrop(event, '${key}'); }" value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="พิมพ์ชื่อคนออฟไลน์..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
           </td>
           <td style="width: 150px;">
-            <select class="cell-input job-input ${job ? '' : 'empty'}" data-slot="${key}" style="--job-color:${job ? colorOf(job) : ''}">
+            <select class="cell-input job-input ${job ? '' : 'empty'}" data-slot="${key}" style="--job-color:${job ? colorOf(job) : ''}" ${isAdmin ? '' : 'disabled'}>
               ${jobSelectHtml(key, job)}
             </select>
           </td>
-          <td class="cell-action"><button class="clear-btn" data-slot="${key}" title="ล้างช่องนี้">✕</button></td>
+          <td class="cell-action">${isAdmin ? `<button class="clear-btn" data-slot="${key}" title="ล้างช่องนี้">✕</button>` : ''}</td>
         </tr>`;
       }
 
