@@ -31,8 +31,21 @@ window.setupLeaveFirebase = async function() {
       if (snapshot.exists()) {
         const d = snapshot.data();
         window.leaveData = d.leaves || [];
-          renderLeaveList();
-          if (typeof window.renderAll === 'function') window.renderAll();
+        renderLeaveList();
+        if (typeof window.renderAll === 'function') window.renderAll();
+        
+        // Auto archive past leaves if admin
+        if (window.isUserAdmin && window.isUserAdmin()) {
+           const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+           const hasPast = window.leaveData.some(l => l.date && l.date < todayStr);
+           if (hasPast && !window._autoArchiving) {
+              window._autoArchiving = true;
+              setTimeout(() => {
+                 if (window.archiveOldLeaves) window.archiveOldLeaves(true);
+                 window._autoArchiving = false;
+              }, 2000);
+           }
+        }
       }
     });
     

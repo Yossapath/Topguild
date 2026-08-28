@@ -430,25 +430,53 @@ function renderLeavePanel() {
   var todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
   var todayDay = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
 
-  var leaveList = window.leaveData && Array.isArray(window.leaveData)
-    ? window.leaveData.filter(function(l) {
-        return l.date === todayStr || l.day === todayDay;
-      })
-    : [];
-
-  if (leaveList.length === 0) {
+  if (!window.leaveData || !Array.isArray(window.leaveData) || window.leaveData.length === 0) {
     panel.style.display = 'none';
     panel.innerHTML = '';
     return;
   }
 
-  panel.style.display = 'flex';
-  panel.innerHTML = '<div class="leave-panel-header">🏖️ คนลาวันนี้ (' + leaveList.length + ' คน) — <small style="font-weight:400;">รายชื่อเหล่านี้จะไม่ถูกจัดทีมอัตโนมัติ</small></div>' +
-    leaveList.map(function(l) {
+  var todayLeaves = [];
+  var advanceLeaves = [];
+
+  window.leaveData.forEach(l => {
+    if (l.date === todayStr || l.day === todayDay) {
+      todayLeaves.push(l);
+    } else {
+      advanceLeaves.push(l);
+    }
+  });
+
+  if (todayLeaves.length === 0 && advanceLeaves.length === 0) {
+    panel.style.display = 'none';
+    panel.innerHTML = '';
+    return;
+  }
+
+  var html = '';
+  if (todayLeaves.length > 0) {
+    html += '<div class="leave-panel-header" style="width:100%;">🏖️ คนลาวันนี้ (' + todayLeaves.length + ' คน) — <small style="font-weight:400;">รายชื่อเหล่านี้จะไม่ถูกจัดทีมอัตโนมัติ</small></div>';
+    html += todayLeaves.map(l => {
       var name = window.escapeHtml ? window.escapeHtml(l.name) : l.name;
       var reason = l.reason ? (' — ' + (window.escapeHtml ? window.escapeHtml(l.reason) : l.reason)) : '';
       return '<span class="leave-badge">🔴 ' + name + '<small>' + reason + '</small></span>';
     }).join('');
+  }
+
+  if (advanceLeaves.length > 0) {
+    if (todayLeaves.length > 0) html += '<div style="width:100%; height:8px;"></div>'; // spacer
+    html += '<div class="leave-panel-header" style="width:100%; color:var(--text-md); border-color:var(--border);">⏳ คนลาล่วงหน้า (' + advanceLeaves.length + ' คน)</div>';
+    html += advanceLeaves.map(l => {
+      var name = window.escapeHtml ? window.escapeHtml(l.name) : l.name;
+      var dateTxt = l.date || l.day;
+      var reason = l.reason ? (' — ' + (window.escapeHtml ? window.escapeHtml(l.reason) : l.reason)) : '';
+      return '<span class="leave-badge" style="background:var(--bg-card); color:var(--text-md); border:1px solid var(--border);">⌛ ' + name + ' (ลาวันที่ ' + dateTxt + ')<small>' + reason + '</small></span>';
+    }).join('');
+  }
+
+  panel.style.display = 'flex';
+  panel.style.flexWrap = 'wrap';
+  panel.innerHTML = html;
 }
 window.renderLeavePanel = renderLeavePanel;
 
@@ -983,7 +1011,7 @@ function renderSidebar() {
 
 
   const allMembers = getMasterMemberList();
-  let missing = allMembers.filter(m => !occupiedMap.has(m.name?.trim()?.toLowerCase()) && !(window.leaveData && window.leaveData.some(l => l.name?.trim()?.toLowerCase() === m.name?.trim()?.toLowerCase())));
+  let missing = allMembers.filter(m => !occupiedMap.has(m.name?.trim()?.toLowerCase()) && !(window.isLeaveToday(m.name)));
 
   if (activeJobFilter) {
     missing = missing.filter(m => m.job === activeJobFilter);
@@ -1496,7 +1524,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
           const candidate = mainCandidates.find(m => {
             const lower = m.name?.trim()?.toLowerCase();
             if (assignedSet.has(lower)) return false;
-        if (window.leaveData && window.leaveData.some(l => l.name?.trim()?.toLowerCase() === m.name?.trim()?.toLowerCase())) return false;
+        if (window.isLeaveToday(m.name)) return false;
 
             const jCount = teamJobsCount[m.job] || 0;
             if (m.job === 'High Wizard') {
@@ -1531,7 +1559,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
     const allRemaining = masterList.filter(m => {
       const lower = m.name?.trim()?.toLowerCase();
       if (assignedSet.has(lower)) return false;
-        if (window.leaveData && window.leaveData.some(l => l.name?.trim()?.toLowerCase() === m.name?.trim()?.toLowerCase())) return false;
+        if (window.isLeaveToday(m.name)) return false;
       if (m.fieldPref === 'main') return false; // respect strict main preference
       return true;
     }).sort((a, b) => (b.power || 0) - (a.power || 0));
@@ -1837,7 +1865,7 @@ function renderAll() {
 function getRecommendedMain60Candidates() {
   const masterList = getMasterMemberList();
   // Filter out those locked to sub field
-  const eligible = masterList.filter(m => m.fieldPref !== 'sub' && !(window.leaveData && window.leaveData.some(l => l.name?.trim()?.toLowerCase() === m.name?.trim()?.toLowerCase())));
+  const eligible = masterList.filter(m => m.fieldPref !== 'sub' && !(window.isLeaveToday(m.name)));
   
   // 1. Get everyone locked to 'main'
   const mainLocked = eligible.filter(m => m.fieldPref === 'main').sort((a, b) => (b.power || 0) - (a.power || 0));
@@ -2372,6 +2400,17 @@ window.showToast = showToast;
 window.renderAll = renderAll;
 window.escapeHtml = escapeHtml;
 window.saveState = saveState;
+window.isLeaveToday = function(name) {
+  if (!window.leaveData || window.leaveData.length === 0) return false;
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+  const todayDay = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+  const lowerName = name?.trim()?.toLowerCase();
+  return window.leaveData.some(l => 
+    l.name?.trim()?.toLowerCase() === lowerName && 
+    (l.date === todayStr || l.day === todayDay)
+  );
+};
+
 
 window.onSidebarDragStart = function(event, name, job, power) {
   event.dataTransfer.setData('text/plain', JSON.stringify({ name, job, power }));
