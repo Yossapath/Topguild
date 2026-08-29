@@ -585,6 +585,16 @@ import {
           : "+ สร้างทีมใหม่";
       }
 
+      // Show/hide run controls for admin
+      const runCtrl = document.getElementById('dungeonRunControls');
+      if (runCtrl) runCtrl.style.display = isAdmin ? 'block' : 'none';
+
+      // Admin controls area
+      const adminCtrlArea = document.getElementById('dungeonAdminControls');
+      if (adminCtrlArea && isAdmin) {
+        adminCtrlArea.innerHTML = '';
+      }
+
       // ---- QUEUE PANEL ----
       const qList = document.getElementById("dqList");
       if (qList) {
@@ -601,7 +611,8 @@ import {
           qList.innerHTML =
             '<div style="padding:16px;text-align:center;color:var(--text-lo);font-size:13px;">ยังไม่มีคิว</div>';
         } else {
-          qList.innerHTML = filteredQueues
+          const badge = document.getElementById('dqCountBadge'); if (badge) badge.textContent = filteredQueues.filter(q => q.status !== 'done').length + ' คน';
+        qList.innerHTML = filteredQueues
             .map((q) => {
               // Check if in team
               const currentTeams = dungeonData.teams.filter(
