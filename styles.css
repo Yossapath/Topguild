@@ -1767,7 +1767,7 @@ footer {
   border: 2px solid var(--blue-300, #93c5fd) !important;
   background: transparent !important;
   color: var(--text-lo) !important;
-  border-radius: 8px !important; /* Square-ish rectangle */
+  border-radius: 0 !important;
   font-weight: 700 !important;
   font-size: 15px !important;
   cursor: pointer !important;
