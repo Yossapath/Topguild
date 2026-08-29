@@ -637,7 +637,10 @@ import {
         const badge = document.getElementById('dqCountBadge');
         if (badge) badge.textContent = filteredQueues.filter(q => q.status !== 'done').length + ' คน';
         if (filteredQueues.length === 0) {
-          qList.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-lo);font-size:14px;">ยังไม่มีคิว</div>';
+          qList.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:300px; color:var(--text-lo); font-size:15px; font-weight:600; background:var(--blue-50, #eff6ff); border:2px dashed var(--line); border-radius:12px; margin:16px;">
+  <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:12px; opacity:0.3; color:var(--text-lo);"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+  <div style="opacity:0.6;">ยังไม่มีคิวในขณะนี้</div>
+</div>`;
         } else {
           qList.innerHTML = filteredQueues.map((q) => {
             const currentTeams = dungeonData.teams.filter(t => t.type === currentTab);
