@@ -634,27 +634,28 @@ import {
             const eJob = window.escapeHtml ? window.escapeHtml(q.job || '') : q.job || '';
             const isOwner = window.currentUser && q.name?.toLowerCase() === window.currentUser.username?.toLowerCase();
             const memberCtrl = (!isAdmin && isOwner)
-              ? `<button onclick="deleteDungeonQueue('${q.id}')" style="font-size:12px;padding:4px 12px;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:6px;cursor:pointer;white-space:nowrap;">ยกเลิก</button>`
+              ? `<button onclick="deleteDungeonQueue('${q.id}')" style="font-size:13px;height:30px;padding:0 14px;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:6px;cursor:pointer;white-space:nowrap;">ยกเลิก</button>`
               : '';
             const adminCtrl = isAdmin
-              ? `<button onclick="changeDungeonQueueStatus('${q.id}','done')" style="font-size:12px;padding:4px 12px;border:none;background:var(--ok);color:white;border-radius:6px;cursor:pointer;white-space:nowrap;">ลงเสร็จ</button>
-                 <button onclick="deleteDungeonQueue('${q.id}')" style="font-size:12px;padding:4px 12px;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:6px;cursor:pointer;white-space:nowrap;">ลบ</button>`
+              ? `<button onclick="changeDungeonQueueStatus('${q.id}','done')" style="font-size:13px;height:30px;padding:0 14px;border:none;background:var(--ok);color:white;border-radius:6px;cursor:pointer;white-space:nowrap;">ลงเสร็จ</button>
+                 <button onclick="deleteDungeonQueue('${q.id}')" style="font-size:13px;height:30px;padding:0 14px;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:6px;cursor:pointer;white-space:nowrap;">ลบ</button>`
               : '';
             const dragAttr = isAdmin
               ? `draggable="true" data-queue-name="${eName}" data-queue-job="${eJob}" data-queue-power="${q.power || 0}" data-queue-time="${q.timestamp || ""}"`
               : '';
             const jobColor = q.job && window.JOB_COLORS && window.JOB_COLORS[q.job] ? window.JOB_COLORS[q.job] : 'var(--text-lo)';
             const statusBorder = q.status === 'done' ? 'var(--ok)' : q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)';
-            return `<div ${dragAttr} style="padding:14px 20px;border-bottom:1px solid var(--line);background:white;border-left:4px solid ${statusBorder};${isAdmin ? 'cursor:grab;' : ''}" ondragstart="window.onDungeonQueueDragStart(event)">
-              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                <strong style="color:var(--text-hi);font-size:18px;font-weight:800;">${eName}</strong>
-                <span style="font-size:13px;color:${jobColor};font-weight:700;background:rgba(0,0,0,0.07);padding:3px 10px;border-radius:8px;">${q.job || ''}</span>
-                ${q.power ? '<span style="font-size:13px;color:var(--text-lo);font-weight:700;">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
-                <span style="font-size:13px;padding:4px 14px;border-radius:20px;font-weight:700;color:${sColor};border:1.5px solid ${sColor};background:white;white-space:nowrap;">${sText}</span>
-                <div style="display:flex;gap:6px;margin-left:auto;">${adminCtrl}${memberCtrl}</div>
+            return `<div ${dragAttr} style="padding:10px 20px;border-bottom:1px solid var(--line);background:white;border-left:4px solid ${statusBorder};${isAdmin ? 'cursor:grab;' : ''}" ondragstart="window.onDungeonQueueDragStart(event)">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;">
+                <strong style="font-size:14px;font-weight:700;color:var(--text-hi);line-height:30px;white-space:nowrap;">${eName}</strong>
+                <span style="font-size:13px;color:${jobColor};font-weight:700;background:rgba(0,0,0,0.07);height:30px;padding:0 10px;border-radius:6px;display:inline-flex;align-items:center;white-space:nowrap;">${q.job || ''}</span>
+                ${q.power ? '<span style="font-size:13px;color:var(--text-lo);font-weight:600;line-height:30px;white-space:nowrap;">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
+                <span style="font-size:13px;font-weight:700;color:${sColor};border:1.5px solid ${sColor};height:30px;padding:0 12px;border-radius:20px;display:inline-flex;align-items:center;white-space:nowrap;background:white;">${sText}</span>
+                <div style="display:flex;gap:6px;margin-left:auto;flex-shrink:0;">${adminCtrl}${memberCtrl}</div>
               </div>
-              ${q.timestamp ? '<div style="font-size:12px;color:var(--text-lo);margin-top:5px;">' + new Date(q.timestamp).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' น.</div>' : ''}
+              ${q.timestamp ? '<div style="font-size:11px;color:var(--text-lo);margin-top:3px;">' + new Date(q.timestamp).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' น.</div>' : ''}
             </div>`;
+
           }).join('');
         }
       }
