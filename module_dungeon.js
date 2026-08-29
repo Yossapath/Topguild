@@ -949,7 +949,6 @@ import {
       } catch(e) { console.error('loadDungeonSchedule:', e); }
     })();
 
-    }
   } catch (err) {
     console.error("[Module Dungeon] ระบบดันเจี้ยนมีปัญหา:", err);
     const area = document.getElementById("dungeonTeamsArea");
