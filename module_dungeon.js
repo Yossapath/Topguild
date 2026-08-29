@@ -205,7 +205,7 @@ import {
       const q = dungeonData.queues.find(x => x.id === id);
       if (q) {
         const isOwner = window.currentUser && window.currentUser.username && q.name && q.name.toLowerCase() === window.currentUser.username.toLowerCase();
-        if (isAdmin || isOwner) {
+        if (isAdmin) {
           if (roundNumber === 1) q.round1 = !q.round1;
           if (roundNumber === 2) q.round2 = !q.round2;
           saveDungeonState();
@@ -697,8 +697,8 @@ import {
                 
                 <!-- Round Buttons -->
                 <div style="display:flex;gap:6px;margin-left:8px;">
-                  <button onclick="window.toggleDungeonQueueRound('${q.id}', 1)" style="font-size:12px;height:30px;padding:0 12px;border:none;background:${q.round1 ? '#10b981' : '#f59e0b'};color:white;border-radius:6px;cursor:${isAdmin || isOwner ? 'pointer' : 'default'};opacity:${isAdmin || isOwner ? '1' : '0.7'};white-space:nowrap;font-weight:700;">รอบ 1</button>
-                  <button onclick="window.toggleDungeonQueueRound('${q.id}', 2)" style="font-size:12px;height:30px;padding:0 12px;border:none;background:${q.round2 ? '#10b981' : '#f59e0b'};color:white;border-radius:6px;cursor:${isAdmin || isOwner ? 'pointer' : 'default'};opacity:${isAdmin || isOwner ? '1' : '0.7'};white-space:nowrap;font-weight:700;">รอบ 2</button>
+                  <button onclick="window.toggleDungeonQueueRound('${q.id}', 1)" style="font-size:12px;height:30px;padding:0 12px;border:none;background:${q.round1 ? '#10b981' : '#f59e0b'};color:white;border-radius:6px;cursor:${isAdmin ? 'pointer' : 'default'};opacity:${isAdmin ? '1' : '0.7'};white-space:nowrap;font-weight:700;">รอบ 1</button>
+                  <button onclick="window.toggleDungeonQueueRound('${q.id}', 2)" style="font-size:12px;height:30px;padding:0 12px;border:none;background:${q.round2 ? '#10b981' : '#f59e0b'};color:white;border-radius:6px;cursor:${isAdmin ? 'pointer' : 'default'};opacity:${isAdmin ? '1' : '0.7'};white-space:nowrap;font-weight:700;">รอบ 2</button>
                 </div>
                 <div style="display:flex;gap:6px;margin-left:auto;flex-shrink:0;">${adminCtrl}${memberCtrl}</div>
               </div>
