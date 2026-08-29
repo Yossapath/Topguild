@@ -194,7 +194,12 @@ import {
     window.changeDungeonQueueStatus = function (id, newStatus) {
       const q = dungeonData.queues.find((x) => x.id === id);
       if (q) {
-        q.status = newStatus;
+        if (newStatus === 'done') {
+           // Delete it from the array instead of keeping it hidden
+           dungeonData.queues = dungeonData.queues.filter(x => x.id !== id);
+        } else {
+           q.status = newStatus;
+        }
         saveDungeonState();
       }
     };
@@ -209,7 +214,10 @@ import {
           if (roundNumber === 1) q.round1 = !q.round1;
           if (roundNumber === 2) {
             q.round2 = !q.round2;
-            if (q.round2) q.status = 'done';
+            if (q.round2) {
+               // Auto delete it instead of just marking as done and hiding
+               dungeonData.queues = dungeonData.queues.filter(x => x.id !== id);
+            }
           }
           saveDungeonState();
         }
@@ -642,7 +650,7 @@ import {
       const qList = document.getElementById("dqList");
       if (qList) {
         const filteredQueues = (dungeonData.queues || []).filter(
-          (q) => q.dungeon === currentTab,
+          (q) => q.dungeon === currentTab && q.status !== 'done'
         );
         filteredQueues.sort((a, b) => {
           const aDone = a.status === 'done' ? 1 : 0;
