@@ -229,10 +229,7 @@ function applyRolePermissions() {
   const rmTeamBtn = document.getElementById('btnRemoveTeamBtn');
   if (rmTeamBtn) rmTeamBtn.style.display = isAdmin ? 'block' : 'none';
 
-  // Restore last visited tab after login/role applied
-  setTimeout(() => {
-    if (typeof window._restoreLastTab === 'function') window._restoreLastTab();
-  }, 100);
+
 }
 
 // ==========================================
