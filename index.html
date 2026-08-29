@@ -496,12 +496,28 @@
             <option value="บับเบิ้ล (Bubble)">ดันบับเบิ้ล (10 คน)</option>
             <option value="กระจก (Mirror)">ดันกระจก (10 คน)</option>
           </select>
-          <button class="btn-primary" style="width:100%; font-size:17px; padding:16px; font-weight:700; border-radius:10px;" onclick="bookDungeonQueue()">🎯 จองคิวลงดันเจี้ยน</button>
-          <!-- Admin run queue controls -->
-          <div id="dungeonRunControls" style="margin-top:16px; display:none;">
+          <div id="dqScheduleStatus" style="margin-bottom:12px; padding:10px 14px; border-radius:8px; font-size:13px; font-weight:600; display:none;"></div>
+          <button class="btn-primary" id="btnBookDungeon" style="width:100%; font-size:17px; padding:16px; font-weight:700; border-radius:10px;" onclick="bookDungeonQueue()">🎯 จองคิวลงดันเจี้ยน</button>
+          <!-- Admin booking schedule panel -->
+          <div id="dungeonAdminPanel" style="margin-top:16px; display:none;">
             <hr style="border:none; border-top:1px solid var(--line); margin:16px 0;">
-            <button class="btn-secondary" style="width:100%; font-size:14px; padding:12px; font-weight:700; border-color:var(--ok); color:var(--ok);" onclick="window.runDungeonQueue && window.runDungeonQueue()">▶️ รันคิว (จัดทีมอัตโนมัติ)</button>
-            <button class="btn-secondary" style="width:100%; font-size:14px; padding:10px; margin-top:8px; font-weight:600; border-color:var(--danger); color:var(--danger);" onclick="window.clearDungeonQueues && window.clearDungeonQueues()">🗑️ ล้างคิวทั้งหมด</button>
+            <div style="background:var(--blue-50,#eff6ff); border:1.5px solid var(--blue-200,#bfdbfe); border-radius:10px; padding:16px;">
+              <div style="font-size:13px; font-weight:700; color:var(--blue-700); margin-bottom:12px;">⚙️ ตั้งค่าช่วงเวลาเปิดจอง</div>
+              <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:4px; text-transform:uppercase;">วันที่เปิดจอง</label>
+              <input type="date" id="dqOpenDate" class="form-control" style="width:100%; margin-bottom:10px; font-size:14px; padding:10px; box-sizing:border-box;">
+              <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <div style="flex:1;">
+                  <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:4px; text-transform:uppercase;">เวลาเปิด</label>
+                  <input type="time" id="dqOpenTime" class="form-control" style="width:100%; font-size:14px; padding:10px; box-sizing:border-box;">
+                </div>
+                <div style="flex:1;">
+                  <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:4px; text-transform:uppercase;">เวลาปิด</label>
+                  <input type="time" id="dqCloseTime" class="form-control" style="width:100%; font-size:14px; padding:10px; box-sizing:border-box;">
+                </div>
+              </div>
+              <button class="btn-primary" style="width:100%; font-size:14px; padding:12px; font-weight:700;" onclick="window.saveDungeonSchedule && window.saveDungeonSchedule()">💾 บันทึกตั้งค่า</button>
+              <button class="btn-secondary" style="width:100%; font-size:13px; padding:9px; margin-top:8px; font-weight:600; border-color:var(--danger); color:var(--danger);" onclick="window.clearDungeonSchedule && window.clearDungeonSchedule()">🔓 เปิดจองไม่จำกัดเวลา</button>
+            </div>
           </div>
         </div>
         <!-- Queue list -->

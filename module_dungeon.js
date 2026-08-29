@@ -661,28 +661,33 @@ import {
               const eJob = window.escapeHtml
                 ? window.escapeHtml(q.job || "")
                 : q.job || "";
-              const memberCtrl = (!isAdmin && window.currentUser && q.name?.toLowerCase() === window.currentUser.username?.toLowerCase()) ? `<div style="display:flex;margin-top:8px;"><button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:11px;padding:2px 8px;color:var(--danger);border-color:var(--danger);">ยกเลิกการจอง</button></div>` : '';
-              const adminCtrl = isAdmin ? `<div style="display:flex;gap:4px;margin-top:8px;">
-          <button class="btn-secondary" onclick="changeDungeonQueueStatus('${q.id}','waiting')" style="font-size:11px;padding:2px 4px;">รอ</button>
-          <button class="btn-secondary" onclick="changeDungeonQueueStatus('${q.id}','active')" style="font-size:11px;padding:2px 4px;">กำลังลง</button>
-          <button class="btn-secondary" onclick="changeDungeonQueueStatus('${q.id}','done')" style="font-size:11px;padding:2px 4px;">เสร็จ</button>
-          <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:11px;padding:2px 4px;color:var(--danger);border-color:var(--danger);">ลบ</button>
-        </div>`
-                : "";
+              const isOwner = window.currentUser && q.name?.toLowerCase() === window.currentUser.username?.toLowerCase();
+              const memberCtrl = (!isAdmin && isOwner) ? `<div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:13px;padding:8px 16px;color:var(--danger);border-color:var(--danger);flex:1;">🗑 ยกเลิกการจอง</button>
+              </div>` : '';
+              const adminCtrl = isAdmin ? `<div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn-primary" onclick="changeDungeonQueueStatus('${q.id}','done')" style="font-size:13px;padding:8px 16px;flex:1;background:var(--ok);border:none;">✅ ลงเสร็จ</button>
+                <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:13px;padding:8px 16px;color:var(--danger);border-color:var(--danger);">🗑 ลบ</button>
+              </div>` : '';
               const dragAttr = isAdmin
                 ? `draggable="true" data-queue-name="${eName}" data-queue-job="${eJob}" data-queue-power="${q.power || 0}" data-queue-time="${q.timestamp || ""}"`
                 : "";
-              return `<div ${dragAttr} style="padding:10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;${isAdmin ? "cursor:grab;" : ""}" ondragstart="window.onDungeonQueueDragStart(event)">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <strong style="color:var(--text-hi);font-size:14px;">${eName}</strong>
-              <span style="font-size:11px;color:${q.job && window.JOB_COLORS && window.JOB_COLORS[q.job] ? window.JOB_COLORS[q.job] : "var(--text-lo)"};margin-left:6px;font-weight:600;">${q.job || ""}</span>
-              ${q.power ? '<span style="font-size:11px;color:var(--text-lo);">' + Number(q.power).toLocaleString("en-US") + "</span>" : ""}
-              ${q.timestamp ? '<div style="font-size:10.5px;color:var(--text-lo);margin-top:4px;">🕒 ' + new Date(q.timestamp).toLocaleString("th-TH", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) + " น.</div>" : ""}
-            </div>
-            <span style="font-size:11px;padding:2px 6px;border-radius:12px;font-weight:600;color:${sColor};">${sText}</span>
-          </div>
-          ${adminCtrl}${memberCtrl}
+              const jobColor = q.job && window.JOB_COLORS && window.JOB_COLORS[q.job] ? window.JOB_COLORS[q.job] : 'var(--text-lo)';
+              const statusBg = q.status === 'done' ? 'rgba(22,163,74,0.08)' : q.status === 'active' ? 'rgba(37,99,235,0.08)' : 'rgba(245,158,11,0.08)';
+              const statusBorder = q.status === 'done' ? 'var(--ok)' : q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)';
+              return `<div ${dragAttr} style="padding:16px 20px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;background:${statusBg};border-left:4px solid ${statusBorder};${isAdmin ? 'cursor:grab;' : ''}" ondragstart="window.onDungeonQueueDragStart(event)">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+                  <div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                      <strong style="color:var(--text-hi);font-size:17px;font-weight:700;">${eName}</strong>
+                      <span style="font-size:12px;color:${jobColor};font-weight:700;background:rgba(0,0,0,0.06);padding:3px 10px;border-radius:10px;">${q.job || ''}</span>
+                      ${q.power ? '<span style="font-size:12px;color:var(--text-lo);font-weight:600;">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
+                    </div>
+                    ${q.timestamp ? '<div style="font-size:11px;color:var(--text-lo);">🕒 ' + new Date(q.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' น.</div>' : ''}
+                  </div>
+                  <span style="font-size:12px;padding:5px 14px;border-radius:20px;font-weight:700;color:${sColor};border:1.5px solid ${sColor};background:white;white-space:nowrap;flex-shrink:0;">${sText}</span>
+                </div>
+                ${adminCtrl}${memberCtrl}
               </div>`;
             })
             .join("");
@@ -892,6 +897,83 @@ import {
     if (typeof setupDungeonFirebase === "function" && !window._dungeonReady) {
       window._dungeonReady = true;
       await setupDungeonFirebase();
+    // ====== DUNGEON BOOKING SCHEDULE ======
+    window.saveDungeonSchedule = async function() {
+      if (!window.isUserAdmin || !window.isUserAdmin()) return;
+      const openDate = document.getElementById('dqOpenDate')?.value || '';
+      const openTime = document.getElementById('dqOpenTime')?.value || '';
+      const closeTime = document.getElementById('dqCloseTime')?.value || '';
+      if (!openDate || !openTime || !closeTime) return window.showToast('กรุณากรอกวันที่และเวลาให้ครบ', 'error');
+      try {
+        const scheduleRef = doc(window.db, 'guild_system', 'dungeon_schedule');
+        await setDoc(scheduleRef, { openDate, openTime, closeTime, updatedAt: Date.now() });
+        dungeonData._schedule = { openDate, openTime, closeTime };
+        window.showToast('บันทึกตั้งค่าช่วงเวลาเปิดจองเรียบร้อยแล้ว', 'success');
+        if (typeof renderDungeonScheduleStatus === 'function') renderDungeonScheduleStatus(true);
+      } catch(e) { window.showToast('เกิดข้อผิดพลาด', 'error'); }
+    };
+
+    window.clearDungeonSchedule = async function() {
+      if (!window.isUserAdmin || !window.isUserAdmin()) return;
+      try {
+        const scheduleRef = doc(window.db, 'guild_system', 'dungeon_schedule');
+        await setDoc(scheduleRef, { openDate: '', openTime: '', closeTime: '' });
+        dungeonData._schedule = null;
+        window.showToast('เปิดจองไม่จำกัดเวลาแล้ว', 'success');
+        if (typeof renderDungeonScheduleStatus === 'function') renderDungeonScheduleStatus(window.isUserAdmin && window.isUserAdmin());
+      } catch(e) { window.showToast('เกิดข้อผิดพลาด', 'error'); }
+    };
+
+    function renderDungeonScheduleStatus(isAdmin) {
+      const statusEl = document.getElementById('dqScheduleStatus');
+      const bookBtn = document.getElementById('btnBookDungeon');
+      if (!statusEl) return;
+      const sched = dungeonData._schedule;
+      if (!sched || !sched.openDate || !sched.openTime || !sched.closeTime) {
+        statusEl.style.display = 'none';
+        if (bookBtn) { bookBtn.disabled = false; bookBtn.style.opacity = '1'; }
+        return;
+      }
+      const now = new Date();
+      const nowDateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+      const nowTimeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
+      const isOpen = nowDateStr === sched.openDate && nowTimeStr >= sched.openTime && nowTimeStr <= sched.closeTime;
+      if (isOpen) {
+        statusEl.style.cssText = 'display:block;background:rgba(22,163,74,0.12);color:var(--ok);border:1px solid var(--ok);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;';
+        statusEl.textContent = '🟢 เปิดรับจองอยู่ (ถึง ' + sched.closeTime + ' น.)';
+        if (bookBtn) { bookBtn.disabled = false; bookBtn.style.opacity = '1'; }
+      } else {
+        statusEl.style.cssText = 'display:block;background:rgba(239,68,68,0.08);color:var(--danger);border:1px solid var(--danger);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;';
+        const futureOpen = nowDateStr < sched.openDate || (nowDateStr === sched.openDate && nowTimeStr < sched.openTime);
+        statusEl.textContent = futureOpen
+          ? '🔒 จะเปิดจองวันที่ ' + sched.openDate + ' เวลา ' + sched.openTime + '–' + sched.closeTime + ' น.'
+          : '🔒 ปิดรับการจองแล้ว';
+        if (bookBtn && !isAdmin) { bookBtn.disabled = true; bookBtn.style.opacity = '0.5'; }
+      }
+    }
+    window.renderDungeonScheduleStatus = renderDungeonScheduleStatus;
+
+    await (async function loadDungeonSchedule() {
+      if (!window.db) return;
+      try {
+        const schedRef = doc(window.db, 'guild_system', 'dungeon_schedule');
+        const snap = await getDoc(schedRef);
+        if (snap.exists()) {
+          const s = snap.data();
+          if (s && (s.openDate || s.openTime)) {
+            dungeonData._schedule = s;
+            const od = document.getElementById('dqOpenDate');
+            const ot = document.getElementById('dqOpenTime');
+            const ct = document.getElementById('dqCloseTime');
+            if (od) od.value = s.openDate || '';
+            if (ot) ot.value = s.openTime || '';
+            if (ct) ct.value = s.closeTime || '';
+            renderDungeonScheduleStatus(window.isUserAdmin && window.isUserAdmin());
+          }
+        }
+      } catch(e) { console.error('loadDungeonSchedule:', e); }
+    })();
+
     }
   } catch (err) {
     console.error("[Module Dungeon] ระบบดันเจี้ยนมีปัญหา:", err);
