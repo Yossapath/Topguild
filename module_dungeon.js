@@ -585,8 +585,8 @@ import {
           : "+ สร้างทีมใหม่";
       }
 
-      // Show/hide run controls for admin
-      const runCtrl = document.getElementById('dungeonRunControls');
+      // Show/hide admin booking panel
+      const runCtrl = document.getElementById('dungeonAdminPanel');
       if (runCtrl) runCtrl.style.display = isAdmin ? 'block' : 'none';
 
       // Admin controls area
@@ -662,11 +662,11 @@ import {
                 ? window.escapeHtml(q.job || "")
                 : q.job || "";
               const isOwner = window.currentUser && q.name?.toLowerCase() === window.currentUser.username?.toLowerCase();
-              const memberCtrl = (!isAdmin && isOwner) ? `<div style="display:flex;gap:8px;margin-top:12px;">
-                <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:13px;padding:8px 16px;color:var(--danger);border-color:var(--danger);flex:1;">🗑 ยกเลิกการจอง</button>
+              const memberCtrl = (!isAdmin && isOwner) ? `<div style="display:flex;gap:6px;margin-top:8px;">
+                <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:12px;padding:5px 12px;color:var(--danger);border-color:var(--danger);flex:1;">ยกเลิกการจอง</button>
               </div>` : '';
-              const adminCtrl = isAdmin ? `<div style="display:flex;gap:8px;margin-top:12px;">
-                <button class="btn-primary" onclick="changeDungeonQueueStatus('${q.id}','done')" style="font-size:13px;padding:8px 16px;flex:1;background:var(--ok);border:none;">✅ ลงเสร็จ</button>
+              const adminCtrl = isAdmin ? `<div style="display:flex;gap:6px;margin-top:8px;">
+                <button class="btn-primary" onclick="changeDungeonQueueStatus('${q.id}','done')" style="font-size:12px;padding:5px 12px;background:var(--ok);border:none;">ลงเสร็จ</button>
                 <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:13px;padding:8px 16px;color:var(--danger);border-color:var(--danger);">🗑 ลบ</button>
               </div>` : '';
               const dragAttr = isAdmin
