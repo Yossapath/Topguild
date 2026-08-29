@@ -863,6 +863,7 @@ import {
     if (typeof setupDungeonFirebase === "function" && !window._dungeonReady) {
       window._dungeonReady = true;
       await setupDungeonFirebase();
+    }
     // ====== DUNGEON BOOKING SCHEDULE ======
     window.saveDungeonSchedule = async function() {
       if (!window.isUserAdmin || !window.isUserAdmin()) return;
