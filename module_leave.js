@@ -11,6 +11,7 @@ import { doc, getDoc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from 
 
 window.leaveData = window.leaveData || [];
 let unsubLeaveListener = null;
+let unsubLeaveHistoryListener = null;
 
 window.setupLeaveFirebase = async function() {
   if (!window.db) return;
