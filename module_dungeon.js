@@ -31,11 +31,38 @@ import {
 
         unsubDungeonListener = onSnapshot(dungRef, (snapshot) => {
           if (snapshot.exists()) {
+            const oldSchedule = dungeonData ? dungeonData._schedule : null;
             dungeonData = snapshot.data();
+            dungeonData._schedule = oldSchedule; // Preserve schedule across queue updates
             window.dungeonData = dungeonData;
             if (!dungeonData.queues) dungeonData.queues = [];
             if (!dungeonData.teams) dungeonData.teams = [];
             renderDungeonPage();
+          }
+        });
+
+        // -------------------------
+        // Real-time Schedule Listener
+        // -------------------------
+        const schedRef = doc(window.db, 'guild_system', 'dungeon_schedule');
+        onSnapshot(schedRef, (snap) => {
+          if (snap.exists()) {
+            const s = snap.data();
+            dungeonData._schedule = s || null;
+            const od = document.getElementById('dqOpenDate');
+            const ot = document.getElementById('dqOpenTime');
+            const ct = document.getElementById('dqCloseTime');
+            if (s && (s.openDate || s.openTime)) {
+              if (od) od.value = s.openDate || '';
+              if (ot) ot.value = s.openTime || '06:00';
+              if (ct) ct.value = s.closeTime || '23:59';
+            } else {
+              if (ot && !ot.value) ot.value = '06:00';
+              if (ct && !ct.value) ct.value = '23:59';
+            }
+            if (typeof renderDungeonScheduleStatus === 'function') {
+              renderDungeonScheduleStatus(window.isUserAdmin && window.isUserAdmin());
+            }
           }
         });
       } catch (e) {
@@ -922,32 +949,7 @@ import {
     }
     window.renderDungeonScheduleStatus = renderDungeonScheduleStatus;
 
-    await (async function loadDungeonSchedule() {
-      if (!window.db) return;
-      try {
-        const schedRef = doc(window.db, 'guild_system', 'dungeon_schedule');
-        const snap = await getDoc(schedRef);
-        if (snap.exists()) {
-          const s = snap.data();
-          if (s && (s.openDate || s.openTime)) {
-            dungeonData._schedule = s;
-            const od = document.getElementById('dqOpenDate');
-            const ot = document.getElementById('dqOpenTime');
-            const ct = document.getElementById('dqCloseTime');
-            if (od) od.value = s.openDate || '';
-            if (ot) ot.value = s.openTime || '06:00';
-            if (ct) ct.value = s.closeTime || '23:59';
-            renderDungeonScheduleStatus(window.isUserAdmin && window.isUserAdmin());
-          }
-        } else {
-          // No schedule set yet - pre-fill default times for admin
-          const ot = document.getElementById('dqOpenTime');
-          const ct = document.getElementById('dqCloseTime');
-          if (ot && !ot.value) ot.value = '06:00';
-          if (ct && !ct.value) ct.value = '23:59';
-        }
-      } catch(e) { console.error('loadDungeonSchedule:', e); }
-    })();
+
 
   } catch (err) {
     console.error("[Module Dungeon] ระบบดันเจี้ยนมีปัญหา:", err);
