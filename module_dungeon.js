@@ -207,7 +207,10 @@ import {
         const isOwner = window.currentUser && window.currentUser.username && q.name && q.name.toLowerCase() === window.currentUser.username.toLowerCase();
         if (isAdmin) {
           if (roundNumber === 1) q.round1 = !q.round1;
-          if (roundNumber === 2) q.round2 = !q.round2;
+          if (roundNumber === 2) {
+            q.round2 = !q.round2;
+            if (q.round2) q.status = 'done';
+          }
           saveDungeonState();
         }
       }
