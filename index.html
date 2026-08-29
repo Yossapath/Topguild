@@ -79,7 +79,20 @@
         if (pageId === 'page-attendance' && typeof window.renderAttendanceTable === 'function') {
             window.renderAttendanceTable();
         }
+
+        // Save current tab to localStorage
+        try { localStorage.setItem('guild_active_tab', pageId); } catch(e) {}
       }
+
+    // Restore last active tab after login
+    window._restoreLastTab = function() {
+      try {
+        var last = localStorage.getItem('guild_active_tab');
+        if (last && document.getElementById(last)) {
+          switchTab(last);
+        }
+      } catch(e) {}
+    };
 
     function openSettingsPage() {
       switchTab('page-settings');
