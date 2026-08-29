@@ -199,6 +199,19 @@ import {
       }
     };
 
+    
+    window.toggleDungeonQueueRound = function(id, roundNumber) {
+      const isAdmin = typeof window.isUserAdmin === 'function' && window.isUserAdmin();
+      const q = dungeonData.queues.find(x => x.id === id);
+      if (q) {
+        const isOwner = window.currentUser && window.currentUser.username && q.name && q.name.toLowerCase() === window.currentUser.username.toLowerCase();
+        if (isAdmin || isOwner) {
+          if (roundNumber === 1) q.round1 = !q.round1;
+          if (roundNumber === 2) q.round2 = !q.round2;
+          saveDungeonState();
+        }
+      }
+    };
     window.deleteDungeonQueue = function (id) {
       const q = dungeonData.queues.find((x) => x.id === id);
       if (window.writeSystemLog)
@@ -642,7 +655,7 @@ import {
   <div style="opacity:0.6;">ยังไม่มีคิวในขณะนี้</div>
 </div>`;
         } else {
-          qList.innerHTML = filteredQueues.map((q) => {
+          qList.innerHTML = filteredQueues.map((q, index) => {
             const currentTeams = dungeonData.teams.filter(t => t.type === currentTab);
             let inTeamIndex = -1;
             currentTeams.forEach((team, tIdx) => {
@@ -677,10 +690,16 @@ import {
             const statusBorder = q.status === 'done' ? 'var(--ok)' : q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)';
             return `<div ${dragAttr} style="padding:10px 20px;border-bottom:1px solid var(--line);background:white;border-left:4px solid ${statusBorder};${isAdmin ? 'cursor:grab;' : ''}" ondragstart="window.onDungeonQueueDragStart(event)">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;">
-                <strong style="font-size:14px;font-weight:700;color:var(--text-hi);line-height:30px;white-space:nowrap;">${eName}</strong>
+                <strong style="font-size:14px;font-weight:700;color:var(--text-hi);line-height:30px;white-space:nowrap;"><span style="color:var(--text-lo);margin-right:4px;">${index + 1}.</span>${eName}</strong>
                 <span style="font-size:13px;color:${jobColor};font-weight:700;background:rgba(0,0,0,0.07);height:30px;padding:0 10px;border-radius:6px;display:inline-flex;align-items:center;white-space:nowrap;">${q.job || ''}</span>
                 ${q.power ? '<span style="font-size:13px;color:var(--text-lo);font-weight:600;line-height:30px;white-space:nowrap;">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
                 <span style="font-size:13px;font-weight:700;color:${sColor};border:1.5px solid ${sColor};height:30px;padding:0 12px;border-radius:20px;display:inline-flex;align-items:center;white-space:nowrap;background:white;">${sText}</span>
+                
+                <!-- Round Buttons -->
+                <div style="display:flex;gap:6px;margin-left:8px;">
+                  <button onclick="window.toggleDungeonQueueRound('${q.id}', 1)" style="font-size:12px;height:30px;padding:0 12px;border:none;background:${q.round1 ? '#10b981' : '#f59e0b'};color:white;border-radius:6px;cursor:${isAdmin || isOwner ? 'pointer' : 'default'};opacity:${isAdmin || isOwner ? '1' : '0.7'};white-space:nowrap;font-weight:700;">รอบ 1</button>
+                  <button onclick="window.toggleDungeonQueueRound('${q.id}', 2)" style="font-size:12px;height:30px;padding:0 12px;border:none;background:${q.round2 ? '#10b981' : '#f59e0b'};color:white;border-radius:6px;cursor:${isAdmin || isOwner ? 'pointer' : 'default'};opacity:${isAdmin || isOwner ? '1' : '0.7'};white-space:nowrap;font-weight:700;">รอบ 2</button>
+                </div>
                 <div style="display:flex;gap:6px;margin-left:auto;flex-shrink:0;">${adminCtrl}${memberCtrl}</div>
               </div>
               ${q.timestamp ? '<div style="font-size:11px;color:var(--text-lo);margin-top:3px;">' + new Date(q.timestamp).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' น.</div>' : ''}
