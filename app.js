@@ -369,6 +369,16 @@ async function setupFirebase(configObj) {
 
     renderAll();
 
+    // Restore last active tab after initial data load
+    setTimeout(function() {
+      try {
+        var last = localStorage.getItem('guild_active_tab');
+        if (last && document.getElementById(last) && typeof window.switchTab === 'function') {
+          window.switchTab(last);
+        }
+      } catch(e) {}
+    }, 400);
+
     // Step 2: Real-time listener for live updates
     unsubRosterListener = onSnapshot(rosterDocRef, (snap) => {
       const r = toRoster(snap);
