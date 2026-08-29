@@ -469,7 +469,7 @@
 
     <section id="page-dungeons" class="page">
     <!-- Full-width dungeon booking UI -->
-    <div style="background: var(--surface); border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden;">
+    <div style="background: white; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden;">
       <!-- Header -->
       <div style="background: var(--blue-700); color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <h2 style="margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.5px;">ระบบจองคิวลงดันเจี้ยน</h2>
@@ -482,9 +482,9 @@
         <button type="button" class="dungeon-tab" data-type="กระจก (Mirror)" onclick="switchDungeonTab('กระจก (Mirror)')" style="flex:1; padding:13px; font-size:15px; font-weight:700; border-radius:0; border:none; border-bottom:3px solid transparent; background:white; cursor:pointer;">กระจก (Mirror)</button>
       </div>
       <!-- Body: form left + queue right -->
-      <div style="display:flex; align-items:stretch;">
+      <div style="display:flex; align-items:flex-start;">
         <!-- Booking form -->
-        <div style="width:340px; flex-shrink:0; border-right:2px solid var(--line); padding:24px; background:var(--surface);">
+        <div style="width:340px; flex-shrink:0; border-right:2px solid var(--line); padding:24px; background:white;">
           <h3 style="margin:0 0 20px 0; font-size:16px; color:var(--blue-700); font-weight:700;">จองคิวลงดัน</h3>
           <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">ชื่อตัวละคร</label>
           <input type="text" id="dqName" class="form-control autocomplete-member" data-action="dungeonQueue" placeholder="พิมพ์ชื่อ หรือคลิกเพื่อเลือก..." autocomplete="off" style="font-size:15px; padding:12px 14px; height:48px; width:100%; box-sizing:border-box; margin-bottom:6px;">
