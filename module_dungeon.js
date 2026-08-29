@@ -675,20 +675,21 @@ import {
               const jobColor = q.job && window.JOB_COLORS && window.JOB_COLORS[q.job] ? window.JOB_COLORS[q.job] : 'var(--text-lo)';
               const statusBg = q.status === 'done' ? 'rgba(22,163,74,0.08)' : q.status === 'active' ? 'rgba(37,99,235,0.08)' : 'rgba(245,158,11,0.08)';
               const statusBorder = q.status === 'done' ? 'var(--ok)' : q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)';
-              return `<div ${dragAttr} style="padding:16px 20px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;background:${statusBg};border-left:4px solid ${statusBorder};${isAdmin ? 'cursor:grab;' : ''}" ondragstart="window.onDungeonQueueDragStart(event)">
+              return `<div ${dragAttr} style="padding:18px 22px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;background:${statusBg};border-left:4px solid ${statusBorder};${isAdmin ? 'cursor:grab;' : ''}" ondragstart="window.onDungeonQueueDragStart(event)">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-                  <div>
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-                      <strong style="color:var(--text-hi);font-size:17px;font-weight:700;">${eName}</strong>
-                      <span style="font-size:12px;color:${jobColor};font-weight:700;background:rgba(0,0,0,0.06);padding:3px 10px;border-radius:10px;">${q.job || ''}</span>
-                      ${q.power ? '<span style="font-size:12px;color:var(--text-lo);font-weight:600;">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
+                  <div style="flex:1;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+                      <strong style="color:var(--text-hi);font-size:20px;font-weight:800;">${eName}</strong>
+                      <span style="font-size:14px;color:${jobColor};font-weight:700;background:rgba(0,0,0,0.07);padding:4px 12px;border-radius:10px;">${q.job || ''}</span>
+                      ${q.power ? '<span style="font-size:14px;color:var(--text-lo);font-weight:700;">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
                     </div>
-                    ${q.timestamp ? '<div style="font-size:11px;color:var(--text-lo);">🕒 ' + new Date(q.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' น.</div>' : ''}
+                    ${q.timestamp ? '<div style="font-size:13px;color:var(--text-lo);font-weight:500;">🕒 ' + new Date(q.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' น.</div>' : ''}
                   </div>
-                  <span style="font-size:12px;padding:5px 14px;border-radius:20px;font-weight:700;color:${sColor};border:1.5px solid ${sColor};background:white;white-space:nowrap;flex-shrink:0;">${sText}</span>
+                  <span style="font-size:14px;padding:6px 16px;border-radius:20px;font-weight:700;color:${sColor};border:1.5px solid ${sColor};background:white;white-space:nowrap;flex-shrink:0;">${sText}</span>
                 </div>
                 ${adminCtrl}${memberCtrl}
               </div>`;
+
             })
             .join("");
         }
