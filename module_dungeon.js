@@ -602,96 +602,61 @@ import {
           (q) => q.dungeon === currentTab,
         );
         filteredQueues.sort((a, b) => {
-          const aDone = a.status === "done" ? 1 : 0;
-          const bDone = b.status === "done" ? 1 : 0;
+          const aDone = a.status === 'done' ? 1 : 0;
+          const bDone = b.status === 'done' ? 1 : 0;
           if (aDone !== bDone) return aDone - bDone;
           return (a.timestamp || 0) - (b.timestamp || 0);
         });
+        const badge = document.getElementById('dqCountBadge');
+        if (badge) badge.textContent = filteredQueues.filter(q => q.status !== 'done').length + ' คน';
         if (filteredQueues.length === 0) {
-          qList.innerHTML =
-            '<div style="padding:16px;text-align:center;color:var(--text-lo);font-size:13px;">ยังไม่มีคิว</div>';
+          qList.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-lo);font-size:14px;">ยังไม่มีคิว</div>';
         } else {
-          const badge = document.getElementById('dqCountBadge'); if (badge) badge.textContent = filteredQueues.filter(q => q.status !== 'done').length + ' คน';
-        qList.innerHTML = filteredQueues
-            .map((q) => {
-              // Check if in team
-              const currentTeams = dungeonData.teams.filter(
-                (t) => t.type === currentTab,
-              );
-              let inTeamIndex = -1;
-              currentTeams.forEach((team, tIdx) => {
-                if (team.members && Array.isArray(team.members)) {
-                  if (
-                    team.members.some(
-                      (m) =>
-                        m &&
-                        m.name &&
-                        q &&
-                        q.name &&
-                        m.name?.toLowerCase() === q.name?.toLowerCase(),
-                    )
-                  ) {
-                    inTeamIndex = tIdx + 1;
-                  }
+          qList.innerHTML = filteredQueues.map((q) => {
+            const currentTeams = dungeonData.teams.filter(t => t.type === currentTab);
+            let inTeamIndex = -1;
+            currentTeams.forEach((team, tIdx) => {
+              if (team.members && Array.isArray(team.members)) {
+                if (team.members.some(m => m && m.name && q && q.name && m.name?.toLowerCase() === q.name?.toLowerCase())) {
+                  inTeamIndex = tIdx + 1;
                 }
-              });
-
-              let sColor, sText;
-              if (inTeamIndex !== -1) {
-                sColor = "var(--blue-500)";
-                sText = "อยู่ในทีม " + inTeamIndex;
-              } else {
-                sColor =
-                  q.status === "done"
-                    ? "var(--ok)"
-                    : q.status === "active"
-                      ? "var(--blue-500)"
-                      : "var(--warn)";
-                sText =
-                  q.status === "done"
-                    ? "สำเร็จ"
-                    : q.status === "active"
-                      ? "กำลังลงดัน"
-                      : "รอลงดัน";
               }
-
-              const eName = window.escapeHtml
-                ? window.escapeHtml(q.name)
-                : q.name;
-              const eJob = window.escapeHtml
-                ? window.escapeHtml(q.job || "")
-                : q.job || "";
-              const isOwner = window.currentUser && q.name?.toLowerCase() === window.currentUser.username?.toLowerCase();
-              const memberCtrl = (!isAdmin && isOwner) ? `<div style="display:flex;gap:6px;margin-top:8px;">
-                <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:12px;padding:5px 12px;color:var(--danger);border-color:var(--danger);flex:1;">ยกเลิกการจอง</button>
-              </div>` : '';
-              const adminCtrl = isAdmin ? `<div style="display:flex;gap:6px;margin-top:8px;">
-                <button class="btn-primary" onclick="changeDungeonQueueStatus('${q.id}','done')" style="font-size:12px;padding:5px 12px;background:var(--ok);border:none;">ลงเสร็จ</button>
-                <button class="btn-secondary" onclick="deleteDungeonQueue('${q.id}')" style="font-size:13px;padding:8px 16px;color:var(--danger);border-color:var(--danger);">🗑 ลบ</button>
-              </div>` : '';
-              const dragAttr = isAdmin
-                ? `draggable="true" data-queue-name="${eName}" data-queue-job="${eJob}" data-queue-power="${q.power || 0}" data-queue-time="${q.timestamp || ""}"`
-                : "";
-              const jobColor = q.job && window.JOB_COLORS && window.JOB_COLORS[q.job] ? window.JOB_COLORS[q.job] : 'var(--text-lo)';
-              const statusBg = q.status === 'done' ? 'rgba(22,163,74,0.08)' : q.status === 'active' ? 'rgba(37,99,235,0.08)' : 'rgba(245,158,11,0.08)';
-              const statusBorder = q.status === 'done' ? 'var(--ok)' : q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)';
-              return `<div ${dragAttr} style="padding:18px 22px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;background:${statusBg};border-left:4px solid ${statusBorder};${isAdmin ? 'cursor:grab;' : ''}" ondragstart="window.onDungeonQueueDragStart(event)">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-                  <div style="flex:1;">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-                      <strong style="color:var(--text-hi);font-size:20px;font-weight:800;">${eName}</strong>
-                      <span style="font-size:14px;color:${jobColor};font-weight:700;background:rgba(0,0,0,0.07);padding:4px 12px;border-radius:10px;">${q.job || ''}</span>
-                      ${q.power ? '<span style="font-size:14px;color:var(--text-lo);font-weight:700;">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
-                    </div>
-                    ${q.timestamp ? '<div style="font-size:13px;color:var(--text-lo);font-weight:500;">🕒 ' + new Date(q.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' น.</div>' : ''}
-                  </div>
-                  <span style="font-size:14px;padding:6px 16px;border-radius:20px;font-weight:700;color:${sColor};border:1.5px solid ${sColor};background:white;white-space:nowrap;flex-shrink:0;">${sText}</span>
-                </div>
-                ${adminCtrl}${memberCtrl}
-              </div>`;
-
-            })
-            .join("");
+            });
+            let sColor, sText;
+            if (inTeamIndex !== -1) {
+              sColor = 'var(--blue-500)';
+              sText = 'อยู่ในทีม ' + inTeamIndex;
+            } else {
+              sColor = q.status === 'done' ? 'var(--ok)' : q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)';
+              sText = q.status === 'done' ? 'สำเร็จ' : q.status === 'active' ? 'กำลังลงดัน' : 'รอลงดัน';
+            }
+            const eName = window.escapeHtml ? window.escapeHtml(q.name) : q.name;
+            const eJob = window.escapeHtml ? window.escapeHtml(q.job || '') : q.job || '';
+            const isOwner = window.currentUser && q.name?.toLowerCase() === window.currentUser.username?.toLowerCase();
+            const memberCtrl = (!isAdmin && isOwner)
+              ? `<button onclick="deleteDungeonQueue('${q.id}')" style="font-size:12px;padding:4px 12px;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:6px;cursor:pointer;white-space:nowrap;">ยกเลิก</button>`
+              : '';
+            const adminCtrl = isAdmin
+              ? `<button onclick="changeDungeonQueueStatus('${q.id}','done')" style="font-size:12px;padding:4px 12px;border:none;background:var(--ok);color:white;border-radius:6px;cursor:pointer;white-space:nowrap;">ลงเสร็จ</button>
+                 <button onclick="deleteDungeonQueue('${q.id}')" style="font-size:12px;padding:4px 12px;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:6px;cursor:pointer;white-space:nowrap;">ลบ</button>`
+              : '';
+            const dragAttr = isAdmin
+              ? `draggable="true" data-queue-name="${eName}" data-queue-job="${eJob}" data-queue-power="${q.power || 0}" data-queue-time="${q.timestamp || ""}"`
+              : '';
+            const jobColor = q.job && window.JOB_COLORS && window.JOB_COLORS[q.job] ? window.JOB_COLORS[q.job] : 'var(--text-lo)';
+            const statusBorder = q.status === 'done' ? 'var(--ok)' : q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)';
+            return `<div ${dragAttr} style="padding:14px 20px;border-bottom:1px solid var(--line);background:white;border-left:4px solid ${statusBorder};${isAdmin ? 'cursor:grab;' : ''}" ondragstart="window.onDungeonQueueDragStart(event)">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <strong style="color:var(--text-hi);font-size:18px;font-weight:800;">${eName}</strong>
+                <span style="font-size:13px;color:${jobColor};font-weight:700;background:rgba(0,0,0,0.07);padding:3px 10px;border-radius:8px;">${q.job || ''}</span>
+                ${q.power ? '<span style="font-size:13px;color:var(--text-lo);font-weight:700;">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
+                <span style="font-size:13px;padding:4px 14px;border-radius:20px;font-weight:700;color:${sColor};border:1.5px solid ${sColor};background:white;white-space:nowrap;">${sText}</span>
+                <div style="display:flex;gap:6px;margin-left:auto;">${adminCtrl}${memberCtrl}</div>
+              </div>
+              ${q.timestamp ? '<div style="font-size:12px;color:var(--text-lo);margin-top:5px;">' + new Date(q.timestamp).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' น.</div>' : ''}
+            </div>`;
+          }).join('');
+        }
         }
       }
 
@@ -938,17 +903,19 @@ import {
       const now = new Date();
       const nowDateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
       const nowTimeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
-      const isOpen = nowDateStr === sched.openDate && nowTimeStr >= sched.openTime && nowTimeStr <= sched.closeTime;
+      // Handle midnight/23:59 as end of day
+      const effectiveClose = sched.closeTime === '24:00' ? '23:59' : sched.closeTime;
+      const isOpen = nowDateStr === sched.openDate && nowTimeStr >= sched.openTime && nowTimeStr <= effectiveClose;
       if (isOpen) {
         statusEl.style.cssText = 'display:block;background:rgba(22,163,74,0.12);color:var(--ok);border:1px solid var(--ok);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;';
-        statusEl.textContent = '🟢 เปิดรับจองอยู่ (ถึง ' + sched.closeTime + ' น.)';
+        statusEl.textContent = 'เปิดรับจองอยู่ (ถึง ' + sched.closeTime + ' น.)';
         if (bookBtn) { bookBtn.disabled = false; bookBtn.style.opacity = '1'; }
       } else {
         statusEl.style.cssText = 'display:block;background:rgba(239,68,68,0.08);color:var(--danger);border:1px solid var(--danger);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;';
         const futureOpen = nowDateStr < sched.openDate || (nowDateStr === sched.openDate && nowTimeStr < sched.openTime);
         statusEl.textContent = futureOpen
-          ? '🔒 จะเปิดจองวันที่ ' + sched.openDate + ' เวลา ' + sched.openTime + '–' + sched.closeTime + ' น.'
-          : '🔒 ปิดรับการจองแล้ว';
+          ? 'จะเปิดจองวันที่ ' + sched.openDate + ' เวลา ' + sched.openTime + '–' + sched.closeTime + ' น.'
+          : 'ปิดรับการจองแล้ว';
         if (bookBtn && !isAdmin) { bookBtn.disabled = true; bookBtn.style.opacity = '0.5'; }
       }
     }
@@ -967,10 +934,16 @@ import {
             const ot = document.getElementById('dqOpenTime');
             const ct = document.getElementById('dqCloseTime');
             if (od) od.value = s.openDate || '';
-            if (ot) ot.value = s.openTime || '';
-            if (ct) ct.value = s.closeTime || '';
+            if (ot) ot.value = s.openTime || '06:00';
+            if (ct) ct.value = s.closeTime || '23:59';
             renderDungeonScheduleStatus(window.isUserAdmin && window.isUserAdmin());
           }
+        } else {
+          // No schedule set yet - pre-fill default times for admin
+          const ot = document.getElementById('dqOpenTime');
+          const ct = document.getElementById('dqCloseTime');
+          if (ot && !ot.value) ot.value = '06:00';
+          if (ct && !ct.value) ct.value = '23:59';
         }
       } catch(e) { console.error('loadDungeonSchedule:', e); }
     })();
