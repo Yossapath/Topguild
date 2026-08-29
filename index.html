@@ -521,11 +521,11 @@
               <div style="display:flex; gap:8px; margin-bottom:10px;">
                 <div style="flex:1;">
                   <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:4px; text-transform:uppercase;">เวลาเปิด</label>
-                  <input type="time" id="dqOpenTime" lang="sv-SE" value="06:00" style="flex:1; padding:6px 8px; border:1px solid var(--line); border-radius:4px; font-size:13px;">
+                  <input type="text" id="dqOpenTime" value="06:00" placeholder="06:00" maxlength="5" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" oninput="this.value=this.value.replace(/[^0-9:]/g,'')" style="flex:1; padding:6px 8px; border:1px solid var(--line); border-radius:4px; font-size:13px; width:80px;">
                 </div>
                 <div style="flex:1;">
                   <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:4px; text-transform:uppercase;">เวลาปิด</label>
-                  <input type="time" id="dqCloseTime" lang="sv-SE" value="23:59" style="flex:1; padding:6px 8px; border:1px solid var(--line); border-radius:4px; font-size:13px;">
+                  <input type="text" id="dqCloseTime" value="23:59" placeholder="23:59" maxlength="5" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" oninput="this.value=this.value.replace(/[^0-9:]/g,'')" style="flex:1; padding:6px 8px; border:1px solid var(--line); border-radius:4px; font-size:13px; width:80px;">
                 </div>
               </div>
               <button class="btn-primary" style="width:100%; font-size:14px; padding:12px; font-weight:700;" onclick="window.saveDungeonSchedule && window.saveDungeonSchedule()">บันทึกตั้งค่า</button>
