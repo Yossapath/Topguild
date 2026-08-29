@@ -657,7 +657,6 @@ import {
             </div>`;
           }).join('');
         }
-        }
       }
 
       // ---- TEAMS AREA ----
