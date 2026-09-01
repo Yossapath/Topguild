@@ -834,8 +834,13 @@ function isTeamLocked(fieldIdx, teamName) {
       ].filter(Boolean).join(' ');
 
       rows.push(`
-        <tr class="${rowClass}" ${isAdmin && a && a.name ? `draggable="true" ondragstart="window.onSlotDragStart(event, '${key}', '${window.escapeHtml(a.name)}')" ondragend="window.onSlotDragEnd(event)" style="cursor:grab;"` : ''}>
-          <td class="cell-rank">${i + 1}</td>
+        <tr class="${rowClass}">
+          <td class="cell-rank">
+            <div style="display:flex; align-items:center; justify-content:center; gap:2px;">
+              ${isAdmin && a && a.name ? `<div draggable="true" ondragstart="window.onSlotDragStart(event, '${key}', '${window.escapeHtml(a.name)}')" ondragend="window.onSlotDragEnd(event)" style="cursor:grab; opacity:0.4; display:flex; align-items:center;" title="ลากเพื่อสลับผู้เล่น"><svg width="12" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div>` : `<div style="width:12px;"></div>`}
+              <span>${i + 1}</span>
+            </div>
+          </td>
           <td>
             <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField" ondragover="if(window.isUserAdmin && window.isUserAdmin()) event.preventDefault();" ondrop="if(window.isUserAdmin && window.isUserAdmin()) { event.preventDefault(); window.onTeamSlotDrop(event, '${key}'); }" value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="พิมพ์/คลิก..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
           </td>
@@ -876,7 +881,7 @@ function isTeamLocked(fieldIdx, teamName) {
           </div>
         </div>
         <table class="team-table">
-          <thead><tr><th style="width:18px;"></th><th>ชื่อ</th><th>อาชีพ</th><th>ค่าพลัง</th><th style="width:26px;"></th></tr></thead>
+          <thead><tr><th style="width:34px;"></th><th>ชื่อ</th><th>อาชีพ</th><th>ค่าพลัง</th><th style="width:26px;"></th></tr></thead>
           <tbody>${rows.join('')}</tbody>
         </table>
       </div>`;
@@ -899,7 +904,12 @@ function isTeamLocked(fieldIdx, teamName) {
         const job = rowJobFilter[key] || (a ? a.job : '') || '';
         htmlRows += `
         <tr>
-          <td style="width: 40px; text-align: center; color:var(--text-lo); font-size:12px;">${i+1}</td>
+          <td style="width: 50px; text-align: center; color:var(--text-lo); font-size:12px;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:2px;">
+              ${isAdmin && a && a.name ? `<div draggable="true" ondragstart="window.onSlotDragStart(event, '${key}', '${window.escapeHtml(a.name)}')" ondragend="window.onSlotDragEnd(event)" style="cursor:grab; opacity:0.4; display:flex; align-items:center;" title="ลากเพื่อสลับผู้เล่น"><svg width="12" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div>` : `<div style="width:12px;"></div>`}
+              <span>${i+1}</span>
+            </div>
+          </td>
           <td>
             <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField" ondragover="if(window.isUserAdmin && window.isUserAdmin()) event.preventDefault();" ondrop="if(window.isUserAdmin && window.isUserAdmin()) { event.preventDefault(); window.onTeamSlotDrop(event, '${key}'); }" value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="พิมพ์ชื่อคนออฟไลน์..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
           </td>
@@ -2895,13 +2905,6 @@ window.onSlotDragStart = function(event, slotKey, name) {
     return;
   }
   
-  // Make sure we are not dragging an input text selection
-  if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') {
-     // Allow dragging text in inputs normally
-     // Wait, if it's draggable=true on TR, clicking input might drag the TR.
-     // To fix this, users should drag from the rank number or empty space.
-  }
-
   event.dataTransfer.setData('text/plain', JSON.stringify({
     type: 'swap_slot',
     sourceKey: slotKey,
@@ -2909,12 +2912,16 @@ window.onSlotDragStart = function(event, slotKey, name) {
   }));
   
   event.dataTransfer.effectAllowed = 'move';
-  // Optional visual feedback
-  setTimeout(() => {
-    event.target.style.opacity = '0.5';
-  }, 0);
+  const tr = event.target.closest('tr');
+  if (tr) {
+    event.dataTransfer.setDragImage(tr, 20, 20);
+    setTimeout(() => {
+      tr.style.opacity = '0.5';
+    }, 0);
+  }
 };
 
 window.onSlotDragEnd = function(event) {
-  event.target.style.opacity = '1';
+  const tr = event.target.closest('tr');
+  if (tr) tr.style.opacity = '1';
 };
