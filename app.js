@@ -2720,33 +2720,41 @@ window.onTeamCardDragStart = function(event) {
     event.preventDefault();
     return;
   }
-  // Make sure we are grabbing the card, not a row
-  if (event.target.tagName === 'TR' || event.target.tagName === 'TD') return;
+  
+  // Make sure we are not dragging an input or button
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON' || event.target.tagName === 'SELECT') {
+     return;
+  }
 
   const team = event.currentTarget.dataset.team;
-  event.dataTransfer.setData('application/x-swap-team', JSON.stringify({
+  event.dataTransfer.setData('text/plain', JSON.stringify({
     type: 'swap_team',
     fieldIdx: window.currentFieldIdx,
     team: team
   }));
+  
+  // Store a global state as fallback for dragover
+  window._isDraggingTeam = true;
+  
   event.currentTarget.style.opacity = '0.5';
   event.dataTransfer.effectAllowed = 'move';
 };
 
 window.onTeamCardDragOver = function(event) {
-  if (event.dataTransfer.types.includes('application/x-swap-team')) {
-    event.preventDefault();
+  event.preventDefault();
+  if (window._isDraggingTeam) {
     event.currentTarget.style.boxShadow = '0 0 0 2px var(--primary) inset';
   }
 };
 
 window.onTeamCardDragLeave = function(event) {
-  if (event.dataTransfer.types.includes('application/x-swap-team')) {
+  if (window._isDraggingTeam) {
     event.currentTarget.style.boxShadow = '';
   }
 };
 
 window.onTeamCardDragEnd = function(event) {
+  window._isDraggingTeam = false;
   event.currentTarget.style.opacity = '1';
   document.querySelectorAll('.team-card').forEach(el => el.style.boxShadow = '');
 };
@@ -2754,10 +2762,11 @@ window.onTeamCardDragEnd = function(event) {
 window.onTeamCardDrop = function(event) {
   event.preventDefault();
   event.currentTarget.style.boxShadow = '';
+  window._isDraggingTeam = false;
   const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
   if (!isAdmin) return;
 
-  const dataStr = event.dataTransfer.getData('application/x-swap-team');
+  const dataStr = event.dataTransfer.getData('text/plain');
   if (!dataStr) return;
 
   try {
@@ -2811,7 +2820,7 @@ window.onTeamCardDrop = function(event) {
 
       window.saveState();
       window.renderAll();
-      if (window.showToast) window.showToast(`สลับ ${sourceTeam} กับ ${targetTeam} แล้ว`, 'success');
+      if (window.showToast) window.showToast(`สลับ ${sourceTeam} กับ ${targetTeam} เรียบร้อยแล้ว`, 'success');
     }
   } catch(e) {
     console.error(e);
