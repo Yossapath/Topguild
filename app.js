@@ -2729,7 +2729,7 @@ window.onTeamCardDragStart = function(event) {
   const team = event.currentTarget.dataset.team;
   event.dataTransfer.setData('text/plain', JSON.stringify({
     type: 'swap_team',
-    fieldIdx: window.currentFieldIdx,
+    fieldIdx: currentFieldIdx,
     team: team
   }));
   
@@ -2780,56 +2780,56 @@ window.onTeamCardDrop = function(event) {
 
   try {
     const data = JSON.parse(dataStr);
-    if (data.type === 'swap_team' && data.fieldIdx === window.currentFieldIdx) {
+    if (data.type === 'swap_team' && data.fieldIdx === currentFieldIdx) {
       const sourceTeam = data.team;
       const targetTeam = event.currentTarget.dataset.team;
       
       if (sourceTeam === targetTeam) return;
 
-      const fm = window.fieldMeta[window.currentFieldIdx];
+      const fm = fieldMeta[currentFieldIdx];
       const capA = fm.capacity[sourceTeam] || 5;
       const capB = fm.capacity[targetTeam] || 5;
       const maxCap = Math.max(capA, capB);
 
       for (let i = 0; i < maxCap; i++) {
-        const keyA = window.currentFieldIdx + '|' + sourceTeam + '|' + i;
-        const keyB = window.currentFieldIdx + '|' + targetTeam + '|' + i;
+        const keyA = currentFieldIdx + '|' + sourceTeam + '|' + i;
+        const keyB = currentFieldIdx + '|' + targetTeam + '|' + i;
 
-        const valA = window.teamsAssignments[keyA];
-        const valB = window.teamsAssignments[keyB];
-        const filterA = window.rowJobFilter[keyA];
-        const filterB = window.rowJobFilter[keyB];
+        const valA = teamsAssignments[keyA];
+        const valB = teamsAssignments[keyB];
+        const filterA = rowJobFilter[keyA];
+        const filterB = rowJobFilter[keyB];
 
         if (valB) {
-            window.teamsAssignments[keyA] = valB;
-            if (valB.name) window.occupiedMap.set(valB.name.toLowerCase(), keyA);
+            teamsAssignments[keyA] = valB;
+            if (valB.name) occupiedMap.set(valB.name.toLowerCase(), keyA);
         } else {
-            delete window.teamsAssignments[keyA];
+            delete teamsAssignments[keyA];
         }
 
         if (valA) {
-            window.teamsAssignments[keyB] = valA;
-            if (valA.name) window.occupiedMap.set(valA.name.toLowerCase(), keyB);
+            teamsAssignments[keyB] = valA;
+            if (valA.name) occupiedMap.set(valA.name.toLowerCase(), keyB);
         } else {
-            delete window.teamsAssignments[keyB];
+            delete teamsAssignments[keyB];
         }
 
         if (filterB) {
-            window.rowJobFilter[keyA] = filterB;
+            rowJobFilter[keyA] = filterB;
         } else {
-            delete window.rowJobFilter[keyA];
+            delete rowJobFilter[keyA];
         }
 
         if (filterA) {
-            window.rowJobFilter[keyB] = filterA;
+            rowJobFilter[keyB] = filterA;
         } else {
-            delete window.rowJobFilter[keyB];
+            delete rowJobFilter[keyB];
         }
       }
 
-      window.saveState();
-      window.renderAll();
-      if (window.showToast) window.showToast(`สลับ ${sourceTeam} กับ ${targetTeam} เรียบร้อยแล้ว`, 'success');
+      saveState();
+      renderAll();
+      if (showToast) showToast(`สลับ ${sourceTeam} กับ ${targetTeam} เรียบร้อยแล้ว`, 'success');
     }
   } catch(e) {
     console.error(e);
