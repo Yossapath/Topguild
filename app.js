@@ -2656,25 +2656,25 @@ window.exportSubFieldPDF = function() {
   `;
 
   const renderBlock = (teamsArray, mainTeamTitle) => {
-    let result = \`<div class="main-team"><h3 class="main-team-title">\${mainTeamTitle}</h3>\`;
+    let result = `<div class="main-team"><h3 class="main-team-title">${mainTeamTitle}</h3>`;
     teamsArray.forEach(tName => {
       const cap = subFm.capacity[tName] || 5;
       let leaderName = getTeamLeader(tName);
 
-      result += \`<table>
-        <tr><td colspan="3" class="party-title">\${tName} (ปาร์ตี้: \${leaderName})</td></tr>
-        <tr><th>ลำดับ</th><th>ชื่อตัวละคร</th><th>อาชีพ</th></tr>\`;
+      result += `<table>
+        <tr><td colspan="3" class="party-title">${tName} (ปาร์ตี้: ${leaderName})</td></tr>
+        <tr><th>ลำดับ</th><th>ชื่อตัวละคร</th><th>อาชีพ</th></tr>`;
         
       for (let j = 0; j < cap; j++) {
         const key = '1|' + tName + '|' + j;
         const member = assignments[key];
-        result += \`<tr>
-          <td style="width: 40px;">\${j + 1}</td>
-          <td>\${member && member.name ? window.escapeHtml(member.name) : '-'}</td>
-          <td>\${member && member.job ? member.job : '-'}</td>
-        </tr>\`;
+        result += `<tr>
+          <td style="width: 40px;">${j + 1}</td>
+          <td>${member && member.name ? window.escapeHtml(member.name) : '-'}</td>
+          <td>${member && member.job ? member.job : '-'}</td>
+        </tr>`;
       }
-      result += \`</table>\`;
+      result += `</table>`;
     });
     result += '</div>';
     return result;
@@ -2686,8 +2686,8 @@ window.exportSubFieldPDF = function() {
   const count1 = block1Teams.reduce((sum, t) => sum + (subFm.capacity[t]||5), 0);
   const count2 = block2Teams.reduce((sum, t) => sum + (subFm.capacity[t]||5), 0);
 
-  if (block1Teams.length > 0) htmlContent += renderBlock(block1Teams, \`โซน 1 (ซ้าย) - ผู้นำ: \${leader1}) (\${count1} คน)\`);
-  if (block2Teams.length > 0) htmlContent += renderBlock(block2Teams, \`โซน 2 (ขวา) - ผู้นำ: \${leader2}) (\${count2} คน)\`);
+  if (block1Teams.length > 0) htmlContent += renderBlock(block1Teams, `โซน 1 (ซ้าย) - ผู้นำ: ${leader1}) (${count1} คน)`);
+  if (block2Teams.length > 0) htmlContent += renderBlock(block2Teams, `โซน 2 (ขวา) - ผู้นำ: ${leader2}) (${count2} คน)`);
 
   htmlContent += `
         </div>
