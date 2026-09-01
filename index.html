@@ -218,6 +218,49 @@
     .custom-dropdown-item:hover { background: var(--bg-soft); }
     .custom-dropdown-item:last-child { border-bottom: none; }
     .custom-dropdown-item.selected { background: rgba(47,143,214,0.1); border-left: 3px solid var(--blue-500); }
+  
+    /* CSS for Team Drag and Drop */
+    body.is-dragging-team .team-table,
+    body.is-dragging-team .team-title-group,
+    body.is-dragging-team .team-card-head button,
+    body.is-dragging-team .team-card-head .status-badge {
+      pointer-events: none !important;
+    }
+    
+    body.is-dragging-team .team-card {
+      position: relative;
+    }
+    
+    body.is-dragging-team .team-card::after {
+      content: "สลับที่กับทีมนี้";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.85);
+      border: 3px dashed var(--primary);
+      border-radius: inherit;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      pointer-events: none;
+      transition: all 0.2s ease;
+    }
+    
+    body.is-dragging-team .team-card.drag-over::after {
+      background: rgba(239, 246, 255, 0.95);
+      border-width: 4px;
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* Make the dragging element transparent but hide the overlay on ITSELF */
+    body.is-dragging-team .team-card.is-dragged::after {
+      display: none;
+    }
+
   </style>
   
 <script>
@@ -944,15 +987,15 @@
 
 <!-- Firebase SDK v10 (CDN Module) -->
 <!-- Module: Auth, Login, Shared Utilities -->
-  <script type="module" src="module_auth.js?v=7.9"></script>
+  <script type="module" src="module_auth.js?v=7.10"></script>
   <!-- Module: Dungeon (isolated - bug here won't affect other pages) -->
-  <script type="module" src="module_dungeon.js?v=7.9"></script>
+  <script type="module" src="module_dungeon.js?v=7.10"></script>
     <!-- Module: Log & Backup (Admin Only) -->
-    <script type="module" src="module_log.js?v=7.9"></script>
+    <script type="module" src="module_log.js?v=7.10"></script>
   <!-- Module: Attendance (isolated) -->
-  <script type="module" src="module_attendance.js?v=7.9"></script>
+  <script type="module" src="module_attendance.js?v=7.10"></script>
   <!-- Module: Leave (isolated) -->
-  <script type="module" src="module_leave.js?v=7.9"></script>
+  <script type="module" src="module_leave.js?v=7.10"></script>
 <script type="module" src="app.js?v=1787667838965"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>

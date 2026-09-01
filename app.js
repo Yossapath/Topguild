@@ -2733,36 +2733,45 @@ window.onTeamCardDragStart = function(event) {
     team: team
   }));
   
-  // Store a global state as fallback for dragover
   window._isDraggingTeam = true;
+  document.body.classList.add('is-dragging-team');
+  event.currentTarget.classList.add('is-dragged');
   
-  event.currentTarget.style.opacity = '0.5';
   event.dataTransfer.effectAllowed = 'move';
 };
 
 window.onTeamCardDragOver = function(event) {
   event.preventDefault();
   if (window._isDraggingTeam) {
-    event.currentTarget.style.boxShadow = '0 0 0 2px var(--primary) inset';
+    event.currentTarget.classList.add('drag-over');
   }
 };
 
 window.onTeamCardDragLeave = function(event) {
   if (window._isDraggingTeam) {
-    event.currentTarget.style.boxShadow = '';
+    event.currentTarget.classList.remove('drag-over');
   }
 };
 
 window.onTeamCardDragEnd = function(event) {
   window._isDraggingTeam = false;
-  event.currentTarget.style.opacity = '1';
-  document.querySelectorAll('.team-card').forEach(el => el.style.boxShadow = '');
+  document.body.classList.remove('is-dragging-team');
+  document.querySelectorAll('.team-card').forEach(el => {
+      el.classList.remove('is-dragged');
+      el.classList.remove('drag-over');
+  });
 };
 
 window.onTeamCardDrop = function(event) {
   event.preventDefault();
-  event.currentTarget.style.boxShadow = '';
+  
   window._isDraggingTeam = false;
+  document.body.classList.remove('is-dragging-team');
+  document.querySelectorAll('.team-card').forEach(el => {
+      el.classList.remove('is-dragged');
+      el.classList.remove('drag-over');
+  });
+
   const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
   if (!isAdmin) return;
 
