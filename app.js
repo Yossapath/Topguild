@@ -1044,37 +1044,6 @@ function renderSidebar() {
 
   sidebarBody.innerHTML = missing.map(m => `
     <div class="missing-row" draggable="true" ondragstart="
-window.onSlotDragStart = function(event, slotKey, name) {
-  const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
-  if (!isAdmin) {
-    event.preventDefault();
-    return;
-  }
-  
-  // Make sure we are not dragging an input text selection
-  if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') {
-     // Allow dragging text in inputs normally
-     // Wait, if it's draggable=true on TR, clicking input might drag the TR.
-     // To fix this, users should drag from the rank number or empty space.
-  }
-
-  event.dataTransfer.setData('text/plain', JSON.stringify({
-    type: 'swap_slot',
-    sourceKey: slotKey,
-    name: name
-  }));
-  
-  event.dataTransfer.effectAllowed = 'move';
-  // Optional visual feedback
-  setTimeout(() => {
-    event.target.style.opacity = '0.5';
-  }, 0);
-};
-
-window.onSlotDragEnd = function(event) {
-  event.target.style.opacity = '1';
-};
-
 window.onSidebarDragStart(event, '${escapeHtml(m.name)}', '${escapeHtml(m.job)}', ${m.power})">
       <span class="dot" style="background:${colorOf(m.job)}"></span>
       <span class="mm-name">${escapeHtml(m.name)}</span>
@@ -2916,4 +2885,36 @@ window.onTeamCardDrop = function(event) {
   } catch(e) {
     console.error(e);
   }
+};
+
+
+window.onSlotDragStart = function(event, slotKey, name) {
+  const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
+  if (!isAdmin) {
+    event.preventDefault();
+    return;
+  }
+  
+  // Make sure we are not dragging an input text selection
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') {
+     // Allow dragging text in inputs normally
+     // Wait, if it's draggable=true on TR, clicking input might drag the TR.
+     // To fix this, users should drag from the rank number or empty space.
+  }
+
+  event.dataTransfer.setData('text/plain', JSON.stringify({
+    type: 'swap_slot',
+    sourceKey: slotKey,
+    name: name
+  }));
+  
+  event.dataTransfer.effectAllowed = 'move';
+  // Optional visual feedback
+  setTimeout(() => {
+    event.target.style.opacity = '0.5';
+  }, 0);
+};
+
+window.onSlotDragEnd = function(event) {
+  event.target.style.opacity = '1';
 };
