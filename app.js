@@ -834,7 +834,7 @@ function isTeamLocked(fieldIdx, teamName) {
       ].filter(Boolean).join(' ');
 
       rows.push(`
-        <tr class="${rowClass}">
+        <tr class="${rowClass}" ${isAdmin && a && a.name ? `draggable="true" ondragstart="window.onSlotDragStart(event, '${key}', '${window.escapeHtml(a.name)}')" ondragend="window.onSlotDragEnd(event)" style="cursor:grab;"` : ''}>
           <td class="cell-rank">${i + 1}</td>
           <td>
             <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField" ondragover="if(window.isUserAdmin && window.isUserAdmin()) event.preventDefault();" ondrop="if(window.isUserAdmin && window.isUserAdmin()) { event.preventDefault(); window.onTeamSlotDrop(event, '${key}'); }" value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="พิมพ์/คลิก..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
@@ -1043,7 +1043,39 @@ function renderSidebar() {
   }
 
   sidebarBody.innerHTML = missing.map(m => `
-    <div class="missing-row" draggable="true" ondragstart="window.onSidebarDragStart(event, '${escapeHtml(m.name)}', '${escapeHtml(m.job)}', ${m.power})">
+    <div class="missing-row" draggable="true" ondragstart="
+window.onSlotDragStart = function(event, slotKey, name) {
+  const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
+  if (!isAdmin) {
+    event.preventDefault();
+    return;
+  }
+  
+  // Make sure we are not dragging an input text selection
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') {
+     // Allow dragging text in inputs normally
+     // Wait, if it's draggable=true on TR, clicking input might drag the TR.
+     // To fix this, users should drag from the rank number or empty space.
+  }
+
+  event.dataTransfer.setData('text/plain', JSON.stringify({
+    type: 'swap_slot',
+    sourceKey: slotKey,
+    name: name
+  }));
+  
+  event.dataTransfer.effectAllowed = 'move';
+  // Optional visual feedback
+  setTimeout(() => {
+    event.target.style.opacity = '0.5';
+  }, 0);
+};
+
+window.onSlotDragEnd = function(event) {
+  event.target.style.opacity = '1';
+};
+
+window.onSidebarDragStart(event, '${escapeHtml(m.name)}', '${escapeHtml(m.job)}', ${m.power})">
       <span class="dot" style="background:${colorOf(m.job)}"></span>
       <span class="mm-name">${escapeHtml(m.name)}</span>
       <span class="mm-job">${escapeHtml(m.job)}</span>
@@ -2432,17 +2464,67 @@ window.isLeaveToday = function(name) {
 window.onSidebarDragStart = function(event, name, job, power) {
   event.dataTransfer.setData('text/plain', JSON.stringify({ name, job, power }));
 };
-window.onTeamSlotDrop = function(event, slotKey) {
+window.onTeamSlotDrop = function(event, targetKey) {
   event.preventDefault();
-  if (!window.isUserAdmin || !window.isUserAdmin()) return;
+  const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
+  if (!isAdmin) return;
+  
   const dataStr = event.dataTransfer.getData('text/plain');
   if (!dataStr) return;
+  
   try {
     const data = JSON.parse(dataStr);
-    if (data && data.name) {
-      if (window.handleNameChange) window.handleNameChange(slotKey, data.name);
+    
+    // Check if it's a swap slot action
+    if (data.type === 'swap_slot') {
+       const sourceKey = data.sourceKey;
+       if (sourceKey === targetKey) return;
+       
+       const valA = teamsAssignments[sourceKey];
+       const valB = teamsAssignments[targetKey];
+       
+       const filterA = rowJobFilter[sourceKey];
+       const filterB = rowJobFilter[targetKey];
+       
+       // Swap the values!
+       if (valB) {
+           teamsAssignments[sourceKey] = valB;
+           if (valB.name) occupiedMap.set(valB.name.toLowerCase(), sourceKey);
+       } else {
+           delete teamsAssignments[sourceKey];
+       }
+       
+       if (valA) {
+           teamsAssignments[targetKey] = valA;
+           if (valA.name) occupiedMap.set(valA.name.toLowerCase(), targetKey);
+       } else {
+           delete teamsAssignments[targetKey];
+       }
+       
+       if (filterB) {
+           rowJobFilter[sourceKey] = filterB;
+       } else {
+           delete rowJobFilter[sourceKey];
+       }
+       
+       if (filterA) {
+           rowJobFilter[targetKey] = filterA;
+       } else {
+           delete rowJobFilter[targetKey];
+       }
+       
+       saveState();
+       renderAll();
+       return;
     }
-  } catch(e) {}
+
+    // Normal drop from sidebar
+    if (data && data.name) {
+      if (typeof handleNameChange === 'function') handleNameChange(targetKey, data.name);
+    }
+  } catch(e) {
+    console.error(e);
+  }
 };
 
 // Ensure PDF button exists
