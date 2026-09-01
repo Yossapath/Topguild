@@ -444,6 +444,7 @@
         <button class="btn-primary" id="btnAutoOptimizeMain" onclick="openAutoMatchModal('main')" style="background:linear-gradient(135deg, #15a083, #1c9d8b);box-shadow: 0 3px 10px rgba(21,160,131,0.25); white-space: nowrap; display: none;">จัดทีมสนามหลักอัตโนมัติ</button>
         <button class="btn-primary" id="btnAutoOptimizeSub" onclick="window.runAutoOptimizeSub()" style="background:linear-gradient(135deg, #2c7eb9, #1c7bb5);box-shadow: 0 3px 10px rgba(44,126,185,0.25); white-space: nowrap; display: none;">จัดทีมสนามรองอัตโนมัติ</button>
         <button class="btn-primary" id="btnExportPDF" onclick="window.exportMainFieldPDF()" style="background:linear-gradient(135deg, #e53e3e, #c53030);box-shadow: 0 3px 10px rgba(229,62,62,0.25); white-space: nowrap;">📄 Export PDF สนามหลัก</button>
+        <button class="btn-primary" id="btnExportSubPDF" onclick="window.exportSubFieldPDF()" style="background:linear-gradient(135deg, #e53e3e, #c53030);box-shadow: 0 3px 10px rgba(229,62,62,0.25); white-space: nowrap; display: none;">📄 Export PDF สนามรอง</button>
       </div>
     </div>
     <div id="teamSearchResult" class="team-search-result-card"></div>
@@ -943,15 +944,15 @@
 
 <!-- Firebase SDK v10 (CDN Module) -->
 <!-- Module: Auth, Login, Shared Utilities -->
-  <script type="module" src="module_auth.js?v=7.5"></script>
+  <script type="module" src="module_auth.js?v=7.6"></script>
   <!-- Module: Dungeon (isolated - bug here won't affect other pages) -->
-  <script type="module" src="module_dungeon.js?v=7.5"></script>
+  <script type="module" src="module_dungeon.js?v=7.6"></script>
     <!-- Module: Log & Backup (Admin Only) -->
-    <script type="module" src="module_log.js?v=7.5"></script>
+    <script type="module" src="module_log.js?v=7.6"></script>
   <!-- Module: Attendance (isolated) -->
-  <script type="module" src="module_attendance.js?v=7.5"></script>
+  <script type="module" src="module_attendance.js?v=7.6"></script>
   <!-- Module: Leave (isolated) -->
-  <script type="module" src="module_leave.js?v=7.5"></script>
+  <script type="module" src="module_leave.js?v=7.6"></script>
 <script type="module" src="app.js?v=1787667838965"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>
