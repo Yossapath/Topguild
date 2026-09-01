@@ -834,7 +834,7 @@ function isTeamLocked(fieldIdx, teamName) {
       ].filter(Boolean).join(' ');
 
       rows.push(`
-        <tr class="${rowClass}">
+        <tr class="${rowClass}" ondragover="window.onSlotDragOver(event)" ondragleave="window.onSlotDragLeave(event)" ondrop="window.onTeamSlotDrop(event, '${key}')">
           <td class="cell-rank">
             <div style="display:flex; align-items:center; justify-content:center; gap:2px;">
               ${isAdmin && a && a.name ? `<div draggable="true" ondragstart="window.onSlotDragStart(event, '${key}', '${window.escapeHtml(a.name)}')" ondragend="window.onSlotDragEnd(event)" style="cursor:grab; opacity:0.5; display:flex; align-items:center; padding: 4px;" title="ลากเพื่อสลับผู้เล่น"><svg width="12" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div>` : `<div style="width:12px;"></div>`}
@@ -842,7 +842,7 @@ function isTeamLocked(fieldIdx, teamName) {
             </div>
           </td>
           <td>
-            <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField" ondragover="if(window.isUserAdmin && window.isUserAdmin()) event.preventDefault();" ondrop="if(window.isUserAdmin && window.isUserAdmin()) { event.preventDefault(); window.onTeamSlotDrop(event, '${key}'); }" value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="พิมพ์/คลิก..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
+            <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField"  value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="พิมพ์/คลิก..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
           </td>
           <td>
             <select class="cell-input job-input ${job ? '' : 'empty'}" data-slot="${key}" style="--job-color:${job ? colorOf(job) : ''}" ${isAdmin ? '' : 'disabled'}>
@@ -911,7 +911,7 @@ function isTeamLocked(fieldIdx, teamName) {
             </div>
           </td>
           <td>
-            <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField" ondragover="if(window.isUserAdmin && window.isUserAdmin()) event.preventDefault();" ondrop="if(window.isUserAdmin && window.isUserAdmin()) { event.preventDefault(); window.onTeamSlotDrop(event, '${key}'); }" value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="พิมพ์ชื่อคนออฟไลน์..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
+            <input type="text" class="cell-input name-input autocomplete-member" data-slot="${key}" data-action="mainField"  value="${a && a.name ? window.escapeHtml(a.name) : ''}" placeholder="พิมพ์ชื่อคนออฟไลน์..." autocomplete="off" ${isAdmin ? '' : 'disabled'}>
           </td>
           <td style="width: 150px;">
             <select class="cell-input job-input ${job ? '' : 'empty'}" data-slot="${key}" style="--job-color:${job ? colorOf(job) : ''}" ${isAdmin ? '' : 'disabled'}>
@@ -2445,6 +2445,8 @@ window.onSidebarDragStart = function(event, name, job, power) {
 };
 window.onTeamSlotDrop = function(event, targetKey) {
   event.preventDefault();
+  event.currentTarget.classList.remove('slot-drag-over');
+  document.body.classList.remove('is-dragging-slot');
   const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
   if (!isAdmin) return;
   
@@ -2912,6 +2914,7 @@ window.onSlotDragStart = function(event, slotKey, name) {
   }));
   
   event.dataTransfer.effectAllowed = 'move';
+  document.body.classList.add('is-dragging-slot');
   const tr = event.target.closest('tr');
   if (tr) {
     setTimeout(() => {
@@ -2921,8 +2924,22 @@ window.onSlotDragStart = function(event, slotKey, name) {
 };
 
 window.onSlotDragEnd = function(event) {
+  document.body.classList.remove('is-dragging-slot');
   const tr = event.target.closest('tr');
   if (tr) {
     tr.style.opacity = '1';
   }
+  document.querySelectorAll('.slot-drag-over').forEach(el => el.classList.remove('slot-drag-over'));
+};
+
+window.onSlotDragOver = function(event) {
+  event.preventDefault();
+  const tr = event.currentTarget;
+  if (!tr.classList.contains('slot-drag-over')) {
+    tr.classList.add('slot-drag-over');
+  }
+};
+
+window.onSlotDragLeave = function(event) {
+  event.currentTarget.classList.remove('slot-drag-over');
 };
