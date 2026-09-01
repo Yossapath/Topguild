@@ -834,10 +834,10 @@ function isTeamLocked(fieldIdx, teamName) {
       ].filter(Boolean).join(' ');
 
       rows.push(`
-        <tr class="${rowClass}" ${isAdmin && a && a.name ? `ondragstart="window.onSlotDragStart(event, '${key}', '${window.escapeHtml(a.name)}')" ondragend="window.onSlotDragEnd(event)"` : ''}>
+        <tr class="${rowClass}">
           <td class="cell-rank">
             <div style="display:flex; align-items:center; justify-content:center; gap:2px;">
-              ${isAdmin && a && a.name ? `<div onmousedown="this.closest('tr').setAttribute('draggable', 'true')" onmouseup="this.closest('tr').removeAttribute('draggable')" onmouseleave="this.closest('tr').removeAttribute('draggable')" style="cursor:grab; opacity:0.4; display:flex; align-items:center;" title="ลากเพื่อสลับผู้เล่น"><svg width="12" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div>` : `<div style="width:12px;"></div>`}
+              ${isAdmin && a && a.name ? `<div draggable="true" ondragstart="window.onSlotDragStart(event, '${key}', '${window.escapeHtml(a.name)}')" ondragend="window.onSlotDragEnd(event)" style="cursor:grab; opacity:0.5; display:flex; align-items:center; padding: 4px;" title="ลากเพื่อสลับผู้เล่น"><svg width="12" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div>` : `<div style="width:12px;"></div>`}
               <span>${i + 1}</span>
             </div>
           </td>
@@ -906,7 +906,7 @@ function isTeamLocked(fieldIdx, teamName) {
         <tr>
           <td style="width: 50px; text-align: center; color:var(--text-lo); font-size:12px;">
             <div style="display:flex; align-items:center; justify-content:center; gap:2px;">
-              ${isAdmin && a && a.name ? `<div onmousedown="this.closest('tr').setAttribute('draggable', 'true')" onmouseup="this.closest('tr').removeAttribute('draggable')" onmouseleave="this.closest('tr').removeAttribute('draggable')" style="cursor:grab; opacity:0.4; display:flex; align-items:center;" title="ลากเพื่อสลับผู้เล่น"><svg width="12" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div>` : `<div style="width:12px;"></div>`}
+              ${isAdmin && a && a.name ? `<div draggable="true" ondragstart="window.onSlotDragStart(event, '${key}', '${window.escapeHtml(a.name)}')" ondragend="window.onSlotDragEnd(event)" style="cursor:grab; opacity:0.5; display:flex; align-items:center; padding: 4px;" title="ลากเพื่อสลับผู้เล่น"><svg width="12" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div>` : `<div style="width:12px;"></div>`}
               <span>${i+1}</span>
             </div>
           </td>
@@ -2912,7 +2912,7 @@ window.onSlotDragStart = function(event, slotKey, name) {
   }));
   
   event.dataTransfer.effectAllowed = 'move';
-  const tr = event.currentTarget;
+  const tr = event.target.closest('tr');
   if (tr) {
     setTimeout(() => {
       tr.style.opacity = '0.5';
@@ -2921,9 +2921,8 @@ window.onSlotDragStart = function(event, slotKey, name) {
 };
 
 window.onSlotDragEnd = function(event) {
-  const tr = event.currentTarget;
+  const tr = event.target.closest('tr');
   if (tr) {
     tr.style.opacity = '1';
-    tr.removeAttribute('draggable');
   }
 };
