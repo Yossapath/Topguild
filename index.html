@@ -264,40 +264,61 @@
   
     /* CSS for Slot Drag and Drop */
     .slot-drag-handle {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       cursor: grab;
-      font-size: 14px;
+      font-size: 16px;
+      line-height: 1;
       opacity: 0.4;
-      margin-right: 2px;
+      margin-right: 3px;
+      padding: 2px 3px;
       user-select: none;
       vertical-align: middle;
+      border-radius: 3px;
+      min-width: 18px;
+      min-height: 18px;
     }
-    .slot-drag-handle:hover { opacity: 0.8; }
+    .slot-drag-handle:hover {
+      opacity: 0.8;
+      background: rgba(59,130,246,0.1);
+    }
     .slot-drag-handle:active { cursor: grabbing; }
 
-    tr.slot-is-dragged td { opacity: 0.45; }
-
-    /* Overlay that appears on each target row during drag */
-    .slot-drop-overlay {
+    /* Highlight all filled TRs during drag to show they are drop targets */
+    body.is-dragging-slot tr[data-slot-key] td {
+      background-color: rgba(219,234,254,0.5) !important;
+    }
+    body.is-dragging-slot tr[data-slot-dragging="1"] td {
+      opacity: 0.4 !important;
+      background-color: transparent !important;
+    }
+    /* Hovered drop target row */
+    body.is-dragging-slot tr.slot-drag-over td {
+      background-color: #bfdbfe !important;
+      outline: 2px solid #3b82f6;
+      outline-offset: -1px;
+    }
+    /* Show "สลับที่กัน" label in first cell via pseudo-element */
+    body.is-dragging-slot tr[data-slot-key]:not([data-slot-dragging]) td.cell-rank {
+      position: relative;
+    }
+    body.is-dragging-slot tr[data-slot-key]:not([data-slot-dragging]) td.cell-rank::after {
+      content: "วาง";
       position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,0.82);
-      border: 2.5px dashed var(--primary, #3b82f6);
-      border-radius: 4px;
-      font-size: 13px;
+      color: #3b82f6;
+      font-size: 10px;
       font-weight: 700;
-      color: var(--primary, #3b82f6);
-      pointer-events: all;
-      z-index: 50;
-      transition: all 0.15s ease;
+      pointer-events: none;
     }
-    .slot-drop-overlay.hovered {
-      background: rgba(219, 234, 254, 0.95);
-      border-width: 3px;
-      transform: scale(1.01);
+    body.is-dragging-slot tr.slot-drag-over td.cell-rank::after {
+      content: "สลับที่กัน";
+      font-size: 11px;
+      color: #1d4ed8;
     }
 
   </style>
@@ -1026,15 +1047,15 @@
 
 <!-- Firebase SDK v10 (CDN Module) -->
 <!-- Module: Auth, Login, Shared Utilities -->
-  <script type="module" src="module_auth.js?v=7.21"></script>
+  <script type="module" src="module_auth.js?v=7.22"></script>
   <!-- Module: Dungeon (isolated - bug here won't affect other pages) -->
-  <script type="module" src="module_dungeon.js?v=7.21"></script>
+  <script type="module" src="module_dungeon.js?v=7.22"></script>
     <!-- Module: Log & Backup (Admin Only) -->
-    <script type="module" src="module_log.js?v=7.21"></script>
+    <script type="module" src="module_log.js?v=7.22"></script>
   <!-- Module: Attendance (isolated) -->
-  <script type="module" src="module_attendance.js?v=7.21"></script>
+  <script type="module" src="module_attendance.js?v=7.22"></script>
   <!-- Module: Leave (isolated) -->
-  <script type="module" src="module_leave.js?v=7.21"></script>
+  <script type="module" src="module_leave.js?v=7.22"></script>
 <script type="module" src="app.js?v=1787667838965"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>

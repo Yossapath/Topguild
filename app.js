@@ -834,7 +834,8 @@ function isTeamLocked(fieldIdx, teamName) {
       ].filter(Boolean).join(' ');
 
       rows.push(`
-        <tr class="${rowClass}" data-slot-key="${key}">
+        <tr class="${rowClass}" data-slot-key="${key}"
+            ondragover="window.onSlotDragOver(event)" ondragleave="window.onSlotDragLeave(event)" ondrop="window.onTeamSlotDrop(event, '${key}')">
           <td class="cell-rank" style="position:relative; white-space:nowrap;">
             ${isAdmin && a && a.name
               ? `<span class="slot-drag-handle" draggable="true"
@@ -906,7 +907,8 @@ function isTeamLocked(fieldIdx, teamName) {
 
         const job = rowJobFilter[key] || (a ? a.job : '') || '';
         htmlRows += `
-        <tr data-slot-key="${key}">
+        <tr data-slot-key="${key}"
+            ondragover="window.onSlotDragOver(event)" ondragleave="window.onSlotDragLeave(event)" ondrop="window.onTeamSlotDrop(event, '${key}')">
           <td style="width: 50px; text-align: center; color:var(--text-lo); font-size:12px; position:relative; white-space:nowrap;">
             ${isAdmin && a && a.name
               ? `<span class="slot-drag-handle" draggable="true"
@@ -2907,8 +2909,10 @@ window.onTeamCardDrop = function(event) {
 
 
 // ---- Slot Handle Drag-and-Drop ----
-// Drag starts from the ⠿ handle span; overlays appear on all other filled TRs.
-// This pattern is identical to team card swapping.
+// APPROACH: drag handle SPAN fires drag events.
+// TR elements have ondragover+ondrop to act as drop targets.
+// Body gets 'is-dragging-slot' class → CSS highlights all drop-target TRs.
+// No DOM injection needed. Works reliably.
 
 window._slotDragSourceKey = null;
 
@@ -2919,45 +2923,20 @@ window.onSlotHandleDragStart = function(event, sourceKey) {
   window._slotDragSourceKey = sourceKey;
   event.dataTransfer.setData('text/plain', JSON.stringify({ type: 'swap_slot', sourceKey }));
   event.dataTransfer.effectAllowed = 'move';
+  document.body.classList.add('is-dragging-slot');
 
-  // Mark source row
+  // Mark source TR
   const sourceTr = event.target.closest('tr');
-  if (sourceTr) sourceTr.classList.add('slot-is-dragged');
-
-  // Show overlay on all other filled TRs
-  document.querySelectorAll('tr[data-slot-key]').forEach(tr => {
-    const k = tr.dataset.slotKey;
-    if (!k || k === sourceKey) return;
-    // Check if it has a player (check for the drag handle)
-    if (!tr.querySelector('.slot-drag-handle')) return;
-
-    const overlay = document.createElement('div');
-    overlay.className = 'slot-drop-overlay';
-    overlay.textContent = 'สลับที่กัน';
-    overlay.setAttribute('data-target-key', k);
-    overlay.setAttribute('draggable', 'false');
-    overlay.addEventListener('dragover', e => { e.preventDefault(); overlay.classList.add('hovered'); });
-    overlay.addEventListener('dragleave', () => overlay.classList.remove('hovered'));
-    overlay.addEventListener('drop', e => {
-      e.preventDefault();
-      window.onTeamSlotDrop(e, k);
-    });
-    tr.style.position = 'relative';
-    tr.appendChild(overlay);
-  });
+  if (sourceTr) sourceTr.dataset.slotDragging = '1';
 };
 
 window.onSlotHandleDragEnd = function(event) {
   window._slotDragSourceKey = null;
-  // Remove source marker
-  document.querySelectorAll('.slot-is-dragged').forEach(el => el.classList.remove('slot-is-dragged'));
-  // Remove all overlays
-  document.querySelectorAll('.slot-drop-overlay').forEach(el => el.remove());
-  // Reset TR positions
-  document.querySelectorAll('tr[data-slot-key]').forEach(tr => tr.style.position = '');
+  document.body.classList.remove('is-dragging-slot');
+  document.querySelectorAll('tr[data-slot-dragging]').forEach(tr => delete tr.dataset.slotDragging);
+  document.querySelectorAll('.slot-drag-over').forEach(el => el.classList.remove('slot-drag-over'));
 };
 
-// Keep old function names as aliases for backward compat (sidebar drop still uses them)
 window.onSlotDragStart = window.onSlotHandleDragStart;
 window.onSlotDragEnd = window.onSlotHandleDragEnd;
 
@@ -2965,8 +2944,17 @@ window.onSlotDragOver = function(event) {
   event.preventDefault();
   event.dataTransfer.dropEffect = 'move';
   const tr = event.currentTarget;
-  if (tr) tr.classList.add('slot-drag-over');
+  if (tr && !tr.dataset.slotDragging) tr.classList.add('slot-drag-over');
 };
+
+window.onSlotDragLeave = function(event) {
+  const tr = event.currentTarget;
+  if (tr && !tr.contains(event.relatedTarget)) {
+    tr.classList.remove('slot-drag-over');
+  }
+};
+
+
 
 window.onSlotDragLeave = function(event) {
   const tr = event.currentTarget;
