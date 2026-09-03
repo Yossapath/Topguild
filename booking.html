@@ -624,7 +624,8 @@
     function buildRosterNames() {
       allNames = [];
       Object.entries(guildRoster).forEach(([job, arr]) => {
-        (arr || []).forEach(m => { if (m && m.name) allNames.push({ ...m, job }); });
+        if (!Array.isArray(arr)) return;
+        arr.forEach(m => { if (m && m.name) allNames.push({ ...m, job }); });
       });
       allNames.sort((a, b) => (b.power || 0) - (a.power || 0));
     }
@@ -869,7 +870,8 @@
           // Auto-lookup job/power from roster
           if (memberName && !memberJob) {
             for (const j in guildRoster) {
-              const found = (guildRoster[j] || []).find(m => m.name?.toLowerCase() === memberName.toLowerCase());
+              if (!Array.isArray(guildRoster[j])) continue;
+              const found = guildRoster[j].find(m => m.name?.toLowerCase() === memberName.toLowerCase());
               if (found) { memberJob = j; memberPower = found.power; break; }
             }
           }
@@ -931,7 +933,8 @@
       // Check name in roster
       let found = null;
       Object.entries(guildRoster).forEach(([j, arr]) => {
-        (arr || []).forEach(m => {
+        if (!Array.isArray(arr)) return;
+        arr.forEach(m => {
           if (m && m.name && m.name.toLowerCase() === name.toLowerCase()) found = { ...m, job: j };
         });
       });
