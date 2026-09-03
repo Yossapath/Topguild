@@ -218,6 +218,20 @@
     .custom-dropdown-item:hover { background: var(--bg-soft); }
     .custom-dropdown-item:last-child { border-bottom: none; }
     .custom-dropdown-item.selected { background: rgba(47,143,214,0.1); border-left: 3px solid var(--blue-500); }
+
+    /* ---- Round Selector ---- */
+    .round-selector { display: flex; gap: 8px; margin-bottom: 12px; }
+    .round-opt {
+      flex: 1; padding: 10px 0; border: 2px solid var(--line);
+      border-radius: 10px; background: var(--bg-soft, #f8fafc); color: var(--text-lo);
+      font-size: 14px; font-weight: 700; font-family: inherit;
+      cursor: pointer; text-align: center; transition: all 0.18s; user-select: none;
+    }
+    .round-opt:hover { border-color: var(--blue-300); color: var(--blue-700); background: var(--blue-50, #eff6ff); }
+    .round-opt.active {
+      background: var(--blue-700); border-color: var(--blue-700);
+      color: white; box-shadow: 0 3px 10px rgba(20,88,143,0.3);
+    }
   
     /* CSS for Team Drag and Drop */
     body.is-dragging-team .team-table,
@@ -593,12 +607,12 @@
         <!-- Booking form -->
         <div style="width:340px; flex-shrink:0; border-right:2px solid var(--line); padding:24px; background:white;">
           <h3 style="margin:0 0 4px 0; font-size:16px; color:var(--blue-700); font-weight:700;">จองคิวดันมายา</h3>
-          <div style="font-size:12px; color:var(--text-lo); margin-bottom:20px;">จองได้ 1 ตัวละคร ต่อ 1 รอบการจอง</div>
+          <div style="font-size:12px; color:var(--text-lo); margin-bottom:20px;">เลือกชื่อ · อาชีพ · และจำนวนรอบที่ต้องการลง</div>
           <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">ชื่อตัวละคร</label>
           <input type="text" id="dqName" class="form-control autocomplete-member" data-action="dungeonQueue" placeholder="พิมพ์ชื่อ หรือคลิกเพื่อเลือก..." autocomplete="off" style="font-size:15px; padding:12px 14px; height:48px; width:100%; box-sizing:border-box; margin-bottom:6px;">
           <div id="dqScoreDisplay" style="font-size:12px; color:var(--text-lo); margin-bottom:12px; font-weight:600; min-height:18px;"></div>
           <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">อาชีพ</label>
-          <select id="dqClass" class="form-control" style="font-size:15px; padding:12px 14px; height:48px; width:100%; box-sizing:border-box; margin-bottom:12px;">
+          <select id="dqClass" class="form-control" style="font-size:15px; padding:12px 14px; height:48px; width:100%; box-sizing:border-box; margin-bottom:16px;">
             <option value="" disabled selected>-- เลือกอาชีพ --</option>
             <option value="Lord Knight">Lord Knight</option>
             <option value="Paladin">Paladin</option>
@@ -613,6 +627,11 @@
           </select>
           <!-- Fixed to Maya only -->
           <input type="hidden" id="dqDungeon" value="มายา (Maya)">
+          <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">จำนวนรอบที่ต้องการลง</label>
+          <div class="round-selector">
+            <button type="button" class="round-opt active" data-round="1" id="dqRoundOpt1" onclick="window.setDqRound(1)">🗡 1 รอบ</button>
+            <button type="button" class="round-opt" data-round="2" id="dqRoundOpt2" onclick="window.setDqRound(2)">⚔️ 2 รอบ</button>
+          </div>
           <div id="dqScheduleStatus" style="margin-bottom:12px; padding:10px 14px; border-radius:8px; font-size:13px; font-weight:600; display:none;"></div>
           <button class="btn-primary" id="btnBookDungeon" style="width:100%; font-size:17px; padding:16px; font-weight:700; border-radius:10px;" onclick="bookDungeonQueue()">✅ จองคิวดันมายา</button>
           <!-- Admin booking schedule panel -->

@@ -102,6 +102,14 @@ import {
       });
     }
 
+    let selectedDqRound = 1;
+    window.setDqRound = function(round) {
+      selectedDqRound = round;
+      document.querySelectorAll('.dq-round-opt').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('dqRoundOpt' + round);
+      if(activeBtn) activeBtn.classList.add('active');
+    };
+
     window.bookDungeonQueue = async function () {
       if (!window.currentUser)
         return window.showToast("กรุณาเข้าสู่ระบบ", "error");
@@ -170,25 +178,31 @@ import {
         dungeon,
         power,
         status: "waiting",
-
+        rounds: selectedDqRound,
         timestamp: Date.now(),
       });
 
       saveDungeonState();
+      
+      const roundLabel = selectedDqRound === 2 ? '(2 รอบ)' : '(1 รอบ)';
+
       if (window.writeSystemLog)
         window.writeSystemLog(
           "dungeon",
           "BOOK_QUEUE",
           name,
           dungeon,
-          "จองคิวลงดันเจี้ยน อาชีพ " + job,
+          `จองคิวลงดันเจี้ยน อาชีพ ${job} ${roundLabel}`,
           null,
         );
 
       document.getElementById("dqName").value = "";
       window.updateDungeonScoreDisplay("");
       document.getElementById("dqClass").value = "";
-      window.showToast("จองคิวสำเร็จ!", "success");
+      window.showToast(`🎉 จองคิวสำเร็จ! ${name} (${job}) ${roundLabel} อยู่ในคิวดันมายาแล้ว`, "success");
+      
+      // Reset round selector
+      window.setDqRound(1);
     };
 
     window.changeDungeonQueueStatus = function (id, newStatus) {
@@ -205,24 +219,7 @@ import {
     };
 
     
-    window.toggleDungeonQueueRound = function(id, roundNumber) {
-      const isAdmin = typeof window.isUserAdmin === 'function' && window.isUserAdmin();
-      const q = dungeonData.queues.find(x => x.id === id);
-      if (q) {
-        const isOwner = window.currentUser && window.currentUser.username && q.name && q.name.toLowerCase() === window.currentUser.username.toLowerCase();
-        if (isAdmin) {
-          if (roundNumber === 1) q.round1 = !q.round1;
-          if (roundNumber === 2) {
-            q.round2 = !q.round2;
-            if (q.round2) {
-               // Auto delete it instead of just marking as done and hiding
-               dungeonData.queues = dungeonData.queues.filter(x => x.id !== id);
-            }
-          }
-          saveDungeonState();
-        }
-      }
-    };
+
     window.deleteDungeonQueue = function (id) {
       const q = dungeonData.queues.find((x) => x.id === id);
       if (window.writeSystemLog)
@@ -705,12 +702,7 @@ import {
                 <span style="font-size:13px;color:${jobColor};font-weight:700;background:rgba(0,0,0,0.07);height:30px;padding:0 10px;border-radius:6px;display:inline-flex;align-items:center;white-space:nowrap;">${q.job || ''}</span>
                 ${q.power ? '<span style="font-size:13px;color:var(--text-lo);font-weight:600;line-height:30px;white-space:nowrap;">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
                 <span style="font-size:13px;font-weight:700;color:${sColor};border:1.5px solid ${sColor};height:30px;padding:0 12px;border-radius:20px;display:inline-flex;align-items:center;white-space:nowrap;background:white;">${sText}</span>
-                
-                <!-- Round Buttons -->
-                <div style="display:flex;gap:6px;margin-left:8px;">
-                  <button onclick="window.toggleDungeonQueueRound('${q.id}', 1)" style="font-size:12px;height:30px;padding:0 12px;border:none;background:${q.round1 ? '#10b981' : '#f59e0b'};color:white;border-radius:6px;cursor:${isAdmin ? 'pointer' : 'default'};opacity:${isAdmin ? '1' : '0.7'};white-space:nowrap;font-weight:700;">รอบ 1</button>
-                  <button onclick="window.toggleDungeonQueueRound('${q.id}', 2)" style="font-size:12px;height:30px;padding:0 12px;border:none;background:${q.round2 ? '#10b981' : '#f59e0b'};color:white;border-radius:6px;cursor:${isAdmin ? 'pointer' : 'default'};opacity:${isAdmin ? '1' : '0.7'};white-space:nowrap;font-weight:700;">รอบ 2</button>
-                </div>
+                <span style="font-size:12px;font-weight:700;height:30px;padding:0 10px;border-radius:6px;display:inline-flex;align-items:center;white-space:nowrap;background:${q.rounds === 2 ? 'rgba(139,70,175,0.12)' : 'rgba(47,143,214,0.1)'};color:${q.rounds === 2 ? 'var(--job-sin)' : 'var(--blue-700)'};">${q.rounds === 2 ? '⚔️ 2 รอบ' : '🗡 1 รอบ'}</span>
                 <div style="display:flex;gap:6px;margin-left:auto;flex-shrink:0;">${adminCtrl}${memberCtrl}</div>
               </div>
               ${q.timestamp ? '<div style="font-size:11px;color:var(--text-lo);margin-top:3px;">' + new Date(q.timestamp).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' น.</div>' : ''}
