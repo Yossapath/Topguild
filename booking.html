@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จองคิวดันมายา - TopGuild</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Prompt', sans-serif;
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      width: 100%;
+      max-width: 480px;
+      overflow: hidden;
+    }
+    .card-header {
+      background: linear-gradient(135deg, #1e40af, #2563eb);
+      color: white;
+      padding: 28px 28px 24px;
+      text-align: center;
+    }
+    .card-header h1 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+    .card-header p { font-size: 13px; opacity: 0.85; }
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      border: 1.5px solid rgba(255,255,255,0.4);
+      color: white;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+    .card-body { padding: 28px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    input[type="text"], select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      color: #0f172a;
+      background: #f8fafc;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: #2563eb; background: #eff6ff; }
+    .score-display { font-size: 12px; font-weight: 600; color: #64748b; min-height: 18px; margin-top: 6px; }
+    .btn-book {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(37,99,235,0.35);
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+    .btn-book:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
+    .btn-book:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+    .status-msg {
+      text-align: center;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      display: none;
+      margin-top: 16px;
+    }
+    .status-msg.success { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
+    .status-msg.error   { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
+    .queue-section { border-top: 2px solid #f1f5f9; margin-top: 28px; padding-top: 24px; }
+    .queue-section h2 { font-size: 15px; font-weight: 700; color: #1e40af; margin-bottom: 16px; }
+    .queue-list { list-style: none; }
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1.5px solid #e2e8f0;
+    }
+    .queue-num {
+      width: 28px; height: 28px;
+      background: #2563eb;
+      color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .queue-name { font-weight: 700; font-size: 14px; flex: 1; }
+    .queue-job { font-size: 12px; color: #64748b; }
+    .queue-empty { text-align: center; color: #94a3b8; font-size: 14px; padding: 24px 0; }
+    .autocomplete-list {
+      position: absolute;
+      background: white;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 100;
+      max-height: 200px;
+      overflow-y: auto;
+      width: 100%;
+      top: calc(100% + 4px);
+      left: 0;
+    }
+    .autocomplete-list div {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .autocomplete-list div:hover { background: #eff6ff; }
+    .input-wrap { position: relative; }
+    .loading { text-align: center; padding: 40px; color: #94a3b8; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <div style="font-size: 32px; margin-bottom: 8px;">⚔️</div>
+      <h1>จองคิวดันมายา</h1>
+      <p>TopGuild · Ragnarok The New World</p>
+      <span class="badge">🏰 Maya Dungeon · 5 คนต่อทีม</span>
+    </div>
+    <div class="card-body" id="mainBody">
+      <div class="loading" id="loadingMsg">⏳ กำลังโหลดข้อมูล...</div>
+      <div id="formArea" style="display:none;">
+        <div class="form-group">
+          <label>ชื่อตัวละคร</label>
+          <div class="input-wrap">
+            <input type="text" id="bkName" placeholder="พิมพ์ชื่อหรือเลือกจากรายการ..." autocomplete="off" oninput="onNameInput(this.value)">
+            <div class="autocomplete-list" id="acList" style="display:none;"></div>
+          </div>
+          <div class="score-display" id="bkScoreDisplay"></div>
+        </div>
+        <div class="form-group">
+          <label>อาชีพ</label>
+          <select id="bkClass">
+            <option value="" disabled selected>-- เลือกอาชีพ --</option>
+            <option>Lord Knight</option>
+            <option>Paladin</option>
+            <option>High Wizard</option>
+            <option>Sniper</option>
+            <option>Priest</option>
+            <option>Champion</option>
+            <option>Assassin Cross</option>
+            <option>Merchant</option>
+            <option>Gunslinger</option>
+            <option>Druid</option>
+          </select>
+        </div>
+        <div id="scheduleStatus" style="display:none; padding:10px 14px; border-radius:8px; font-size:13px; font-weight:600; margin-bottom:16px;"></div>
+        <button class="btn-book" id="btnBook" onclick="doBook()">✅ จองคิวดันมายา</button>
+        <div class="status-msg" id="statusMsg"></div>
+
+        <!-- Queue list -->
+        <div class="queue-section">
+          <h2>📋 รายชื่อคิวรอ (<span id="queueCount">0</span> คน)</h2>
+          <ul class="queue-list" id="queueList">
+            <li class="queue-empty">ยังไม่มีผู้จองคิว</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // ---- Firebase Config (same as main app) ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyBXPfxhSLBt9dQqf5glFrXvx6KLxqPmEE8",
+      authDomain: "topguild-eeb40.firebaseapp.com",
+      projectId: "topguild-eeb40",
+      storageBucket: "topguild-eeb40.firebasestorage.app",
+      messagingSenderId: "879954426796",
+      appId: "1:879954426796:web:48e305dc9f78bda6a51809"
+    };
+
+    let app, db, guildRoster = {}, dungeonData = { queues: [], teams: [] }, scheduleData = null;
+    const DUNGEON = 'มายา (Maya)';
+
+    async function init() {
+      try {
+        app = initializeApp(firebaseConfig, 'booking-page');
+        db = getFirestore(app);
+
+        // Load roster
+        const rosterSnap = await getDoc(doc(db, 'guild_system', 'roster'));
+        if (rosterSnap.exists()) guildRoster = rosterSnap.data() || {};
+
+        // Load schedule
+        const schedSnap = await getDoc(doc(db, 'guild_system', 'dungeon_schedule'));
+        if (schedSnap.exists()) scheduleData = schedSnap.data();
+
+        // Listen to dungeon queue in real-time
+        onSnapshot(doc(db, 'guild_system', 'dungeons'), (snap) => {
+          if (snap.exists()) {
+            dungeonData = snap.data();
+            if (!dungeonData.queues) dungeonData.queues = [];
+            renderQueue();
+          }
+        });
+
+        document.getElementById('loadingMsg').style.display = 'none';
+        document.getElementById('formArea').style.display = 'block';
+        renderScheduleStatus();
+        buildRosterNames();
+      } catch (e) {
+        document.getElementById('loadingMsg').textContent = '❌ โหลดข้อมูลไม่สำเร็จ: ' + e.message;
+        console.error(e);
+      }
+    }
+
+    // ---- Autocomplete ----
+    let allNames = [];
+    function buildRosterNames() {
+      allNames = [];
+      Object.values(guildRoster).forEach(arr => {
+        (arr || []).forEach(m => { if (m && m.name) allNames.push(m); });
+      });
+    }
+
+    window.onNameInput = function(val) {
+      const acList = document.getElementById('acList');
+      const scoreEl = document.getElementById('bkScoreDisplay');
+      if (!val || val.length < 1) { acList.style.display = 'none'; scoreEl.textContent = ''; return; }
+      const matches = allNames.filter(m => m.name.toLowerCase().includes(val.toLowerCase())).slice(0, 8);
+      if (matches.length === 0) { acList.style.display = 'none'; return; }
+      acList.innerHTML = matches.map(m => `<div onclick="selectName('${m.name.replace(/'/g,"\\'")}','${m.job||''}')">${m.name} <small style="color:#94a3b8">${m.job||''}</small></div>`).join('');
+      acList.style.display = 'block';
+    };
+
+    window.selectName = function(name, job) {
+      document.getElementById('bkName').value = name;
+      if (job) document.getElementById('bkClass').value = job;
+      document.getElementById('acList').style.display = 'none';
+    };
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.input-wrap')) document.getElementById('acList').style.display = 'none';
+    });
+
+    // ---- Schedule Status ----
+    function renderScheduleStatus() {
+      const el = document.getElementById('scheduleStatus');
+      const btn = document.getElementById('btnBook');
+      if (!scheduleData || (!scheduleData.openDate && !scheduleData.openTime)) {
+        el.style.display = 'none'; btn.disabled = false; return;
+      }
+      const now = new Date();
+      const todayStr = now.toISOString().slice(0, 10);
+      const openDate = scheduleData.openDate;
+      if (openDate && todayStr !== openDate) {
+        const d = new Date(openDate);
+        el.style.display = 'block';
+        el.style.background = '#fef3c7'; el.style.color = '#92400e'; el.style.border = '1.5px solid #fde68a';
+        el.textContent = '🗓 เปิดจองวันที่ ' + d.toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' });
+        btn.disabled = true; return;
+      }
+      const [oh, om] = (scheduleData.openTime || '00:00').split(':').map(Number);
+      const [ch, cm] = (scheduleData.closeTime || '23:59').split(':').map(Number);
+      const openMin = oh * 60 + om, closeMin = ch * 60 + cm;
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      if (nowMin < openMin || nowMin > closeMin) {
+        el.style.display = 'block';
+        el.style.background = '#fee2e2'; el.style.color = '#991b1b'; el.style.border = '1.5px solid #fca5a5';
+        el.textContent = `🔒 เปิดรับจอง ${scheduleData.openTime || '06:00'} - ${scheduleData.closeTime || '23:59'} น. (ปัจจุบันปิดอยู่)`;
+        btn.disabled = true;
+      } else {
+        el.style.display = 'block';
+        el.style.background = '#dcfce7'; el.style.color = '#166534'; el.style.border = '1.5px solid #86efac';
+        el.textContent = `✅ เปิดรับจองถึง ${scheduleData.closeTime || '23:59'} น.`;
+        btn.disabled = false;
+      }
+    }
+
+    // ---- Render Queue ----
+    function renderQueue() {
+      const mayaQ = (dungeonData.queues || []).filter(q => q.dungeon === DUNGEON);
+      document.getElementById('queueCount').textContent = mayaQ.length;
+      const ul = document.getElementById('queueList');
+      if (mayaQ.length === 0) {
+        ul.innerHTML = '<li class="queue-empty">ยังไม่มีผู้จองคิว</li>';
+        return;
+      }
+      ul.innerHTML = mayaQ.map((q, i) => `
+        <li class="queue-item">
+          <div class="queue-num">${i + 1}</div>
+          <div style="flex:1;">
+            <div class="queue-name">${q.name || '-'}</div>
+            <div class="queue-job">${q.job || '-'}</div>
+          </div>
+        </li>`).join('');
+    }
+
+    // ---- Book ----
+    window.doBook = async function() {
+      const name = (document.getElementById('bkName').value || '').trim();
+      const job = document.getElementById('bkClass').value;
+      const msg = document.getElementById('statusMsg');
+      msg.style.display = 'none';
+
+      if (!name || !job) {
+        showMsg('⚠️ กรุณากรอกชื่อตัวละครและเลือกอาชีพ', 'error'); return;
+      }
+
+      // Check name in roster
+      let found = null;
+      Object.values(guildRoster).forEach(arr => {
+        (arr || []).forEach(m => { if (m && m.name && m.name.toLowerCase() === name.toLowerCase()) found = m; });
+      });
+      if (!found) { showMsg('❌ ชื่อนี้ไม่มีในระบบกิลด์', 'error'); return; }
+
+      // Check already booked (any dungeon)
+      const alreadyBooked = (dungeonData.queues || []).some(q =>
+        q.name && q.name.toLowerCase() === name.toLowerCase() && q.dungeon === DUNGEON
+      );
+      if (alreadyBooked) { showMsg('⚠️ คุณจองคิวดันมายาไว้แล้ว', 'error'); return; }
+
+      const btn = document.getElementById('btnBook');
+      btn.disabled = true; btn.textContent = '⏳ กำลังจอง...';
+
+      try {
+        const ref = doc(db, 'guild_system', 'dungeons');
+        const snap = await getDoc(ref);
+        const current = snap.exists() ? snap.data() : { queues: [], teams: [] };
+        if (!current.queues) current.queues = [];
+
+        // Double-check again after fetch
+        const stillBooked = current.queues.some(q => q.name && q.name.toLowerCase() === name.toLowerCase() && q.dungeon === DUNGEON);
+        if (stillBooked) { showMsg('⚠️ คุณจองคิวดันมายาไว้แล้ว', 'error'); btn.disabled = false; btn.textContent = '✅ จองคิวดันมายา'; return; }
+
+        current.queues.push({
+          id: Date.now().toString(),
+          name,
+          job,
+          dungeon: DUNGEON,
+          power: found.power || 0,
+          status: 'waiting',
+          timestamp: Date.now(),
+          bookedVia: 'booking_page'
+        });
+
+        await setDoc(ref, current);
+        document.getElementById('bkName').value = '';
+        document.getElementById('bkClass').value = '';
+        showMsg(`🎉 จองคิวสำเร็จ! ${name} (${job}) อยู่ในคิวดันมายาแล้ว`, 'success');
+      } catch (e) {
+        showMsg('❌ เกิดข้อผิดพลาด: ' + e.message, 'error');
+        console.error(e);
+      } finally {
+        btn.disabled = false; btn.textContent = '✅ จองคิวดันมายา';
+      }
+    };
+
+    function showMsg(text, type) {
+      const el = document.getElementById('statusMsg');
+      el.textContent = text;
+      el.className = 'status-msg ' + type;
+      el.style.display = 'block';
+      if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    init();
+  </script>
+</body>
+</html>

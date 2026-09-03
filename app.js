@@ -795,6 +795,23 @@ function isTeamLocked(fieldIdx, teamName) {
     const saved = localStorage.getItem('guild_locked_teams');
     if (saved) lockedTeams = JSON.parse(saved);
   } catch(e) {}
+
+// =============================================
+// Share Link for Dungeon Booking
+// =============================================
+window.copyDungeonBookingLink = function() {
+  const url = window.location.origin + window.location.pathname.replace('index.html', '') + 'booking.html';
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => {
+      if (window.showToast) window.showToast('คัดลอกลิงค์จองคิวสำเร็จ! ส่งให้เพื่อนได้เลย 🔗', 'success');
+    }).catch(() => {
+      prompt('คัดลอกลิงค์นี้:', url);
+    });
+  } else {
+    prompt('คัดลอกลิงค์นี้:', url);
+  }
+};
+
 })();
 
   function renderTeams() {

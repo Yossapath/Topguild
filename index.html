@@ -577,20 +577,23 @@
     <div style="background: white; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden;">
       <!-- Header -->
       <div style="background: var(--blue-700); color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-        <h2 style="margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.5px;">ระบบจองคิวลงดันเจี้ยน</h2>
-        <div id="dungeonAdminControls" style="display:flex; gap:8px; align-items:center;"></div>
+        <div>
+          <h2 style="margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.5px;">ระบบจองคิว ดันมายา (Maya)</h2>
+          <div style="font-size:12px; opacity:0.8; margin-top:2px;">5 คนต่อทีม · จองได้ 1 ตัวละคร ต่อรอบ</div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button onclick="window.copyDungeonBookingLink()" style="background:rgba(255,255,255,0.18); border:1.5px solid rgba(255,255,255,0.5); color:white; border-radius:8px; padding:8px 14px; cursor:pointer; font-size:13px; font-weight:700;">🔗 แชร์ลิงค์จองคิว</button>
+          <div id="dungeonAdminControls" style="display:flex; gap:8px; align-items:center;"></div>
+        </div>
       </div>
-      <!-- Tabs -->
-      <div id="dungeonTabsContainer" style="display: flex; background: white; border-bottom: 2px solid var(--line);">
-        <button type="button" class="dungeon-tab active" data-type="มายา (Maya)" onclick="switchDungeonTab('มายา (Maya)')" style="flex:1; padding:13px; font-size:15px; font-weight:700; border-radius:0; border:none; border-right:1px solid var(--line); border-bottom:3px solid var(--blue-700); background:white; cursor:pointer;">มายา (Maya)</button>
-        <button type="button" class="dungeon-tab" data-type="บับเบิ้ล (Bubble)" onclick="switchDungeonTab('บับเบิ้ล (Bubble)')" style="flex:1; padding:13px; font-size:15px; font-weight:700; border-radius:0; border:none; border-right:1px solid var(--line); border-bottom:3px solid transparent; background:white; cursor:pointer;">บับเบิ้ล (Bubble)</button>
-        <button type="button" class="dungeon-tab" data-type="กระจก (Mirror)" onclick="switchDungeonTab('กระจก (Mirror)')" style="flex:1; padding:13px; font-size:15px; font-weight:700; border-radius:0; border:none; border-bottom:3px solid transparent; background:white; cursor:pointer;">กระจก (Mirror)</button>
-      </div>
+      <!-- Maya only - hidden tab container; JS will call switchDungeonTab automatically -->
+      <div id="dungeonTabsContainer" style="display:none;"></div>
       <!-- Body: form left + queue right -->
       <div style="display:flex; align-items:stretch;">
         <!-- Booking form -->
         <div style="width:340px; flex-shrink:0; border-right:2px solid var(--line); padding:24px; background:white;">
-          <h3 style="margin:0 0 20px 0; font-size:16px; color:var(--blue-700); font-weight:700;">จองคิวลงดัน</h3>
+          <h3 style="margin:0 0 4px 0; font-size:16px; color:var(--blue-700); font-weight:700;">จองคิวดันมายา</h3>
+          <div style="font-size:12px; color:var(--text-lo); margin-bottom:20px;">จองได้ 1 ตัวละคร ต่อ 1 รอบการจอง</div>
           <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">ชื่อตัวละคร</label>
           <input type="text" id="dqName" class="form-control autocomplete-member" data-action="dungeonQueue" placeholder="พิมพ์ชื่อ หรือคลิกเพื่อเลือก..." autocomplete="off" style="font-size:15px; padding:12px 14px; height:48px; width:100%; box-sizing:border-box; margin-bottom:6px;">
           <div id="dqScoreDisplay" style="font-size:12px; color:var(--text-lo); margin-bottom:12px; font-weight:600; min-height:18px;"></div>
@@ -608,14 +611,10 @@
             <option value="Gunslinger">Gunslinger</option>
             <option value="Druid">Druid</option>
           </select>
-          <label style="font-size:11px; font-weight:700; color:var(--text-lo); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">ดันเจี้ยน</label>
-          <select id="dqDungeon" class="form-control" style="font-size:15px; padding:12px 14px; height:48px; width:100%; box-sizing:border-box; margin-bottom:20px;">
-            <option value="มายา (Maya)">ดันมายา (5 คน)</option>
-            <option value="บับเบิ้ล (Bubble)">ดันบับเบิ้ล (10 คน)</option>
-            <option value="กระจก (Mirror)">ดันกระจก (10 คน)</option>
-          </select>
+          <!-- Fixed to Maya only -->
+          <input type="hidden" id="dqDungeon" value="มายา (Maya)">
           <div id="dqScheduleStatus" style="margin-bottom:12px; padding:10px 14px; border-radius:8px; font-size:13px; font-weight:600; display:none;"></div>
-          <button class="btn-primary" id="btnBookDungeon" style="width:100%; font-size:17px; padding:16px; font-weight:700; border-radius:10px;" onclick="bookDungeonQueue()">จองคิวลงดันเจี้ยน</button>
+          <button class="btn-primary" id="btnBookDungeon" style="width:100%; font-size:17px; padding:16px; font-weight:700; border-radius:10px;" onclick="bookDungeonQueue()">✅ จองคิวดันมายา</button>
           <!-- Admin booking schedule panel -->
           <div id="dungeonAdminPanel" style="margin-top:16px; display:none;">
             <hr style="border:none; border-top:1px solid var(--line); margin:16px 0;">
@@ -1047,15 +1046,15 @@
 
 <!-- Firebase SDK v10 (CDN Module) -->
 <!-- Module: Auth, Login, Shared Utilities -->
-  <script type="module" src="module_auth.js?v=7.23"></script>
+  <script type="module" src="module_auth.js?v=7.24"></script>
   <!-- Module: Dungeon (isolated - bug here won't affect other pages) -->
-  <script type="module" src="module_dungeon.js?v=7.23"></script>
+  <script type="module" src="module_dungeon.js?v=7.24"></script>
     <!-- Module: Log & Backup (Admin Only) -->
-    <script type="module" src="module_log.js?v=7.23"></script>
+    <script type="module" src="module_log.js?v=7.24"></script>
   <!-- Module: Attendance (isolated) -->
-  <script type="module" src="module_attendance.js?v=7.23"></script>
+  <script type="module" src="module_attendance.js?v=7.24"></script>
   <!-- Module: Leave (isolated) -->
-  <script type="module" src="module_leave.js?v=7.23"></script>
+  <script type="module" src="module_leave.js?v=7.24"></script>
 <script type="module" src="app.js?v=1787667838965"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>
