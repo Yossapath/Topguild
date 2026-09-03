@@ -966,7 +966,7 @@ window.copyDungeonBookingLink = function() {
       sortedTeamNames.forEach(tName => {
         const numMatch = tName.match(/\d+/);
         const num = numMatch ? parseInt(numMatch[0]) : 0;
-        if (num % 2 === 0 && num !== 0) {
+        if (num >= 7) {
           zone2Names.push(tName);
         } else {
           zone1Names.push(tName);
@@ -2590,7 +2590,7 @@ window.exportMainFieldPDF = function() {
 
     const numMatch = tName.match(/\d+/);
     const num = numMatch ? parseInt(numMatch[0]) : 0;
-    if (num % 2 === 0 && num !== 0) {
+    if (num >= 7) {
       block2Teams.push(tName); // Even numbers (2,4,6,8,10,12)
     } else {
       block1Teams.push(tName); // Odd numbers (1,3,5,7,9,11) or unnumbered
@@ -2716,7 +2716,7 @@ window.exportSubFieldPDF = function() {
 
     const numMatch = tName.match(/\d+/);
     const num = numMatch ? parseInt(numMatch[0]) : 0;
-    if (num % 2 === 0 && num !== 0) {
+    if (num >= 7) {
       block2Teams.push(tName);
     } else {
       block1Teams.push(tName);
