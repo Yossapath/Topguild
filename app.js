@@ -834,12 +834,14 @@ function isTeamLocked(fieldIdx, teamName) {
       ].filter(Boolean).join(' ');
 
       rows.push(`
-        <tr class="${rowClass}"
-            ${isAdmin && a && a.name ? 'draggable="true"' : ''}
-            ${isAdmin ? `ondragstart="window.onSlotDragStart(event, '${key}')" ondragend="window.onSlotDragEnd(event)"` : ''}
-            ondragover="window.onSlotDragOver(event)" ondragleave="window.onSlotDragLeave(event)" ondrop="window.onTeamSlotDrop(event, '${key}')">
-          <td class="cell-rank" style="cursor:${isAdmin && a && a.name ? 'grab' : 'default'}; user-select:none;">
-            ${isAdmin && a && a.name ? '<span style="font-size:12px;opacity:0.35;margin-right:1px;pointer-events:none;">⠿</span>' : ''}
+        <tr class="${rowClass}" data-slot-key="${key}">
+          <td class="cell-rank" style="position:relative; white-space:nowrap;">
+            ${isAdmin && a && a.name
+              ? `<span class="slot-drag-handle" draggable="true"
+                   ondragstart="window.onSlotHandleDragStart(event, '${key}')"
+                   ondragend="window.onSlotHandleDragEnd(event)"
+                   title="ลากเพื่อสลับผู้เล่น">⠿</span>`
+              : `<span style="display:inline-block;width:14px;"></span>`}
             ${i + 1}
           </td>
           <td>
@@ -904,11 +906,14 @@ function isTeamLocked(fieldIdx, teamName) {
 
         const job = rowJobFilter[key] || (a ? a.job : '') || '';
         htmlRows += `
-        <tr ${isAdmin && a && a.name ? 'draggable="true"' : ''}
-            ${isAdmin ? `ondragstart="window.onSlotDragStart(event, '${key}')" ondragend="window.onSlotDragEnd(event)"` : ''}
-            ondragover="window.onSlotDragOver(event)" ondragleave="window.onSlotDragLeave(event)" ondrop="window.onTeamSlotDrop(event, '${key}')">
-          <td style="width: 50px; text-align: center; color:var(--text-lo); font-size:12px; cursor:${isAdmin && a && a.name ? 'grab' : 'default'}; user-select:none;">
-            ${isAdmin && a && a.name ? '<span style="font-size:12px;opacity:0.35;margin-right:1px;pointer-events:none;">⠿</span>' : ''}
+        <tr data-slot-key="${key}">
+          <td style="width: 50px; text-align: center; color:var(--text-lo); font-size:12px; position:relative; white-space:nowrap;">
+            ${isAdmin && a && a.name
+              ? `<span class="slot-drag-handle" draggable="true"
+                   ondragstart="window.onSlotHandleDragStart(event, '${key}')"
+                   ondragend="window.onSlotHandleDragEnd(event)"
+                   title="ลากเพื่อสลับผู้เล่น">⠿</span>`
+              : `<span style="display:inline-block;width:14px;"></span>`}
             ${i+1}
           </td>
           <td>
@@ -2901,30 +2906,60 @@ window.onTeamCardDrop = function(event) {
 };
 
 
-window.onSlotDragStart = function(event, slotKey) {
-  // Only allow drag when starting from the rank cell (td.cell-rank or the ⠿ span),
-  // NOT from inputs, selects, or buttons inside the row.
-  const tag = (event.target || {}).tagName || '';
-  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'BUTTON' || tag === 'TEXTAREA') {
-    event.preventDefault();
-    return;
-  }
+// ---- Slot Handle Drag-and-Drop ----
+// Drag starts from the ⠿ handle span; overlays appear on all other filled TRs.
+// This pattern is identical to team card swapping.
 
+window._slotDragSourceKey = null;
+
+window.onSlotHandleDragStart = function(event, sourceKey) {
   const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
   if (!isAdmin) { event.preventDefault(); return; }
 
-  event.dataTransfer.setData('text/plain', JSON.stringify({ type: 'swap_slot', sourceKey: slotKey }));
+  window._slotDragSourceKey = sourceKey;
+  event.dataTransfer.setData('text/plain', JSON.stringify({ type: 'swap_slot', sourceKey }));
   event.dataTransfer.effectAllowed = 'move';
-  const tr = event.currentTarget;
-  if (tr) setTimeout(() => { tr.style.opacity = '0.45'; }, 0);
+
+  // Mark source row
+  const sourceTr = event.target.closest('tr');
+  if (sourceTr) sourceTr.classList.add('slot-is-dragged');
+
+  // Show overlay on all other filled TRs
+  document.querySelectorAll('tr[data-slot-key]').forEach(tr => {
+    const k = tr.dataset.slotKey;
+    if (!k || k === sourceKey) return;
+    // Check if it has a player (check for the drag handle)
+    if (!tr.querySelector('.slot-drag-handle')) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'slot-drop-overlay';
+    overlay.textContent = 'สลับที่กัน';
+    overlay.setAttribute('data-target-key', k);
+    overlay.setAttribute('draggable', 'false');
+    overlay.addEventListener('dragover', e => { e.preventDefault(); overlay.classList.add('hovered'); });
+    overlay.addEventListener('dragleave', () => overlay.classList.remove('hovered'));
+    overlay.addEventListener('drop', e => {
+      e.preventDefault();
+      window.onTeamSlotDrop(e, k);
+    });
+    tr.style.position = 'relative';
+    tr.appendChild(overlay);
+  });
 };
 
-window.onSlotDragEnd = function(event) {
-  const tr = event.currentTarget;
-  if (tr) tr.style.opacity = '';
-  document.body.classList.remove('is-dragging-slot');
-  document.querySelectorAll('.slot-drag-over').forEach(el => el.classList.remove('slot-drag-over'));
+window.onSlotHandleDragEnd = function(event) {
+  window._slotDragSourceKey = null;
+  // Remove source marker
+  document.querySelectorAll('.slot-is-dragged').forEach(el => el.classList.remove('slot-is-dragged'));
+  // Remove all overlays
+  document.querySelectorAll('.slot-drop-overlay').forEach(el => el.remove());
+  // Reset TR positions
+  document.querySelectorAll('tr[data-slot-key]').forEach(tr => tr.style.position = '');
 };
+
+// Keep old function names as aliases for backward compat (sidebar drop still uses them)
+window.onSlotDragStart = window.onSlotHandleDragStart;
+window.onSlotDragEnd = window.onSlotHandleDragEnd;
 
 window.onSlotDragOver = function(event) {
   event.preventDefault();
@@ -2939,3 +2974,5 @@ window.onSlotDragLeave = function(event) {
     tr.classList.remove('slot-drag-over');
   }
 };
+
+

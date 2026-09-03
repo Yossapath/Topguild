@@ -263,17 +263,41 @@
 
   
     /* CSS for Slot Drag and Drop */
-    tr[draggable="true"] {
+    .slot-drag-handle {
+      display: inline-block;
       cursor: grab;
+      font-size: 14px;
+      opacity: 0.4;
+      margin-right: 2px;
+      user-select: none;
+      vertical-align: middle;
     }
-    tr[draggable="true"]:active {
-      cursor: grabbing;
+    .slot-drag-handle:hover { opacity: 0.8; }
+    .slot-drag-handle:active { cursor: grabbing; }
+
+    tr.slot-is-dragged td { opacity: 0.45; }
+
+    /* Overlay that appears on each target row during drag */
+    .slot-drop-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.82);
+      border: 2.5px dashed var(--primary, #3b82f6);
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary, #3b82f6);
+      pointer-events: all;
+      z-index: 50;
+      transition: all 0.15s ease;
     }
-    
-    tr.slot-drag-over td {
-      background-color: #dbeafe !important;
-      outline: 2px dashed #3b82f6;
-      outline-offset: -2px;
+    .slot-drop-overlay.hovered {
+      background: rgba(219, 234, 254, 0.95);
+      border-width: 3px;
+      transform: scale(1.01);
     }
 
   </style>
@@ -1002,15 +1026,15 @@
 
 <!-- Firebase SDK v10 (CDN Module) -->
 <!-- Module: Auth, Login, Shared Utilities -->
-  <script type="module" src="module_auth.js?v=7.20"></script>
+  <script type="module" src="module_auth.js?v=7.21"></script>
   <!-- Module: Dungeon (isolated - bug here won't affect other pages) -->
-  <script type="module" src="module_dungeon.js?v=7.20"></script>
+  <script type="module" src="module_dungeon.js?v=7.21"></script>
     <!-- Module: Log & Backup (Admin Only) -->
-    <script type="module" src="module_log.js?v=7.20"></script>
+    <script type="module" src="module_log.js?v=7.21"></script>
   <!-- Module: Attendance (isolated) -->
-  <script type="module" src="module_attendance.js?v=7.20"></script>
+  <script type="module" src="module_attendance.js?v=7.21"></script>
   <!-- Module: Leave (isolated) -->
-  <script type="module" src="module_leave.js?v=7.20"></script>
+  <script type="module" src="module_leave.js?v=7.21"></script>
 <script type="module" src="app.js?v=1787667838965"></script>
 
   <div id="globalMemberDropdown" class="custom-dropdown" style="display:none; position:absolute; z-index:99999; max-height:250px; overflow-y:auto; width:200px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); background-color: var(--surface); border: 1px solid var(--line);"></div>
