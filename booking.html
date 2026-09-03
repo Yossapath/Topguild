@@ -267,20 +267,6 @@
       font-weight: 700;
       font-family: inherit;
     }
-    .cancel-btn {
-      font-size: 13px;
-      height: 30px;
-      padding: 0 14px;
-      border: 1.5px solid var(--danger);
-      background: transparent;
-      color: var(--danger);
-      border-radius: 6px;
-      cursor: pointer;
-      white-space: nowrap;
-      font-family: inherit;
-      font-weight: 600;
-    }
-    .cancel-btn:hover { background: var(--danger); color: white; }
     .queue-item-time { font-size: 11px; color: var(--text-lo); margin-top: 3px; }
 
     /* ---- Teams Section ---- */
@@ -792,48 +778,10 @@
               <span class="round-btn" style="background:${q.round1 ? '#10b981' : '#f59e0b'};">รอบ 1</span>
               <span class="round-btn" style="background:${q.round2 ? '#10b981' : '#f59e0b'};">รอบ 2</span>
             </div>
-            <div style="display:flex;gap:6px;margin-left:auto;flex-shrink:0;">
-              <button class="cancel-btn" data-cancel-id="${q.id}" data-cancel-name="${escapeHtml(q.name)}">ยกเลิก</button>
-            </div>
           </div>
           ${timeStr ? '<div class="queue-item-time">' + timeStr + '</div>' : ''}
         </div>`;
       }).join('');
-
-      // Attach cancel handlers
-      qList.querySelectorAll('.cancel-btn').forEach(btn => {
-        btn.addEventListener('click', () => handleCancel(btn.dataset.cancelId, btn.dataset.cancelName));
-      });
-    }
-
-    // ---- Cancel Queue ----
-    async function handleCancel(id, queueName) {
-      const confirmName = prompt(`เพื่อยกเลิกคิวของ "${queueName}" กรุณาพิมพ์ชื่อตัวละครเพื่อยืนยัน:`);
-      if (!confirmName) return;
-      if (confirmName.trim().toLowerCase() !== queueName.trim().toLowerCase()) {
-        showToast('ชื่อไม่ตรงกับคิว ไม่สามารถยกเลิกได้', 'error');
-        return;
-      }
-
-      try {
-        const ref  = doc(db, 'guild_system', 'dungeons');
-        const snap = await getDoc(ref);
-        const current = snap.exists() ? snap.data() : { queues: [], teams: [] };
-        if (!current.queues) current.queues = [];
-
-        const qIdx = current.queues.findIndex(q => q.id === id && q.name.toLowerCase() === queueName.toLowerCase());
-        if (qIdx === -1) {
-          showToast('ไม่พบคิวนี้แล้ว อาจถูกยกเลิกไปแล้ว', 'warning');
-          return;
-        }
-
-        current.queues.splice(qIdx, 1);
-        await setDoc(ref, current);
-        showToast('ยกเลิกคิวสำเร็จ!', 'success');
-      } catch (e) {
-        showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
-        console.error(e);
-      }
     }
 
     // ---- Render Teams ---- (mirrors index.html non-admin view)
