@@ -3,187 +3,477 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>จองคิวดันมายา - TopGuild</title>
+  <title>จองคิวดันมายา - TopGuild (Public)</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Prompt', sans-serif;
-      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 32px 16px;
+
+    :root {
+      --bg: #eef4fb;
+      --surface: #ffffff;
+      --blue-900: #0b3d63;
+      --blue-700: #14588f;
+      --blue-500: #2f8fd6;
+      --blue-300: #8fc4ef;
+      --blue-100: #dbeeff;
+      --blue-50: #eff6ff;
+      --line: #d3e6f7;
+      --text-hi: #0f2a3d;
+      --text-lo: #5c7d92;
+      --danger: #e0432c;
+      --warn: #e0a800;
+      --ok: #16a34a;
+      --font-display: 'Prompt', sans-serif;
+      --job-lk: #c13829;
+      --job-paladin: #e18028;
+      --job-hw: #2c7eb9;
+      --job-sniper: #d4a015;
+      --job-priest: #25ae62;
+      --job-champ: #15a083;
+      --job-sin: #8b46af;
+      --job-merch: #c2185d;
+      --job-gun: #894517;
+      --job-druid: #41b388;
     }
-    .card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-      width: 100%;
-      max-width: 480px;
+
+    body {
+      font-family: var(--font-display);
+      background: var(--bg);
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    /* ---- Layout ---- */
+    .page-wrap { max-width: 1200px; margin: 0 auto; }
+
+    .main-card {
+      background: var(--surface);
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       overflow: hidden;
     }
+
     .card-header {
-      background: linear-gradient(135deg, #1e40af, #2563eb);
+      background: var(--blue-700);
       color: white;
-      padding: 28px 28px 24px;
-      text-align: center;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
     }
-    .card-header h1 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
-    .card-header p { font-size: 13px; opacity: 0.85; }
-    .badge {
-      display: inline-block;
-      background: rgba(255,255,255,0.2);
-      border: 1.5px solid rgba(255,255,255,0.4);
+    .card-header h2 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+    .card-header .subtitle { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+    .badge-public {
+      background: rgba(255,255,255,0.18);
+      border: 1.5px solid rgba(255,255,255,0.5);
       color: white;
-      border-radius: 20px;
-      padding: 4px 14px;
+      border-radius: 8px;
+      padding: 6px 14px;
       font-size: 12px;
       font-weight: 700;
-      margin-top: 10px;
     }
-    .card-body { padding: 28px; }
-    .form-group { margin-bottom: 20px; }
-    label { display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
-    input[type="text"], select {
+
+    .body-flex { display: flex; align-items: stretch; }
+
+    /* ---- Booking Form ---- */
+    .form-panel {
+      width: 340px;
+      flex-shrink: 0;
+      border-right: 2px solid var(--line);
+      padding: 24px;
+      background: var(--surface);
+    }
+    .form-panel h3 { margin: 0 0 4px; font-size: 16px; color: var(--blue-700); font-weight: 700; }
+    .form-panel .form-sub { font-size: 12px; color: var(--text-lo); margin-bottom: 20px; }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-lo);
+      display: block;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input, .form-select {
       width: 100%;
-      padding: 14px 16px;
-      border: 2px solid #e2e8f0;
+      padding: 12px 14px;
+      border: 2px solid var(--line);
       border-radius: 10px;
       font-size: 15px;
       font-family: inherit;
-      color: #0f172a;
+      color: var(--text-hi);
       background: #f8fafc;
       transition: border-color 0.2s;
       outline: none;
+      height: 48px;
     }
-    input:focus, select:focus { border-color: #2563eb; background: #eff6ff; }
-    .score-display { font-size: 12px; font-weight: 600; color: #64748b; min-height: 18px; margin-top: 6px; }
+    .form-input:focus, .form-select:focus { border-color: var(--blue-500); background: var(--blue-50); }
+
     .btn-book {
       width: 100%;
       padding: 16px;
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: white;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       font-size: 17px;
-      font-weight: 800;
+      font-weight: 700;
       font-family: inherit;
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(37,99,235,0.35);
       transition: all 0.2s;
-      margin-top: 8px;
     }
-    .btn-book:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
+    .btn-book:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
     .btn-book:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
-    .status-msg {
-      text-align: center;
-      padding: 14px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      display: none;
-      margin-top: 16px;
-    }
-    .status-msg.success { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
-    .status-msg.error   { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
-    .queue-section { border-top: 2px solid #f1f5f9; margin-top: 28px; padding-top: 24px; }
-    .queue-section h2 { font-size: 15px; font-weight: 700; color: #1e40af; margin-bottom: 16px; }
-    .queue-list { list-style: none; }
-    .queue-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      background: #f8fafc;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      border: 1.5px solid #e2e8f0;
-    }
-    .queue-num {
-      width: 28px; height: 28px;
-      background: #2563eb;
-      color: white;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700;
-      flex-shrink: 0;
-    }
-    .queue-name { font-weight: 700; font-size: 14px; flex: 1; }
-    .queue-job { font-size: 12px; color: #64748b; }
-    .queue-empty { text-align: center; color: #94a3b8; font-size: 14px; padding: 24px 0; }
+
+    .input-wrap { position: relative; margin-bottom: 6px; }
+
     .autocomplete-list {
       position: absolute;
       background: white;
-      border: 1.5px solid #e2e8f0;
+      border: 1.5px solid var(--line);
       border-radius: 10px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.12);
       z-index: 100;
-      max-height: 200px;
+      max-height: 220px;
       overflow-y: auto;
       width: 100%;
       top: calc(100% + 4px);
       left: 0;
+      display: none;
     }
-    .autocomplete-list div {
+    .autocomplete-list .ac-item {
       padding: 10px 14px;
       cursor: pointer;
       font-size: 14px;
       border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
     }
-    .autocomplete-list div:hover { background: #eff6ff; }
-    .input-wrap { position: relative; }
-    .loading { text-align: center; padding: 40px; color: #94a3b8; font-size: 14px; }
+    .autocomplete-list .ac-item:hover { background: var(--blue-50); }
+    .autocomplete-list .ac-item .ac-name { font-weight: 700; color: var(--text-hi); }
+    .autocomplete-list .ac-item .ac-meta { font-size: 12px; color: var(--text-lo); white-space: nowrap; }
+
+    .score-display {
+      font-size: 12px;
+      color: var(--text-lo);
+      margin-bottom: 12px;
+      font-weight: 600;
+      min-height: 18px;
+      display: none;
+    }
+
+    .schedule-status {
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+    }
+
+    /* ---- Queue Panel ---- */
+    .queue-panel { flex: 1; display: flex; flex-direction: column; background: var(--surface); }
+    .queue-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .queue-header h3 { margin: 0; font-size: 15px; color: var(--text-hi); font-weight: 700; }
+    .count-badge {
+      background: var(--blue-100);
+      color: var(--blue-700);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .queue-list-area {
+      flex: 1;
+      overflow-y: auto;
+      max-height: 600px;
+      background: white;
+    }
+    .queue-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 300px;
+      color: var(--text-lo);
+      font-size: 15px;
+      font-weight: 600;
+      background: var(--blue-50);
+      border: 2px dashed var(--line);
+      border-radius: 12px;
+      margin: 16px;
+    }
+    .queue-item {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--line);
+      background: white;
+    }
+    .queue-item-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+    .queue-item-name { font-size: 14px; font-weight: 700; color: var(--text-hi); line-height: 30px; white-space: nowrap; }
+    .queue-item-name .idx { color: var(--text-lo); margin-right: 4px; }
+    .queue-item-job {
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(0,0,0,0.07);
+      height: 30px;
+      padding: 0 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+    }
+    .queue-item-power { font-size: 13px; color: var(--text-lo); font-weight: 600; line-height: 30px; white-space: nowrap; }
+    .status-pill {
+      font-size: 13px;
+      font-weight: 700;
+      height: 30px;
+      padding: 0 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      background: white;
+    }
+    .round-btn {
+      font-size: 12px;
+      height: 30px;
+      padding: 0 12px;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: default;
+      opacity: 0.85;
+      white-space: nowrap;
+      font-weight: 700;
+      font-family: inherit;
+    }
+    .cancel-btn {
+      font-size: 13px;
+      height: 30px;
+      padding: 0 14px;
+      border: 1.5px solid var(--danger);
+      background: transparent;
+      color: var(--danger);
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      font-weight: 600;
+    }
+    .cancel-btn:hover { background: var(--danger); color: white; }
+    .queue-item-time { font-size: 11px; color: var(--text-lo); margin-top: 3px; }
+
+    /* ---- Teams Section ---- */
+    .teams-section { margin-top: 16px; }
+    .teams-section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--blue-700);
+      padding: 16px 24px 8px;
+    }
+    .teams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 16px;
+      padding: 16px;
+    }
+    .team-card {
+      background: var(--surface);
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border: 1.5px solid var(--line);
+      overflow: hidden;
+    }
+    .team-card-head {
+      background: var(--blue-700);
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .team-card-head .team-name { font-size: 15px; font-weight: 700; }
+    .team-card-head .team-num { font-size: 13px; font-weight: 400; margin-left: 8px; opacity: 0.8; }
+    .team-card-head .team-power { font-size: 13px; opacity: 0.9; margin-top: 2px; }
+    .team-status-badge {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.18);
+      color: white;
+    }
+    .team-status-badge.full { background: rgba(22,163,74,0.35); }
+    .team-status-badge.partial { background: rgba(224,168,0,0.35); }
+
+    .team-table { width: 100%; border-collapse: collapse; }
+    .team-table th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-lo);
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+    .team-table td {
+      padding: 8px 12px;
+      font-size: 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--text-hi);
+    }
+    .team-table tr:last-child td { border-bottom: none; }
+    .member-empty { color: var(--text-lo); font-style: italic; }
+
+    /* ---- Toast ---- */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: var(--font-display);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      animation: toastIn 0.3s ease-out;
+      max-width: 400px;
+    }
+    .toast.success { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
+    .toast.error   { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
+    .toast.warning { background: #fff8e6; color: #92400e; border: 1.5px solid #fde68a; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ---- Loading ---- */
+    .loading-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      color: var(--text-lo);
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid var(--line);
+      border-top-color: var(--blue-500);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 720px) {
+      .body-flex { flex-direction: column; }
+      .form-panel { width: 100%; border-right: none; border-bottom: 2px solid var(--line); }
+      .teams-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="card-header">
-      <div style="font-size: 32px; margin-bottom: 8px;">⚔️</div>
-      <h1>จองคิวดันมายา</h1>
-      <p>TopGuild · Ragnarok The New World</p>
-      <span class="badge">🏰 Maya Dungeon · 5 คนต่อทีม</span>
-    </div>
-    <div class="card-body" id="mainBody">
-      <div class="loading" id="loadingMsg">⏳ กำลังโหลดข้อมูล...</div>
-      <div id="formArea" style="display:none;">
-        <div class="form-group">
-          <label>ชื่อตัวละคร</label>
-          <div class="input-wrap">
-            <input type="text" id="bkName" placeholder="พิมพ์ชื่อหรือเลือกจากรายการ..." autocomplete="off" oninput="onNameInput(this.value)">
-            <div class="autocomplete-list" id="acList" style="display:none;"></div>
-          </div>
-          <div class="score-display" id="bkScoreDisplay"></div>
-        </div>
-        <div class="form-group">
-          <label>อาชีพ</label>
-          <select id="bkClass">
-            <option value="" disabled selected>-- เลือกอาชีพ --</option>
-            <option>Lord Knight</option>
-            <option>Paladin</option>
-            <option>High Wizard</option>
-            <option>Sniper</option>
-            <option>Priest</option>
-            <option>Champion</option>
-            <option>Assassin Cross</option>
-            <option>Merchant</option>
-            <option>Gunslinger</option>
-            <option>Druid</option>
-          </select>
-        </div>
-        <div id="scheduleStatus" style="display:none; padding:10px 14px; border-radius:8px; font-size:13px; font-weight:600; margin-bottom:16px;"></div>
-        <button class="btn-book" id="btnBook" onclick="doBook()">✅ จองคิวดันมายา</button>
-        <div class="status-msg" id="statusMsg"></div>
+  <div class="page-wrap">
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer"></div>
 
-        <!-- Queue list -->
-        <div class="queue-section">
-          <h2>📋 รายชื่อคิวรอ (<span id="queueCount">0</span> คน)</h2>
-          <ul class="queue-list" id="queueList">
-            <li class="queue-empty">ยังไม่มีผู้จองคิว</li>
-          </ul>
+    <!-- Main Card -->
+    <div class="main-card">
+      <div class="card-header">
+        <div>
+          <h2>⚔️ ระบบจองคิว ดันมายา (Maya)</h2>
+          <div class="subtitle">5 คนต่อทีม · จองได้ 1 ตัวละคร ต่อรอบ · TopGuild</div>
         </div>
+        <span class="badge-public">🌐 ลิงค์สาธารณะ</span>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-overlay" id="loadingArea">
+        <div class="spinner"></div>
+        <div>⏳ กำลังโหลดข้อมูล...</div>
+      </div>
+
+      <!-- Main Content (hidden until loaded) -->
+      <div id="mainContent" style="display:none;">
+        <div class="body-flex">
+          <!-- Booking form -->
+          <div class="form-panel">
+            <h3>จองคิวดันมายา</h3>
+            <div class="form-sub">จองได้ 1 ตัวละคร ต่อ 1 รอบการจอง</div>
+
+            <label class="form-label">ชื่อตัวละคร</label>
+            <div class="input-wrap">
+              <input type="text" class="form-input" id="bkName" placeholder="พิมพ์ชื่อ หรือเลือกจากรายการ..." autocomplete="off">
+              <div class="autocomplete-list" id="acList"></div>
+            </div>
+            <div class="score-display" id="bkScoreDisplay"></div>
+
+            <label class="form-label">อาชีพ</label>
+            <select class="form-select" id="bkClass" style="margin-bottom:12px;">
+              <option value="" disabled selected>-- เลือกอาชีพ --</option>
+              <option>Lord Knight</option>
+              <option>Paladin</option>
+              <option>High Wizard</option>
+              <option>Sniper</option>
+              <option>Priest</option>
+              <option>Champion</option>
+              <option>Assassin Cross</option>
+              <option>Merchant</option>
+              <option>Gunslinger</option>
+              <option>Druid</option>
+            </select>
+
+            <div class="schedule-status" id="scheduleStatus"></div>
+            <button class="btn-book" id="btnBook">✅ จองคิวดันมายา</button>
+          </div>
+
+          <!-- Queue list -->
+          <div class="queue-panel">
+            <div class="queue-header">
+              <h3>📋 รายชื่อคิว</h3>
+              <span class="count-badge" id="queueCount">0 คน</span>
+            </div>
+            <div class="queue-list-area" id="queueList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Teams Section -->
+    <div class="teams-section" id="teamsSection" style="display:none;">
+      <div class="main-card" style="margin-top:16px;">
+        <div class="teams-section-title">🏰 ทีมดันมายา</div>
+        <div class="teams-grid" id="teamsGrid"></div>
       </div>
     </div>
   </div>
@@ -203,191 +493,524 @@
       appId: "1:879954426796:web:48e305dc9f78bda6a51809"
     };
 
-    let app, db, guildRoster = {}, dungeonData = { queues: [], teams: [] }, scheduleData = null;
     const DUNGEON = 'มายา (Maya)';
 
+    const JOB_COLORS = {
+      'Lord Knight':    'var(--job-lk)',
+      'Paladin':        'var(--job-paladin)',
+      'High Wizard':    'var(--job-hw)',
+      'Sniper':         'var(--job-sniper)',
+      'Priest':         'var(--job-priest)',
+      'Champion':       'var(--job-champ)',
+      'Assassin Cross': 'var(--job-sin)',
+      'Merchant':       'var(--job-merch)',
+      'Gunslinger':     'var(--job-gun)',
+      'Druid':          'var(--job-druid)',
+    };
+
+    let app, db;
+    let guildRoster = {};
+    let dungeonData = { queues: [], teams: [] };
+    let attendanceData = { dates: {}, archived: {} };
+    let scheduleData = null;
+    let allNames = [];
+
+    // ---- Utility ----
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = 'toast ' + type;
+      t.textContent = msg;
+      container.appendChild(t);
+      setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 4000);
+    }
+
+    // ---- Score Calculation (mirrors module_attendance.js logic) ----
+    function getUserScore(name) {
+      const statsMap = {};
+      const aggregate = (datesObj) => {
+        if (!datesObj) return;
+        Object.keys(datesObj).forEach(d => {
+          let weight = 1;
+          if (d.includes('อาทิตย์')) weight = 2;
+          const dayData = datesObj[d];
+          if (!dayData) return;
+          Object.keys(dayData).forEach(n => {
+            const status = dayData[n];
+            if (!statsMap[n]) statsMap[n] = { score: 0 };
+            if (status === 'attended') statsMap[n].score += weight;
+            if (status === 'absent')  statsMap[n].score -= weight;
+          });
+        });
+      };
+      aggregate(attendanceData.dates);
+      aggregate(attendanceData.archived);
+      const entry = statsMap[name];
+      if (!entry) {
+        // Try case-insensitive match
+        const key = Object.keys(statsMap).find(k => k.toLowerCase() === name.toLowerCase());
+        return key ? statsMap[key].score : 0;
+      }
+      return entry.score;
+    }
+
+    // ---- Initialize ----
     async function init() {
       try {
-        app = initializeApp(firebaseConfig, 'booking-page');
+        app = initializeApp(firebaseConfig, 'booking-public');
         db = getFirestore(app);
 
         // Load roster
         const rosterSnap = await getDoc(doc(db, 'guild_system', 'roster'));
         if (rosterSnap.exists()) guildRoster = rosterSnap.data() || {};
+        buildRosterNames();
+
+        // Load attendance for score calculation
+        const attSnap = await getDoc(doc(db, 'guild_system', 'attendance'));
+        if (attSnap.exists()) attendanceData = attSnap.data() || { dates: {}, archived: {} };
+        if (!attendanceData.dates) attendanceData.dates = {};
+        if (!attendanceData.archived) attendanceData.archived = {};
+
+        // Real-time attendance listener (for live score updates)
+        onSnapshot(doc(db, 'guild_system', 'attendance'), (snap) => {
+          if (snap.exists()) {
+            attendanceData = snap.data() || { dates: {}, archived: {} };
+            if (!attendanceData.dates) attendanceData.dates = {};
+            if (!attendanceData.archived) attendanceData.archived = {};
+            // Refresh score display if a name is typed
+            const nameVal = document.getElementById('bkName').value.trim();
+            if (nameVal) updateScoreDisplay(nameVal);
+          }
+        });
 
         // Load schedule
         const schedSnap = await getDoc(doc(db, 'guild_system', 'dungeon_schedule'));
         if (schedSnap.exists()) scheduleData = schedSnap.data();
 
-        // Listen to dungeon queue in real-time
+        // Real-time schedule listener
+        onSnapshot(doc(db, 'guild_system', 'dungeon_schedule'), (snap) => {
+          scheduleData = snap.exists() ? snap.data() : null;
+          renderScheduleStatus();
+        });
+
+        // Real-time dungeon listener
         onSnapshot(doc(db, 'guild_system', 'dungeons'), (snap) => {
           if (snap.exists()) {
             dungeonData = snap.data();
             if (!dungeonData.queues) dungeonData.queues = [];
-            renderQueue();
+            if (!dungeonData.teams)  dungeonData.teams = [];
+          } else {
+            dungeonData = { queues: [], teams: [] };
           }
+          renderQueue();
+          renderTeams();
         });
 
-        document.getElementById('loadingMsg').style.display = 'none';
-        document.getElementById('formArea').style.display = 'block';
+        document.getElementById('loadingArea').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
         renderScheduleStatus();
-        buildRosterNames();
       } catch (e) {
-        document.getElementById('loadingMsg').textContent = '❌ โหลดข้อมูลไม่สำเร็จ: ' + e.message;
+        document.getElementById('loadingArea').innerHTML = '<div style="color:var(--danger);">❌ โหลดข้อมูลไม่สำเร็จ: ' + escapeHtml(e.message) + '</div>';
         console.error(e);
       }
     }
 
-    // ---- Autocomplete ----
-    let allNames = [];
+    // ---- Roster / Autocomplete ----
     function buildRosterNames() {
       allNames = [];
-      Object.values(guildRoster).forEach(arr => {
-        (arr || []).forEach(m => { if (m && m.name) allNames.push(m); });
+      Object.entries(guildRoster).forEach(([job, arr]) => {
+        (arr || []).forEach(m => { if (m && m.name) allNames.push({ ...m, job }); });
       });
+      allNames.sort((a, b) => (b.power || 0) - (a.power || 0));
     }
 
-    window.onNameInput = function(val) {
-      const acList = document.getElementById('acList');
-      const scoreEl = document.getElementById('bkScoreDisplay');
-      if (!val || val.length < 1) { acList.style.display = 'none'; scoreEl.textContent = ''; return; }
-      const matches = allNames.filter(m => m.name.toLowerCase().includes(val.toLowerCase())).slice(0, 8);
-      if (matches.length === 0) { acList.style.display = 'none'; return; }
-      acList.innerHTML = matches.map(m => `<div onclick="selectName('${m.name.replace(/'/g,"\\'")}','${m.job||''}')">${m.name} <small style="color:#94a3b8">${m.job||''}</small></div>`).join('');
-      acList.style.display = 'block';
-    };
+    function updateScoreDisplay(name) {
+      const display = document.getElementById('bkScoreDisplay');
+      const n = (name || '').trim();
+      if (!n) { display.style.display = 'none'; return; }
 
-    window.selectName = function(name, job) {
-      document.getElementById('bkName').value = name;
-      if (job) document.getElementById('bkClass').value = job;
-      document.getElementById('acList').style.display = 'none';
-    };
+      // Check if name is in roster
+      let inRoster = allNames.some(m => m.name.toLowerCase() === n.toLowerCase());
+      if (!inRoster) { display.style.display = 'none'; return; }
+
+      const score = getUserScore(n);
+      const color = score < 0 ? 'var(--danger)' : score === 0 ? 'var(--warn)' : 'var(--ok)';
+      const suffix = score <= -2 ? ' ⛔ (ไม่มีสิทธิ์จองคิว)' : '';
+      display.innerHTML = 'คะแนนกิจกรรม: <span style="color:' + color + ';font-weight:700;">' + score + suffix + '</span>';
+      display.style.display = 'block';
+    }
+
+    const bkNameEl = document.getElementById('bkName');
+    const acListEl = document.getElementById('acList');
+
+    bkNameEl.addEventListener('input', function() {
+      const val = this.value.trim();
+      updateScoreDisplay(val);
+      if (!val || val.length < 1) { acListEl.style.display = 'none'; return; }
+      const matches = allNames.filter(m => m.name.toLowerCase().includes(val.toLowerCase())).slice(0, 10);
+      if (matches.length === 0) { acListEl.style.display = 'none'; return; }
+      acListEl.innerHTML = matches.map(m => {
+        const score = getUserScore(m.name);
+        const scoreColor = score < 0 ? 'var(--danger)' : score === 0 ? 'var(--warn)' : 'var(--ok)';
+        const jobColor = JOB_COLORS[m.job] || 'var(--text-lo)';
+        return `<div class="ac-item" data-name="${escapeHtml(m.name)}" data-job="${escapeHtml(m.job || '')}">
+          <span class="ac-name">${escapeHtml(m.name)}</span>
+          <span class="ac-meta">
+            <span style="color:${jobColor};font-weight:700;">${escapeHtml(m.job || '')}</span>
+            ${m.power ? ' · ' + Number(m.power).toLocaleString('en-US') : ''}
+            · <span style="color:${scoreColor};">⭐${score}</span>
+          </span>
+        </div>`;
+      }).join('');
+      acListEl.style.display = 'block';
+    });
+
+    bkNameEl.addEventListener('focus', function() {
+      if (this.value.trim().length >= 1) this.dispatchEvent(new Event('input'));
+    });
+
+    acListEl.addEventListener('click', function(e) {
+      const item = e.target.closest('.ac-item[data-name]');
+      if (!item) return;
+      bkNameEl.value = item.dataset.name;
+      if (item.dataset.job) document.getElementById('bkClass').value = item.dataset.job;
+      acListEl.style.display = 'none';
+      updateScoreDisplay(item.dataset.name);
+    });
 
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.input-wrap')) document.getElementById('acList').style.display = 'none';
+      if (!e.target.closest('.input-wrap')) acListEl.style.display = 'none';
     });
 
     // ---- Schedule Status ----
     function renderScheduleStatus() {
-      const el = document.getElementById('scheduleStatus');
+      const el  = document.getElementById('scheduleStatus');
       const btn = document.getElementById('btnBook');
       if (!scheduleData || (!scheduleData.openDate && !scheduleData.openTime)) {
-        el.style.display = 'none'; btn.disabled = false; return;
-      }
-      const now = new Date();
-      const todayStr = now.toISOString().slice(0, 10);
-      const openDate = scheduleData.openDate;
-      if (openDate && todayStr !== openDate) {
-        const d = new Date(openDate);
-        el.style.display = 'block';
-        el.style.background = '#fef3c7'; el.style.color = '#92400e'; el.style.border = '1.5px solid #fde68a';
-        el.textContent = '🗓 เปิดจองวันที่ ' + d.toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' });
-        btn.disabled = true; return;
-      }
-      const [oh, om] = (scheduleData.openTime || '00:00').split(':').map(Number);
-      const [ch, cm] = (scheduleData.closeTime || '23:59').split(':').map(Number);
-      const openMin = oh * 60 + om, closeMin = ch * 60 + cm;
-      const nowMin = now.getHours() * 60 + now.getMinutes();
-      if (nowMin < openMin || nowMin > closeMin) {
-        el.style.display = 'block';
-        el.style.background = '#fee2e2'; el.style.color = '#991b1b'; el.style.border = '1.5px solid #fca5a5';
-        el.textContent = `🔒 เปิดรับจอง ${scheduleData.openTime || '06:00'} - ${scheduleData.closeTime || '23:59'} น. (ปัจจุบันปิดอยู่)`;
-        btn.disabled = true;
-      } else {
-        el.style.display = 'block';
-        el.style.background = '#dcfce7'; el.style.color = '#166534'; el.style.border = '1.5px solid #86efac';
-        el.textContent = `✅ เปิดรับจองถึง ${scheduleData.closeTime || '23:59'} น.`;
+        el.style.display = 'none';
         btn.disabled = false;
-      }
-    }
-
-    // ---- Render Queue ----
-    function renderQueue() {
-      const mayaQ = (dungeonData.queues || []).filter(q => q.dungeon === DUNGEON);
-      document.getElementById('queueCount').textContent = mayaQ.length;
-      const ul = document.getElementById('queueList');
-      if (mayaQ.length === 0) {
-        ul.innerHTML = '<li class="queue-empty">ยังไม่มีผู้จองคิว</li>';
         return;
       }
-      ul.innerHTML = mayaQ.map((q, i) => `
-        <li class="queue-item">
-          <div class="queue-num">${i + 1}</div>
-          <div style="flex:1;">
-            <div class="queue-name">${q.name || '-'}</div>
-            <div class="queue-job">${q.job || '-'}</div>
-          </div>
-        </li>`).join('');
-    }
 
-    // ---- Book ----
-    window.doBook = async function() {
-      const name = (document.getElementById('bkName').value || '').trim();
-      const job = document.getElementById('bkClass').value;
-      const msg = document.getElementById('statusMsg');
-      msg.style.display = 'none';
+      const now        = new Date();
+      const nowDateStr = now.toLocaleDateString('en-CA',  { timeZone: 'Asia/Bangkok' });
+      const nowTimeStr = now.toLocaleTimeString('en-GB',  { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
 
-      if (!name || !job) {
-        showMsg('⚠️ กรุณากรอกชื่อตัวละครและเลือกอาชีพ', 'error'); return;
+      const openDate      = scheduleData.openDate;
+      const openTime      = scheduleData.openTime || '00:00';
+      const closeTime     = scheduleData.closeTime || '23:59';
+      const effectiveClose = closeTime === '24:00' ? '23:59' : closeTime;
+
+      if (openDate && nowDateStr !== openDate) {
+        const futureOpen = nowDateStr < openDate;
+        el.style.display = 'block';
+        if (futureOpen) {
+          el.style.cssText = 'display:block;background:rgba(224,168,0,0.1);color:#92400e;border:1.5px solid #fde68a;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;';
+          const d = new Date(openDate);
+          el.textContent = '🗓 จะเปิดจองวันที่ ' + d.toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' }) + ' เวลา ' + openTime + '–' + closeTime + ' น.';
+        } else {
+          el.style.cssText = 'display:block;background:rgba(239,68,68,0.08);color:var(--danger);border:1px solid var(--danger);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;';
+          el.textContent = '🔒 ปิดรับการจองแล้ว';
+        }
+        btn.disabled = true;
+        return;
       }
 
-      // Check name in roster
-      let found = null;
-      Object.values(guildRoster).forEach(arr => {
-        (arr || []).forEach(m => { if (m && m.name && m.name.toLowerCase() === name.toLowerCase()) found = m; });
+      const isOpen = (!openDate || nowDateStr === openDate) && nowTimeStr >= openTime && nowTimeStr <= effectiveClose;
+      if (isOpen) {
+        el.style.cssText = 'display:block;background:rgba(22,163,74,0.12);color:var(--ok);border:1px solid var(--ok);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;';
+        el.textContent = '✅ เปิดรับจองอยู่ (ถึง ' + closeTime + ' น.)';
+        btn.disabled = false;
+      } else {
+        el.style.cssText = 'display:block;background:rgba(239,68,68,0.08);color:var(--danger);border:1px solid var(--danger);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;';
+        const futureOpen = nowTimeStr < openTime;
+        el.textContent = futureOpen
+          ? '⏰ จะเปิดจองเวลา ' + openTime + '–' + closeTime + ' น.'
+          : '🔒 ปิดรับการจองแล้ว';
+        btn.disabled = true;
+      }
+    }
+
+    // ---- Render Queue ---- (mirrors index.html renderDungeonPage queue section)
+    function renderQueue() {
+      const qList = document.getElementById('queueList');
+      const filteredQueues = (dungeonData.queues || []).filter(q => q.dungeon === DUNGEON && q.status !== 'done');
+      filteredQueues.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+      document.getElementById('queueCount').textContent = filteredQueues.length + ' คน';
+
+      if (filteredQueues.length === 0) {
+        qList.innerHTML = `<div class="queue-empty">
+          <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:12px;opacity:0.3;"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+          <div style="opacity:0.6;">ยังไม่มีคิวในขณะนี้</div>
+        </div>`;
+        return;
+      }
+
+      const currentTeams = (dungeonData.teams || []).filter(t => t.type === DUNGEON);
+
+      qList.innerHTML = filteredQueues.map((q, index) => {
+        // Check if in any team
+        let inTeamIndex = -1;
+        currentTeams.forEach((team, tIdx) => {
+          if (team.members && Array.isArray(team.members)) {
+            if (team.members.some(m => m && m.name && q && q.name && m.name.toLowerCase() === q.name.toLowerCase())) {
+              inTeamIndex = tIdx + 1;
+            }
+          }
+        });
+
+        let sColor, sText;
+        if (inTeamIndex !== -1) {
+          sColor = 'var(--blue-500)';
+          sText  = 'อยู่ในทีม ' + inTeamIndex;
+        } else {
+          sColor = q.status === 'done' ? 'var(--ok)' : q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)';
+          sText  = q.status === 'done' ? 'สำเร็จ'    : q.status === 'active' ? 'กำลังลงดัน'      : 'รอลงดัน';
+        }
+
+        const jobColor    = JOB_COLORS[q.job] || 'var(--text-lo)';
+        const statusBorder = q.status === 'done' ? 'var(--ok)' : q.status === 'active' ? 'var(--blue-500)' : 'var(--warn)';
+
+        const timeStr = q.timestamp
+          ? new Date(q.timestamp).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' น.'
+          : '';
+
+        return `<div class="queue-item" style="border-left:4px solid ${statusBorder};">
+          <div class="queue-item-row">
+            <strong class="queue-item-name"><span class="idx">${index + 1}.</span>${escapeHtml(q.name)}</strong>
+            <span class="queue-item-job" style="color:${jobColor};">${escapeHtml(q.job || '')}</span>
+            ${q.power ? '<span class="queue-item-power">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
+            <span class="status-pill" style="color:${sColor};border:1.5px solid ${sColor};">${sText}</span>
+            <div style="display:flex;gap:6px;margin-left:8px;">
+              <span class="round-btn" style="background:${q.round1 ? '#10b981' : '#f59e0b'};">รอบ 1</span>
+              <span class="round-btn" style="background:${q.round2 ? '#10b981' : '#f59e0b'};">รอบ 2</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-left:auto;flex-shrink:0;">
+              <button class="cancel-btn" data-cancel-id="${q.id}" data-cancel-name="${escapeHtml(q.name)}">ยกเลิก</button>
+            </div>
+          </div>
+          ${timeStr ? '<div class="queue-item-time">' + timeStr + '</div>' : ''}
+        </div>`;
+      }).join('');
+
+      // Attach cancel handlers
+      qList.querySelectorAll('.cancel-btn').forEach(btn => {
+        btn.addEventListener('click', () => handleCancel(btn.dataset.cancelId, btn.dataset.cancelName));
       });
-      if (!found) { showMsg('❌ ชื่อนี้ไม่มีในระบบกิลด์', 'error'); return; }
+    }
 
-      // Check already booked (any dungeon)
-      const alreadyBooked = (dungeonData.queues || []).some(q =>
-        q.name && q.name.toLowerCase() === name.toLowerCase() && q.dungeon === DUNGEON
-      );
-      if (alreadyBooked) { showMsg('⚠️ คุณจองคิวดันมายาไว้แล้ว', 'error'); return; }
-
-      const btn = document.getElementById('btnBook');
-      btn.disabled = true; btn.textContent = '⏳ กำลังจอง...';
+    // ---- Cancel Queue ----
+    async function handleCancel(id, queueName) {
+      const confirmName = prompt(`เพื่อยกเลิกคิวของ "${queueName}" กรุณาพิมพ์ชื่อตัวละครเพื่อยืนยัน:`);
+      if (!confirmName) return;
+      if (confirmName.trim().toLowerCase() !== queueName.trim().toLowerCase()) {
+        showToast('ชื่อไม่ตรงกับคิว ไม่สามารถยกเลิกได้', 'error');
+        return;
+      }
 
       try {
-        const ref = doc(db, 'guild_system', 'dungeons');
+        const ref  = doc(db, 'guild_system', 'dungeons');
         const snap = await getDoc(ref);
         const current = snap.exists() ? snap.data() : { queues: [], teams: [] };
         if (!current.queues) current.queues = [];
 
-        // Double-check again after fetch
-        const stillBooked = current.queues.some(q => q.name && q.name.toLowerCase() === name.toLowerCase() && q.dungeon === DUNGEON);
-        if (stillBooked) { showMsg('⚠️ คุณจองคิวดันมายาไว้แล้ว', 'error'); btn.disabled = false; btn.textContent = '✅ จองคิวดันมายา'; return; }
+        const qIdx = current.queues.findIndex(q => q.id === id && q.name.toLowerCase() === queueName.toLowerCase());
+        if (qIdx === -1) {
+          showToast('ไม่พบคิวนี้แล้ว อาจถูกยกเลิกไปแล้ว', 'warning');
+          return;
+        }
+
+        current.queues.splice(qIdx, 1);
+        await setDoc(ref, current);
+        showToast('ยกเลิกคิวสำเร็จ!', 'success');
+      } catch (e) {
+        showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+        console.error(e);
+      }
+    }
+
+    // ---- Render Teams ---- (mirrors index.html non-admin view)
+    function renderTeams() {
+      const teamsForDungeon = (dungeonData.teams || []).filter(t => t.type === DUNGEON);
+      const section = document.getElementById('teamsSection');
+      const grid    = document.getElementById('teamsGrid');
+
+      if (teamsForDungeon.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+
+      grid.innerHTML = teamsForDungeon.map((t, teamIdx) => {
+        let totalPower = 0;
+        let filledCount = 0;
+        const members = t.members || [];
+
+        let rows = '';
+        for (let i = 0; i < t.capacity; i++) {
+          const member = members[i];
+          let memberName  = '';
+          let memberJob   = '';
+          let memberPower = null;
+
+          if (member) {
+            memberName  = typeof member === 'string' ? member  : (member.name  || '');
+            memberJob   = typeof member === 'string' ? ''      : (member.job   || '');
+            memberPower = typeof member === 'string' ? null    : (member.power || null);
+          }
+
+          // Auto-lookup job/power from roster
+          if (memberName && !memberJob) {
+            for (const j in guildRoster) {
+              const found = (guildRoster[j] || []).find(m => m.name?.toLowerCase() === memberName.toLowerCase());
+              if (found) { memberJob = j; memberPower = found.power; break; }
+            }
+          }
+
+          if (memberName) {
+            filledCount++;
+            if (memberPower) totalPower += Number(memberPower);
+          }
+
+          const jobColor = memberJob && JOB_COLORS[memberJob] ? JOB_COLORS[memberJob] : 'var(--text-hi)';
+
+          rows += `<tr>
+            <td style="width:30px;text-align:center;color:var(--text-lo);font-weight:700;">${i + 1}</td>
+            <td style="font-weight:${memberName ? '600' : '400'};">${memberName ? escapeHtml(memberName) : '<span class="member-empty">- ว่าง -</span>'}</td>
+            <td style="text-align:center;font-weight:600;color:${jobColor};">${memberJob || '-'}</td>
+            <td style="text-align:right;color:var(--text-lo);font-size:13px;">${memberPower ? Number(memberPower).toLocaleString('en-US') : ''}</td>
+          </tr>`;
+        }
+
+        const pct       = t.capacity > 0 ? filledCount / t.capacity : 0;
+        const badgeClass = pct === 1 ? 'full' : 'partial';
+        const badgeText  = filledCount === t.capacity
+          ? 'ครบ ' + filledCount + '/' + t.capacity
+          : 'ขาด ' + (t.capacity - filledCount) + ' คน';
+
+        return `<div class="team-card">
+          <div class="team-card-head">
+            <div>
+              <div><span class="team-name">${escapeHtml(t.dungeonName || t.type)}</span><span class="team-num">(ทีมที่ ${teamIdx + 1})</span></div>
+              <div class="team-power">⚡ ${totalPower.toLocaleString('en-US')}</div>
+            </div>
+            <span class="team-status-badge ${badgeClass}">${badgeText}</span>
+          </div>
+          <div style="padding:8px;">
+            <table class="team-table">
+              <thead><tr>
+                <th style="width:30px;">#</th>
+                <th>ชื่อ</th>
+                <th style="text-align:center;">อาชีพ</th>
+                <th style="text-align:right;">พลัง</th>
+              </tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ---- Book Queue ----
+    document.getElementById('btnBook').addEventListener('click', async function() {
+      const name = (document.getElementById('bkName').value || '').trim();
+      const job  = document.getElementById('bkClass').value;
+
+      if (!name || !job) {
+        showToast('⚠️ กรุณากรอกชื่อตัวละครและเลือกอาชีพ', 'warning');
+        return;
+      }
+
+      // Check name in roster
+      let found = null;
+      Object.entries(guildRoster).forEach(([j, arr]) => {
+        (arr || []).forEach(m => {
+          if (m && m.name && m.name.toLowerCase() === name.toLowerCase()) found = { ...m, job: j };
+        });
+      });
+      if (!found) {
+        showToast('❌ ชื่อนี้ไม่มีในระบบกิลด์', 'error');
+        return;
+      }
+
+      // Check activity score (block if <= -2, same as main app)
+      const score = getUserScore(name);
+      if (score <= -2) {
+        showToast('⛔ ไม่มีสิทธิ์จองคิว! คะแนนกิจกรรม: ' + score + ' (ต้องมากกว่า -2)', 'error');
+        return;
+      }
+
+      // Check already booked
+      const alreadyInQueue = (dungeonData.queues || []).some(q =>
+        q.name && q.name.toLowerCase() === name.toLowerCase() && q.dungeon === DUNGEON && q.status !== 'done'
+      );
+      if (alreadyInQueue) {
+        showToast('⚠️ คุณจองคิวดันมายาไว้แล้ว', 'warning');
+        return;
+      }
+
+      // Check already in team
+      const alreadyInTeam = (dungeonData.teams || []).some(t =>
+        t.type === DUNGEON && t.members && t.members.some(m => m && m.name && m.name.toLowerCase() === name.toLowerCase())
+      );
+      if (alreadyInTeam) {
+        showToast('⚠️ คุณอยู่ในทีมดันมายาแล้ว', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('btnBook');
+      btn.disabled = true;
+      btn.textContent = '⏳ กำลังจอง...';
+
+      try {
+        const ref  = doc(db, 'guild_system', 'dungeons');
+        const snap = await getDoc(ref);
+        const current = snap.exists() ? snap.data() : { queues: [], teams: [] };
+        if (!current.queues) current.queues = [];
+
+        // Double-check race condition
+        const stillBooked = current.queues.some(q =>
+          q.name && q.name.toLowerCase() === name.toLowerCase() && q.dungeon === DUNGEON && q.status !== 'done'
+        );
+        if (stillBooked) {
+          showToast('⚠️ คุณจองคิวดันมายาไว้แล้ว', 'warning');
+          return;
+        }
 
         current.queues.push({
-          id: Date.now().toString(),
+          id:        Date.now().toString(),
           name,
           job,
-          dungeon: DUNGEON,
-          power: found.power || 0,
-          status: 'waiting',
+          dungeon:   DUNGEON,
+          power:     found.power || 0,
+          status:    'waiting',
           timestamp: Date.now(),
-          bookedVia: 'booking_page'
+          bookedVia: 'public_link'
         });
 
         await setDoc(ref, current);
-        document.getElementById('bkName').value = '';
+        document.getElementById('bkName').value  = '';
         document.getElementById('bkClass').value = '';
-        showMsg(`🎉 จองคิวสำเร็จ! ${name} (${job}) อยู่ในคิวดันมายาแล้ว`, 'success');
+        document.getElementById('bkScoreDisplay').style.display = 'none';
+        showToast(`🎉 จองคิวสำเร็จ! ${name} (${job}) อยู่ในคิวดันมายาแล้ว`, 'success');
       } catch (e) {
-        showMsg('❌ เกิดข้อผิดพลาด: ' + e.message, 'error');
+        showToast('❌ เกิดข้อผิดพลาด: ' + e.message, 'error');
         console.error(e);
       } finally {
-        btn.disabled = false; btn.textContent = '✅ จองคิวดันมายา';
+        btn.disabled = false;
+        btn.textContent = '✅ จองคิวดันมายา';
+        renderScheduleStatus();
       }
-    };
+    });
 
-    function showMsg(text, type) {
-      const el = document.getElementById('statusMsg');
-      el.textContent = text;
-      el.className = 'status-msg ' + type;
-      el.style.display = 'block';
-      if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 5000);
-    }
-
+    // ---- Start ----
     init();
   </script>
 </body>
