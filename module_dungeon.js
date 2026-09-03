@@ -205,10 +205,14 @@ import {
       window.setDqRound(1);
     };
 
-    window.changeDungeonQueueStatus = function (id, newStatus) {
+    window.changeDungeonQueueStatus = async function (id, newStatus) {
       const q = dungeonData.queues.find((x) => x.id === id);
       if (q) {
         if (newStatus === 'done') {
+           const confirmMsg = `ยืนยันการตั้งค่าว่า "${q.name}" ลงดันเจี้ยนเสร็จแล้วใช่หรือไม่?`;
+           const confirmed = window.UI && window.UI.confirm ? await window.UI.confirm(confirmMsg) : confirm(confirmMsg);
+           if (!confirmed) return;
+           
            // Delete it from the array instead of keeping it hidden
            dungeonData.queues = dungeonData.queues.filter(x => x.id !== id);
         } else {
@@ -218,11 +222,15 @@ import {
       }
     };
 
-    window.toggleDungeonQueueRound = function(id, roundNumber) {
+    window.toggleDungeonQueueRound = async function(id, roundNumber) {
       const isAdmin = typeof window.isUserAdmin === 'function' && window.isUserAdmin();
       const q = dungeonData.queues.find(x => x.id === id);
       if (q) {
         if (isAdmin) {
+          const confirmMsg = `ยืนยันว่า "${q.name}" ผ่านรอบที่ ${roundNumber} แล้วใช่หรือไม่?`;
+          const confirmed = window.UI && window.UI.confirm ? await window.UI.confirm(confirmMsg) : confirm(confirmMsg);
+          if (!confirmed) return;
+          
           if (roundNumber === 1) {
             q.round1 = !q.round1;
             // If they only booked 1 round, completing round 1 means they are done
@@ -241,19 +249,27 @@ import {
         }
       }
     };
-    window.deleteDungeonQueue = function (id) {
+    window.deleteDungeonQueue = async function (id) {
       const q = dungeonData.queues.find((x) => x.id === id);
-      if (window.writeSystemLog)
-        window.writeSystemLog(
-          "dungeon",
-          "DELETE_QUEUE",
-          q ? q.name : "Unknown",
-          q ? q.dungeon : "",
-          "ลบคิวจอง",
-          q || null,
-        );
-      dungeonData.queues = dungeonData.queues.filter((x) => x.id !== id);
-      saveDungeonState();
+      if (q) {
+        const isAdmin = typeof window.isUserAdmin === 'function' && window.isUserAdmin();
+        const actionText = isAdmin ? 'ลบคิว' : 'ยกเลิกคิว';
+        const confirmMsg = `ยืนยันการ${actionText}ของ "${q.name}" ใช่หรือไม่?`;
+        const confirmed = window.UI && window.UI.confirm ? await window.UI.confirm(confirmMsg) : confirm(confirmMsg);
+        if (!confirmed) return;
+        
+        if (window.writeSystemLog)
+          window.writeSystemLog(
+            "dungeon",
+            "DELETE_QUEUE",
+            q.name,
+            q.dungeon,
+            "ลบคิวจอง",
+            q,
+          );
+        dungeonData.queues = dungeonData.queues.filter((x) => x.id !== id);
+        saveDungeonState();
+      }
     };
 
     window.clearDungeonTeam = async function (teamId) {
