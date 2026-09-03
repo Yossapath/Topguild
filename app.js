@@ -2787,15 +2787,12 @@ window.exportSubFieldPDF = function() {
 
 window.onTeamCardDragStart = function(event) {
   const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
-  if (!isAdmin) {
-    event.preventDefault();
-    return;
-  }
+  if (!isAdmin) { event.preventDefault(); return; }
   
-  // Make sure we are not dragging an input or button
-  if (event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON' || event.target.tagName === 'SELECT') {
-     return;
-  }
+  // GUARD: If drag started from slot handle or anywhere inside team-table, let slot drag handle it
+  if (event.target.classList && event.target.classList.contains('slot-drag-handle')) return;
+  if (event.target.closest && event.target.closest('.team-table')) return;
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON' || event.target.tagName === 'SELECT') return;
 
   const team = event.currentTarget.dataset.team;
   event.dataTransfer.setData('text/plain', JSON.stringify({
@@ -2807,7 +2804,6 @@ window.onTeamCardDragStart = function(event) {
   window._isDraggingTeam = true;
   document.body.classList.add('is-dragging-team');
   event.currentTarget.classList.add('is-dragged');
-  
   event.dataTransfer.effectAllowed = 'move';
 };
 
@@ -2919,6 +2915,9 @@ window._slotDragSourceKey = null;
 window.onSlotHandleDragStart = function(event, sourceKey) {
   const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
   if (!isAdmin) { event.preventDefault(); return; }
+
+  // CRITICAL: stop bubbling so team-card's ondragstart doesn't fire too
+  event.stopPropagation();
 
   window._slotDragSourceKey = sourceKey;
   event.dataTransfer.setData('text/plain', JSON.stringify({ type: 'swap_slot', sourceKey }));
