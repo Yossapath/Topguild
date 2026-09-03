@@ -267,6 +267,31 @@
       font-weight: 700;
       font-family: inherit;
     }
+    /* ---- Round Selector ---- */
+    .round-selector { display: flex; gap: 8px; margin-bottom: 16px; }
+    .round-opt {
+      flex: 1;
+      padding: 10px 0;
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      background: #f8fafc;
+      color: var(--text-lo);
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.18s;
+      user-select: none;
+    }
+    .round-opt:hover { border-color: var(--blue-300); color: var(--blue-700); background: var(--blue-50); }
+    .round-opt.active {
+      background: var(--blue-700);
+      border-color: var(--blue-700);
+      color: white;
+      box-shadow: 0 3px 10px rgba(20,88,143,0.3);
+    }
+
     .queue-item-time { font-size: 11px; color: var(--text-lo); margin-top: 3px; }
 
     /* ---- Teams Section ---- */
@@ -415,7 +440,7 @@
           <!-- Booking form -->
           <div class="form-panel">
             <h3>จองคิวดันมายา</h3>
-            <div class="form-sub">จองได้ 1 ตัวละคร ต่อ 1 รอบการจอง</div>
+            <div class="form-sub">เลือกชื่อ · อาชีพ · และจำนวนรอบที่ต้องการลง</div>
 
             <label class="form-label">ชื่อตัวละคร</label>
             <div class="input-wrap">
@@ -425,7 +450,7 @@
             <div class="score-display" id="bkScoreDisplay"></div>
 
             <label class="form-label">อาชีพ</label>
-            <select class="form-select" id="bkClass" style="margin-bottom:12px;">
+            <select class="form-select" id="bkClass" style="margin-bottom:16px;">
               <option value="" disabled selected>-- เลือกอาชีพ --</option>
               <option>Lord Knight</option>
               <option>Paladin</option>
@@ -438,6 +463,12 @@
               <option>Gunslinger</option>
               <option>Druid</option>
             </select>
+
+            <label class="form-label">จำนวนรอบที่ต้องการลง</label>
+            <div class="round-selector">
+              <button type="button" class="round-opt active" data-round="1" id="roundOpt1">🗡 1 รอบ</button>
+              <button type="button" class="round-opt" data-round="2" id="roundOpt2">⚔️ 2 รอบ</button>
+            </div>
 
             <div class="schedule-status" id="scheduleStatus"></div>
             <button class="btn-book" id="btnBook">✅ จองคิวดันมายา</button>
@@ -674,6 +705,16 @@
       if (!e.target.closest('.input-wrap')) acListEl.style.display = 'none';
     });
 
+    // ---- Round Selector Toggle ----
+    let selectedRounds = 1;
+    document.querySelectorAll('.round-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedRounds = parseInt(btn.dataset.round);
+        document.querySelectorAll('.round-opt').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
     // ---- Schedule Status ----
     function renderScheduleStatus() {
       const el  = document.getElementById('scheduleStatus');
@@ -774,6 +815,7 @@
             <span class="queue-item-job" style="color:${jobColor};">${escapeHtml(q.job || '')}</span>
             ${q.power ? '<span class="queue-item-power">' + Number(q.power).toLocaleString('en-US') + '</span>' : ''}
             <span class="status-pill" style="color:${sColor};border:1.5px solid ${sColor};">${sText}</span>
+            <span style="font-size:12px;font-weight:700;height:30px;padding:0 10px;border-radius:6px;display:inline-flex;align-items:center;white-space:nowrap;background:${q.rounds === 2 ? 'rgba(139,70,175,0.12)' : 'rgba(47,143,214,0.1)'};color:${q.rounds === 2 ? 'var(--job-sin)' : 'var(--blue-700)'};">${q.rounds === 2 ? '⚔️ 2 รอบ' : '🗡 1 รอบ'}</span>
             <div style="display:flex;gap:6px;margin-left:8px;">
               <span class="round-btn" style="background:${q.round1 ? '#10b981' : '#f59e0b'};">รอบ 1</span>
               <span class="round-btn" style="background:${q.round2 ? '#10b981' : '#f59e0b'};">รอบ 2</span>
@@ -942,6 +984,7 @@
           dungeon:   DUNGEON,
           power:     found.power || 0,
           status:    'waiting',
+          rounds:    selectedRounds,
           timestamp: Date.now(),
           bookedVia: 'public_link'
         });
@@ -950,7 +993,13 @@
         document.getElementById('bkName').value  = '';
         document.getElementById('bkClass').value = '';
         document.getElementById('bkScoreDisplay').style.display = 'none';
-        showToast(`🎉 จองคิวสำเร็จ! ${name} (${job}) อยู่ในคิวดันมายาแล้ว`, 'success');
+        // Capture label before reset
+        const roundLabel = selectedRounds === 2 ? '(2 รอบ)' : '(1 รอบ)';
+        // Reset round selector back to 1
+        selectedRounds = 1;
+        document.querySelectorAll('.round-opt').forEach(b => b.classList.remove('active'));
+        document.getElementById('roundOpt1').classList.add('active');
+        showToast(`🎉 จองคิวสำเร็จ! ${name} (${job}) ${roundLabel} อยู่ในคิวดันมายาแล้ว`, 'success');
       } catch (e) {
         showToast('❌ เกิดข้อผิดพลาด: ' + e.message, 'error');
         console.error(e);
