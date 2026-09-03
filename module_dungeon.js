@@ -105,7 +105,7 @@ import {
     let selectedDqRound = 1;
     window.setDqRound = function(round) {
       selectedDqRound = round;
-      document.querySelectorAll('.dq-round-opt').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.round-opt').forEach(b => b.classList.remove('active'));
       const activeBtn = document.getElementById('dqRoundOpt' + round);
       if(activeBtn) activeBtn.classList.add('active');
     };

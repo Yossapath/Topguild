@@ -106,20 +106,27 @@ function fillLeaveForm() {
   }
 }
 
-window.archiveOldLeaves = async function() {
+window.archiveOldLeaves = async function(isSilent = false) {
   if (!window.currentUser || !window.isUserAdmin()) return;
-  if (!await window.UI.confirm('ยืนยันการจัดเก็บประวัติการลาที่เลยกำหนดแล้วเข้าสู่ฐานข้อมูล?')) return;
+  if (!isSilent) {
+    if (!await window.UI.confirm('ยืนยันการจัดเก็บประวัติการลาที่เลยกำหนดแล้วเข้าสู่ฐานข้อมูล?')) return;
+  }
   
   const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
   const toArchive = window.leaveData.filter(l => l.date && l.date < todayStr);
   const remaining = window.leaveData.filter(l => !l.date || l.date >= todayStr);
   
   if (toArchive.length === 0) {
-    return window.showToast('ไม่มีรายการแจ้งลาที่เลยกำหนด', 'info');
+    if (!isSilent) window.showToast('ไม่มีรายการแจ้งลาที่เลยกำหนด', 'info');
+    return;
   }
 
   try {
-    window.leaveHistoryData = [...window.leaveHistoryData, ...toArchive];
+    const newHist = [...(window.leaveHistoryData || [])];
+    toArchive.forEach(a => {
+       if (!newHist.some(h => h.id === a.id)) newHist.push(a);
+    });
+    window.leaveHistoryData = newHist;
     window.leaveData = remaining;
     
     const leaveRef = doc(window.db, 'guild_system', 'leaves');
@@ -127,10 +134,10 @@ window.archiveOldLeaves = async function() {
     await setDoc(leaveRef, { leaves: window.leaveData });
     await setDoc(historyRef, { leaves: window.leaveHistoryData }, { merge: true });
     
-    window.showToast('จัดเก็บประวัติการลาสำเร็จ ' + toArchive.length + ' รายการ', 'success');
+    if (!isSilent) window.showToast('จัดเก็บประวัติการลาสำเร็จ ' + toArchive.length + ' รายการ', 'success');
   } catch(err) {
     console.error(err);
-    window.showToast('เกิดข้อผิดพลาดในการจัดเก็บประวัติ', 'error');
+    if (!isSilent) window.showToast('เกิดข้อผิดพลาดในการจัดเก็บประวัติ', 'error');
   }
 };
 
