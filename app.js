@@ -2902,11 +2902,19 @@ window.onTeamCardDrop = function(event) {
 
 
 window.onSlotDragStart = function(event, slotKey) {
+  // Only allow drag when starting from the rank cell (td.cell-rank or the ⠿ span),
+  // NOT from inputs, selects, or buttons inside the row.
+  const tag = (event.target || {}).tagName || '';
+  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'BUTTON' || tag === 'TEXTAREA') {
+    event.preventDefault();
+    return;
+  }
+
   const isAdmin = typeof window.isUserAdmin === 'function' ? window.isUserAdmin() : window.isAdmin;
   if (!isAdmin) { event.preventDefault(); return; }
+
   event.dataTransfer.setData('text/plain', JSON.stringify({ type: 'swap_slot', sourceKey: slotKey }));
   event.dataTransfer.effectAllowed = 'move';
-  document.body.classList.add('is-dragging-slot');
   const tr = event.currentTarget;
   if (tr) setTimeout(() => { tr.style.opacity = '0.45'; }, 0);
 };
