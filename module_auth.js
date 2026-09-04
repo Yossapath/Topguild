@@ -422,7 +422,7 @@ function showGlobalDropdown(inputEl, filterText = '') {
       const requiredJob = window.rowJobFilter ? window.rowJobFilter[slotKey] : '';
       allMembers = allMembers.filter(m => {
         if (requiredJob && m.job !== requiredJob) return false;
-        const lowerName = m.name?.toLowerCase();
+        const lowerName = (m.name || '').trim().toLowerCase();
         if (window.occupiedMap && window.occupiedMap.has(lowerName)) {
           const occKey = window.occupiedMap.get(lowerName);
             if (occKey !== slotKey && !(slotKey && slotKey.startsWith('2|'))) return false;
@@ -440,13 +440,13 @@ function showGlobalDropdown(inputEl, filterText = '') {
             t.members.forEach((m, idx) => {
               if (m && m.name) {
                 if (t.id === teamId && idx === slotIdx) return;
-                inUseNames.add(m.name?.toLowerCase());
+                inUseNames.add((m.name || '').trim().toLowerCase());
               }
             });
           }
         });
       }
-      allMembers = allMembers.filter(m => !inUseNames.has(m.name?.toLowerCase()));
+      allMembers = allMembers.filter(m => !inUseNames.has((m.name || '').trim().toLowerCase()));
     }
 
     // กรองคนที่ลาวันนี้ออกจาก dropdown (ทุก action ยกเว้นดึงชื่อเพื่อดูประวัติ)
@@ -471,7 +471,7 @@ function showGlobalDropdown(inputEl, filterText = '') {
 
 
     const val = filterText.toLowerCase();
-    const filtered = allMembers.filter(m => m.name?.toLowerCase()?.includes(val));
+    const filtered = allMembers.filter(m => (m.name || '').trim().toLowerCase()?.includes(val));
 
     if (filtered.length === 0) {
       dropdown.innerHTML = '<div style="padding: 10px; text-align:center; color:var(--text-lo); font-size: 13px;">ไม่พบชื่อตัวละคร</div>';

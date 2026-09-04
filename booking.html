@@ -570,7 +570,7 @@
       const entry = statsMap[name];
       if (!entry) {
         // Try case-insensitive match
-        const key = Object.keys(statsMap).find(k => k.toLowerCase() === name.toLowerCase());
+        const key = Object.keys(statsMap).find(k => (k || '').trim().toLowerCase() === (name || '').trim().toLowerCase());
         return key ? statsMap[key].score : 0;
       }
       return entry.score;
@@ -653,7 +653,7 @@
       if (!n) { display.style.display = 'none'; return; }
 
       // Check if name is in roster
-      let inRoster = allNames.some(m => m.name.toLowerCase() === n.toLowerCase());
+      let inRoster = allNames.some(m => (m.name || '').trim().toLowerCase() === (n || '').trim().toLowerCase());
       if (!inRoster) { display.style.display = 'none'; return; }
 
       const score = getUserScore(n);
@@ -670,7 +670,7 @@
       const val = this.value.trim();
       updateScoreDisplay(val);
       if (!val || val.length < 1) { acListEl.style.display = 'none'; return; }
-      const matches = allNames.filter(m => m.name.toLowerCase().includes(val.toLowerCase())).slice(0, 10);
+      const matches = allNames.filter(m => (m.name || '').trim().toLowerCase().includes((val || '').trim().toLowerCase())).slice(0, 10);
       if (matches.length === 0) { acListEl.style.display = 'none'; return; }
       acListEl.innerHTML = matches.map(m => {
         const score = getUserScore(m.name);
@@ -787,7 +787,7 @@
         let inTeamIndex = -1;
         currentTeams.forEach((team, tIdx) => {
           if (team.members && Array.isArray(team.members)) {
-            if (team.members.some(m => m && m.name && q && q.name && m.name.toLowerCase() === q.name.toLowerCase())) {
+            if (team.members.some(m => m && m.name && q && q.name && (m.name || '').trim().toLowerCase() === (q.name || '').trim().toLowerCase())) {
               inTeamIndex = tIdx + 1;
             }
           }
@@ -861,7 +861,7 @@
           if (memberName && !memberJob) {
             for (const j in guildRoster) {
               if (!Array.isArray(guildRoster[j])) continue;
-              const found = guildRoster[j].find(m => m.name?.toLowerCase() === memberName.toLowerCase());
+              const found = guildRoster[j].find(m => (m.name || '').trim().toLowerCase() === (memberName || '').trim().toLowerCase());
               if (found) { memberJob = j; memberPower = found.power; break; }
             }
           }
@@ -925,7 +925,7 @@
       Object.entries(guildRoster).forEach(([j, arr]) => {
         if (!Array.isArray(arr)) return;
         arr.forEach(m => {
-          if (m && m.name && m.name.toLowerCase() === name.toLowerCase()) found = { ...m, job: j };
+          if (m && m.name && (m.name || '').trim().toLowerCase() === (name || '').trim().toLowerCase()) found = { ...m, job: j };
         });
       });
       if (!found) {
@@ -942,7 +942,7 @@
 
       // Check already booked
       const alreadyInQueue = (dungeonData.queues || []).some(q =>
-        q.name && q.name.toLowerCase() === name.toLowerCase() && q.dungeon === DUNGEON && q.status !== 'done'
+        q.name && (q.name || '').trim().toLowerCase() === (name || '').trim().toLowerCase() && q.dungeon === DUNGEON && q.status !== 'done'
       );
       if (alreadyInQueue) {
         showToast('⚠️ คุณจองคิวดันมายาไว้แล้ว', 'warning');
@@ -951,7 +951,7 @@
 
       // Check already in team
       const alreadyInTeam = (dungeonData.teams || []).some(t =>
-        t.type === DUNGEON && t.members && t.members.some(m => m && m.name && m.name.toLowerCase() === name.toLowerCase())
+        t.type === DUNGEON && t.members && t.members.some(m => m && m.name && (m.name || '').trim().toLowerCase() === (name || '').trim().toLowerCase())
       );
       if (alreadyInTeam) {
         showToast('⚠️ คุณอยู่ในทีมดันมายาแล้ว', 'warning');
@@ -970,7 +970,7 @@
 
         // Double-check race condition
         const stillBooked = current.queues.some(q =>
-          q.name && q.name.toLowerCase() === name.toLowerCase() && q.dungeon === DUNGEON && q.status !== 'done'
+          q.name && (q.name || '').trim().toLowerCase() === (name || '').trim().toLowerCase() && q.dungeon === DUNGEON && q.status !== 'done'
         );
         if (stillBooked) {
           showToast('⚠️ คุณจองคิวดันมายาไว้แล้ว', 'warning');

@@ -124,7 +124,7 @@
       let nameInRoster = false;
       if (window.guildRoster) {
         for (const j in window.guildRoster) {
-          if ((window.guildRoster[j] || []).some(m => m.name?.trim().toLowerCase() === name.toLowerCase())) {
+          if ((window.guildRoster[j] || []).some(m => m.name?.trim().toLowerCase() === (name || '').trim().toLowerCase())) {
             nameInRoster = true;
             break;
           }
@@ -149,11 +149,11 @@
 
       // เช็คซ้ำ: scope เฉพาะ dungeon ที่กำลังจอง (ไม่ใช่ทั้งหมด)
       const isAlreadyInQueue = dungeonData.queues.some((q) =>
-        q.name?.trim().toLowerCase() === name.toLowerCase() && q.dungeon === dungeon
+        q.name?.trim().toLowerCase() === (name || '').trim().toLowerCase() && q.dungeon === dungeon
       );
       const isAlreadyInTeam = dungeonData.teams.some((t) =>
         t.type === dungeon &&
-        t.members && t.members.some((m) => m && m.name?.trim().toLowerCase() === name.toLowerCase())
+        t.members && t.members.some((m) => m && m.name?.trim().toLowerCase() === (name || '').trim().toLowerCase())
       );
       if (isAlreadyInQueue || isAlreadyInTeam) {
         return window.showToast(
@@ -166,7 +166,7 @@
       let power = 0;
       if (window.guildRoster && window.guildRoster[job]) {
         const found = window.guildRoster[job].find(
-          (m) => m.name?.toLowerCase() === name.toLowerCase(),
+          (m) => (m.name || '').trim().toLowerCase() === (name || '').trim().toLowerCase(),
         );
         if (found) power = found.power || 0;
       }
@@ -337,7 +337,7 @@
         memberNames.forEach((name) => {
           const q = dungeonData.queues.find(
             (q) =>
-              q.name?.toLowerCase() === name?.toLowerCase() &&
+              (q.name || '').trim().toLowerCase() === (name || '').trim().toLowerCase() &&
               q.dungeon === t.type &&
               q.status !== "done",
           );
@@ -361,7 +361,7 @@
       if (window.guildRoster) {
         Object.keys(window.guildRoster).forEach((job) => {
           const found = (window.guildRoster[job] || []).find(
-            (m) => m.name?.toLowerCase() === myName?.toLowerCase(),
+            (m) => (m.name || '').trim().toLowerCase() === myName?.toLowerCase(),
           );
           if (found) {
             myJob = job;
@@ -383,7 +383,7 @@
         (team) =>
           team.type === window.currentDungeonTab &&
           team.members.some(
-            (m) => m && m.name?.toLowerCase() === myName?.toLowerCase(),
+            (m) => m && (m.name || '').trim().toLowerCase() === myName?.toLowerCase(),
           ),
       );
       if (alreadyInTeam)
@@ -451,7 +451,7 @@
         // Auto remove from queue if they are in it
         dungeonData.queues = dungeonData.queues.filter(
           (q) =>
-            q.name?.toLowerCase() !== myName?.toLowerCase() ||
+            (q.name || '').trim().toLowerCase() !== myName?.toLowerCase() ||
             q.dungeon !== window.currentDungeonTab,
         );
 
@@ -526,7 +526,7 @@
             team.members.some(
               (m, idx) =>
                 m &&
-                m.name?.toLowerCase() === nameVal.trim()?.toLowerCase() &&
+                (m.name || '').trim().toLowerCase() === nameVal.trim()?.toLowerCase() &&
                 !(team.id === teamId && idx === slotIdx),
             ),
         );
@@ -543,7 +543,7 @@
       if (nameVal && window.guildRoster) {
         for (const j in window.guildRoster) {
           const found = (window.guildRoster[j] || []).find(
-            (m) => m.name?.toLowerCase() === nameVal?.toLowerCase(),
+            (m) => (m.name || '').trim().toLowerCase() === nameVal?.toLowerCase(),
           );
           if (found) {
             t.members[slotIdx].job = j;
@@ -619,14 +619,14 @@
 
       if (
         currentName &&
-        !list.some((m) => m.name?.toLowerCase() === currentName?.toLowerCase())
+        !list.some((m) => (m.name || '').trim().toLowerCase() === currentName?.toLowerCase())
       ) {
         out += `<option value="${window.escapeHtml(currentName)}" selected>${window.escapeHtml(currentName)} ❓</option>`;
       }
 
       list.forEach((m) => {
         const isSelected =
-          currentName && m.name?.toLowerCase() === currentName?.toLowerCase();
+          currentName && (m.name || '').trim().toLowerCase() === currentName?.toLowerCase();
         const jobBadge = isSelected ? "" : ` [${m.job || filterJob}]`;
         const extraInfo = isSelected
           ? ""
@@ -737,7 +737,7 @@
             let inTeamIndex = -1;
             currentTeams.forEach((team, tIdx) => {
               if (team.members && Array.isArray(team.members)) {
-                if (team.members.some(m => m && m.name && q && q.name && m.name?.toLowerCase() === q.name?.toLowerCase())) {
+                if (team.members.some(m => m && m.name && q && q.name && (m.name || '').trim().toLowerCase() === (q.name || '').trim().toLowerCase())) {
                   inTeamIndex = tIdx + 1;
                 }
               }
@@ -752,7 +752,7 @@
             }
             const eName = window.escapeHtml ? window.escapeHtml(q.name) : q.name;
             const eJob = window.escapeHtml ? window.escapeHtml(q.job || '') : q.job || '';
-            const isOwner = window.currentUser && q.name?.toLowerCase() === window.currentUser.username?.toLowerCase();
+            const isOwner = window.currentUser && (q.name || '').trim().toLowerCase() === window.currentUser.username?.toLowerCase();
             const memberCtrl = (!isAdmin && isOwner)
               ? `<button onclick="deleteDungeonQueue('${q.id}')" style="font-size:13px;height:30px;padding:0 14px;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:6px;cursor:pointer;white-space:nowrap;">ยกเลิก</button>`
               : '';
@@ -834,7 +834,7 @@
             if (memberName && !memberJob && window.guildRoster) {
               for (const j in window.guildRoster) {
                 const found = (window.guildRoster[j] || []).find(
-                  (m) => m.name?.toLowerCase() === memberName?.toLowerCase(),
+                  (m) => (m.name || '').trim().toLowerCase() === (memberName || '').trim().toLowerCase(),
                 );
                 if (found) {
                   memberJob = j;

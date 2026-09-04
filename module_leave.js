@@ -94,7 +94,7 @@ function fillLeaveForm() {
     if (window.guildRoster) {
       Object.keys(window.guildRoster).forEach(job => {
         const found = (window.guildRoster[job] || []).find(
-          m => m.name && m.name?.toLowerCase() === window.currentUser.username?.toLowerCase()
+          m => m.name && (m.name || '').trim().toLowerCase() === window.currentUser.username?.toLowerCase()
         );
         if (found) { charName = found.name; charJob = job; }
       });
@@ -169,19 +169,19 @@ window.submitLeave = async function() {
     if (window.guildRoster) {
       Object.keys(window.guildRoster).forEach(job => {
         const found = (window.guildRoster[job] || []).find(
-          m => m.name && m.name?.toLowerCase() === window.currentUser.username?.toLowerCase()
+          m => m.name && (m.name || '').trim().toLowerCase() === window.currentUser.username?.toLowerCase()
         );
         if (found) myCharName = found.name;
       });
     }
-    if (!myCharName || myCharName?.toLowerCase() !== name?.toLowerCase()) {
+    if (!myCharName || myCharName?.toLowerCase() !== (name || '').trim().toLowerCase()) {
       return window.showToast('คุณสามารถแจ้งลาได้เฉพาะชื่อตัวละครของตัวเองเท่านั้น', 'error');
     }
   }
 
   // Check for duplicate leave
   const isDup = window.leaveData.some(l =>
-    l.name?.toLowerCase() === name?.toLowerCase() && l.day === day && l.date === date
+    (l.name || '').trim().toLowerCase() === (name || '').trim().toLowerCase() && l.day === day && l.date === date
   );
   if (isDup) return window.showToast('คุณได้แจ้งลาวันนี้และรอบนี้ไว้แล้ว', 'warning');
 

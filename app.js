@@ -1070,7 +1070,7 @@ function renderSidebar() {
   }
 
   missing.sort((a, b) => (b.power || 0) - (a.power || 0));
-  if (sidebarSearchQuery) { missing = missing.filter(function(m) { return m.name && m.name.toLowerCase().includes(sidebarSearchQuery.toLowerCase()); }); }
+  if (sidebarSearchQuery) { missing = missing.filter(function(m) { return m.name && (m.name || '').trim().toLowerCase().includes(sidebarSearchQuery.toLowerCase()); }); }
 
   if (missing.length === 0) {
     sidebarBody.innerHTML = `<div class="sidebar-empty"><span>ครบทุกคนแล้ว</span>ไม่มีสมาชิกที่ตกหล่นจากตาราง</div>`;
@@ -1147,7 +1147,7 @@ function handlePowerChange(key, rawValue) {
     current.power = val;
     // Also update in guild master roster
     const masterMap = getMasterMap();
-    const matched = masterMap.get(current.name?.toLowerCase());
+    const matched = masterMap.get((current.name || '').trim().toLowerCase());
     if (matched) matched.power = val;
   } else {
     teamsAssignments[key] = { name: '', job: rowJobFilter[key] || '', power: val };
@@ -1283,7 +1283,7 @@ function saveMemberFromModal(origName, name, job, power, fieldPref = 'any') {
 
 async function deleteMember(job, name, triggerSave = true) {
   Object.keys(guildRoster).forEach(j => {
-    guildRoster[j] = (guildRoster[j] || []).filter(m => m.name?.toLowerCase() !== name?.toLowerCase());
+    guildRoster[j] = (guildRoster[j] || []).filter(m => (m.name || '').trim().toLowerCase() !== (name || '').trim().toLowerCase());
   });
 
   // Remove from teams if assigned
@@ -1363,7 +1363,7 @@ window.processBulkAdd = function() {
 
     if (!name || !job || isNaN(power)) { errorCount++; return; }
 
-    const nameLower = name?.toLowerCase();
+    const nameLower = (name || '').trim().toLowerCase();
 
     // Find if member exists anywhere in roster
     let existingJob = null;
@@ -1806,7 +1806,7 @@ function warpToFoundTeam() {
       const rows = targetCard.querySelectorAll('tbody tr');
       rows.forEach(tr => {
         const select = tr.querySelector('input.name-input');
-        if (select && select.value?.toLowerCase() === memberName?.toLowerCase()) {
+        if (select && select.value?.toLowerCase() === (memberName || '').trim().toLowerCase()) {
           tr.classList.add('search-row-match');
         }
       });
@@ -1845,7 +1845,7 @@ async function handleTeamSearch() {
       for (let i = 0; i < cap; i++) {
         const key = slotKey(fIdx, teamName, i);
         const a = teamsAssignments[key];
-        if (a && a.name && a.name?.toLowerCase()?.includes(query)) {
+        if (a && a.name && (a.name || '').trim().toLowerCase()?.includes(query)) {
           if (!foundMember) {
             foundFieldIdx = fIdx;
             foundTeamName = teamName;
@@ -2495,14 +2495,14 @@ window.onTeamSlotDrop = function(event, targetKey) {
        // Swap the values!
        if (valB) {
            teamsAssignments[sourceKey] = valB;
-           if (valB.name) occupiedMap.set(valB.name.toLowerCase(), sourceKey);
+           if (valB.name) occupiedMap.set((valB.name || '').trim().toLowerCase(), sourceKey);
        } else {
            delete teamsAssignments[sourceKey];
        }
        
        if (valA) {
            teamsAssignments[targetKey] = valA;
-           if (valA.name) occupiedMap.set(valA.name.toLowerCase(), targetKey);
+           if (valA.name) occupiedMap.set((valA.name || '').trim().toLowerCase(), targetKey);
        } else {
            delete teamsAssignments[targetKey];
        }
@@ -2886,14 +2886,14 @@ window.onTeamCardDrop = function(event) {
 
         if (valB) {
             teamsAssignments[keyA] = valB;
-            if (valB.name) occupiedMap.set(valB.name.toLowerCase(), keyA);
+            if (valB.name) occupiedMap.set((valB.name || '').trim().toLowerCase(), keyA);
         } else {
             delete teamsAssignments[keyA];
         }
 
         if (valA) {
             teamsAssignments[keyB] = valA;
-            if (valA.name) occupiedMap.set(valA.name.toLowerCase(), keyB);
+            if (valA.name) occupiedMap.set((valA.name || '').trim().toLowerCase(), keyB);
         } else {
             delete teamsAssignments[keyB];
         }
