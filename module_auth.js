@@ -460,7 +460,7 @@ function showGlobalDropdown(inputEl, filterText = '') {
       if (window.leaveData && window.leaveData.length > 0) {
         allMembers = allMembers.filter(m => {
           const isOnLeave = window.leaveData.some(l =>
-            l.name?.trim().toLowerCase() === m.name?.trim().toLowerCase() &&
+            (l.name || '').trim().toLowerCase() === (m.name || '').trim().toLowerCase() &&
             (l.date === todayStr || l.day === todayDay)
           );
           return !isOnLeave;

@@ -5,14 +5,14 @@ function fixFile(file) {
   let content = fs.readFileSync(file, 'utf8');
   
   // replace .toLowerCase() on names with robust trim
-  // \b([a-zA-Z0-9_]+)\.name\??\.toLowerCase\(\) -> ( $1.name || '' ).trim().toLowerCase()
-  content = content.replace(/\b([a-zA-Z0-9_]+)\.name\??\.toLowerCase\(\)/g, "($1.name || '').trim().toLowerCase()");
+  // match: word.name?.toLowerCase() OR word.name?.trim()?.toLowerCase() OR word.name.toLowerCase() OR word.name.trim().toLowerCase()
+  content = content.replace(/\b([a-zA-Z0-9_]+)\.name(\??\.(?:trim\(\)\??\.)?)toLowerCase\(\)/g, "($1.name || '').trim().toLowerCase()");
   
   // Also fix Object.keys(statsMap).find(k => k.toLowerCase() === name.toLowerCase())
   content = content.replace(/k\.toLowerCase\(\) === name\.toLowerCase\(\)/g, "(k || '').trim().toLowerCase() === (name || '').trim().toLowerCase()");
   
   // What if it is just name?.toLowerCase() ?
-  content = content.replace(/\bname\??\.toLowerCase\(\)/g, "(name || '').trim().toLowerCase()");
+  content = content.replace(/\bname(\??\.(?:trim\(\)\??\.)?)toLowerCase\(\)/g, "(name || '').trim().toLowerCase()");
   
   // n.toLowerCase() -> (n || '').trim().toLowerCase() where it's used in booking.html: n.toLowerCase()
   content = content.replace(/\bn\.toLowerCase\(\)/g, "(n || '').trim().toLowerCase()");

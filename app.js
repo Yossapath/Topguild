@@ -177,7 +177,7 @@ function getMasterMemberList() {
 
 function getMasterMap() {
   const map = new Map();
-  getMasterMemberList().forEach(m => map.set(m.name?.trim()?.toLowerCase(), m));
+  getMasterMemberList().forEach(m => map.set((m.name || '').trim().toLowerCase(), m));
   return map;
 }
 
@@ -238,7 +238,7 @@ function initTeamStructure(rawTeamsData) {
         const key = slotKey(fieldIdx, teamName, i);
         if (m && m.name) {
           teamsAssignments[key] = { name: m.name, job: m.job, power: m.power };
-          occupiedMap.set(m.name?.trim()?.toLowerCase(), key);
+          occupiedMap.set((m.name || '').trim().toLowerCase(), key);
           rowJobFilter[key] = m.job;
         } else {
           teamsAssignments[key] = null;
@@ -738,7 +738,7 @@ function jobSelectHtml(key, selectedJob) {
 
 function availableNamesForJob(job, key) {
   const current = teamsAssignments[key];
-  const currentNameKey = current && current.name ? current.name?.trim()?.toLowerCase() : null;
+  const currentNameKey = current && current.name ? (current.name || '').trim().toLowerCase() : null;
 
   let candidates = [];
   if (job && guildRoster[job]) {
@@ -749,7 +749,7 @@ function availableNamesForJob(job, key) {
   }
 
   return candidates.filter(m => {
-    const nk = m.name?.trim()?.toLowerCase();
+    const nk = (m.name || '').trim().toLowerCase();
     const ownerKey = occupiedMap.get(nk);
     return !ownerKey || ownerKey === key || nk === currentNameKey;
   }).sort((a, b) => (b.power || 0) - (a.power || 0));
@@ -762,12 +762,12 @@ function nameSelectHtml(key, job) {
 
   let out = `<option value="" ${!currentName ? 'selected' : ''}>— เลือกชื่อ —</option>`;
 
-  if (currentName && !list.some(m => m.name?.trim()?.toLowerCase() === currentName.trim()?.toLowerCase())) {
+  if (currentName && !list.some(m => (m.name || '').trim().toLowerCase() === currentName.trim()?.toLowerCase())) {
     out += `<option value="${escapeHtml(currentName)}" selected>${escapeHtml(currentName)} ⚠</option>`;
   }
 
   list.forEach(m => {
-    const isSelected = currentName && m.name?.trim()?.toLowerCase() === currentName.trim()?.toLowerCase();
+    const isSelected = currentName && (m.name || '').trim().toLowerCase() === currentName.trim()?.toLowerCase();
     // Show pure name if selected, or show name + [Job] + Power if unselected in dropdown list
     const jobBadge = isSelected ? '' : ` [${m.job}]`;
     const extraInfo = isSelected ? '' : (m.power != null ? ` (${m.power.toLocaleString('en-US')})` : '');
@@ -1063,7 +1063,7 @@ function renderSidebar() {
 
 
   const allMembers = getMasterMemberList();
-  let missing = allMembers.filter(m => !occupiedMap.has(m.name?.trim()?.toLowerCase()) && !(window.isLeaveToday(m.name)));
+  let missing = allMembers.filter(m => !occupiedMap.has((m.name || '').trim().toLowerCase()) && !(window.isLeaveToday(m.name)));
 
   if (activeJobFilter) {
     missing = missing.filter(m => m.job === activeJobFilter);
@@ -1093,7 +1093,7 @@ function handleJobFilterChange(key, newJob) {
   const current = teamsAssignments[key];
 
   if (current && current.name && current.job !== newJob) {
-    occupiedMap.delete(current.name?.trim()?.toLowerCase());
+    occupiedMap.delete((current.name || '').trim().toLowerCase());
     teamsAssignments[key] = null;
   }
 
@@ -1160,7 +1160,7 @@ function handlePowerChange(key, rawValue) {
 function handleClearSlot(key) {
   const current = teamsAssignments[key];
   if (current && current.name) {
-    occupiedMap.delete(current.name?.trim()?.toLowerCase());
+    occupiedMap.delete((current.name || '').trim().toLowerCase());
   }
   teamsAssignments[key] = null;
   rowJobFilter[key] = '';
@@ -1218,14 +1218,14 @@ function closeMemberModal() {
 }
 
 function saveMemberFromModal(origName, name, job, power, fieldPref = 'any') {
-  const newNameLower = name.trim()?.toLowerCase();
+  const newNameLower = (name || '').trim().toLowerCase();
   const origNameLower = origName ? origName.trim()?.toLowerCase() : null;
   
   // 1. ตรวจสอบป้องกันชื่อซ้ำกับคนอื่น
   let foundOther = false;
   let existingJob = null;
   Object.keys(guildRoster).forEach(j => {
-    const found = (guildRoster[j] || []).find(m => m.name?.trim()?.toLowerCase() === newNameLower);
+    const found = (guildRoster[j] || []).find(m => (m.name || '').trim().toLowerCase() === newNameLower);
     if (found) {
       if (!origNameLower || origNameLower !== newNameLower) {
         foundOther = true;
@@ -1263,7 +1263,7 @@ function saveMemberFromModal(origName, name, job, power, fieldPref = 'any') {
   // 3. ล้างรายชื่อเดิม (และที่อาจซ้ำ) ออกจากทุกอาชีพ
   Object.keys(guildRoster).forEach(j => {
     guildRoster[j] = (guildRoster[j] || []).filter(m => {
-      const mLower = m.name?.trim()?.toLowerCase();
+      const mLower = (m.name || '').trim().toLowerCase();
       return mLower !== origNameLower && mLower !== newNameLower;
     });
   });
@@ -1287,7 +1287,7 @@ async function deleteMember(job, name, triggerSave = true) {
   });
 
   // Remove from teams if assigned
-  const nk = name.trim()?.toLowerCase();
+  const nk = (name || '').trim().toLowerCase();
   if (occupiedMap.has(nk)) {
     const slot = occupiedMap.get(nk);
     teamsAssignments[slot] = null;
@@ -1370,7 +1370,7 @@ window.processBulkAdd = function() {
     let existingIdx = -1;
     Object.keys(guildRoster).forEach(j => {
       const arr = guildRoster[j] || [];
-      const i = arr.findIndex(m => m.name?.trim()?.toLowerCase() === nameLower);
+      const i = arr.findIndex(m => (m.name || '').trim().toLowerCase() === nameLower);
       if (i !== -1) { existingJob = j; existingIdx = i; }
     });
 
@@ -1450,7 +1450,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
     occupiedMap.clear();
     Object.keys(teamsAssignments).forEach(key => {
        const a = teamsAssignments[key];
-       if (a && a.name) occupiedMap.set(a.name.trim().toLowerCase(), key);
+       if (a && a.name) occupiedMap.set((a.name || '').trim().toLowerCase(), key);
     });
   } else if (mode === 'main') {
     const mainFm = fieldMeta[0];
@@ -1461,7 +1461,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
         for (let i = 0; i < cap; i++) {
           const key = slotKey(0, teamName, i);
           if (teamsAssignments[key]) {
-            occupiedMap.delete(teamsAssignments[key].name?.trim()?.toLowerCase());
+            occupiedMap.delete(teamsAssignments[key].(name || '').trim().toLowerCase());
             delete teamsAssignments[key];
             delete rowJobFilter[key];
           }
@@ -1477,7 +1477,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
         for (let i = 0; i < cap; i++) {
           const key = slotKey(1, teamName, i);
           if (teamsAssignments[key]) {
-            occupiedMap.delete(teamsAssignments[key].name?.trim()?.toLowerCase());
+            occupiedMap.delete(teamsAssignments[key].(name || '').trim().toLowerCase());
             delete teamsAssignments[key];
             delete rowJobFilter[key];
           }
@@ -1496,8 +1496,8 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
         const teamName = parts[1];
         if (isTeamLocked(fieldIdx, teamName)) {
            if (teamsAssignments[key].name) {
-             assignedSet.add(teamsAssignments[key].name?.trim()?.toLowerCase());
-             occupiedMap.set(teamsAssignments[key].name?.trim()?.toLowerCase(), key);
+             assignedSet.add(teamsAssignments[key].(name || '').trim().toLowerCase());
+             occupiedMap.set(teamsAssignments[key].(name || '').trim().toLowerCase(), key);
            }
         }
       }
@@ -1510,7 +1510,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
     
     // Split masterList into main candidates
     masterList.forEach(m => {
-      const lower = m.name?.trim()?.toLowerCase();
+      const lower = (m.name || '').trim().toLowerCase();
       if (customSet.has(lower)) {
         mainCandidates.push(m);
       }
@@ -1521,9 +1521,9 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
     // Main Field Selection Rule: Pick 60 candidates guaranteed to include at least 12 top Priests!
     const allPriests = masterList.filter(m => m.job === 'Priest').sort((a, b) => (b.power || 0) - (a.power || 0));
     const top12Priests = allPriests.slice(0, 12);
-    const top12PriestNames = new Set(top12Priests.map(p => p.name?.trim()?.toLowerCase()));
+    const top12PriestNames = new Set(top12Priests.map(p => (p.name || '').trim().toLowerCase()));
 
-    const remainingMembers = masterList.filter(m => !top12PriestNames.has(m.name?.trim()?.toLowerCase())).sort((a, b) => (b.power || 0) - (a.power || 0));
+    const remainingMembers = masterList.filter(m => !top12PriestNames.has((m.name || '').trim().toLowerCase())).sort((a, b) => (b.power || 0) - (a.power || 0));
     
     const neededOthers = Math.max(0, 60 - top12Priests.length);
     const topOthers = remainingMembers.slice(0, neededOthers);
@@ -1554,9 +1554,9 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
         const p = mainPriests[tIdx];
         const key = slotKey(0, teamName, 4); // slot 5
         teamsAssignments[key] = { name: p.name, job: p.job, power: p.power };
-        occupiedMap.set(p.name?.trim()?.toLowerCase(), key);
+        occupiedMap.set((p.name || '').trim().toLowerCase(), key);
         rowJobFilter[key] = p.job;
-        assignedSet.add(p.name?.trim()?.toLowerCase());
+        assignedSet.add((p.name || '').trim().toLowerCase());
       }
     });
 
@@ -1575,7 +1575,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
         const key = slotKey(0, teamName, i);
         if (!teamsAssignments[key]) {
           const candidate = mainCandidates.find(m => {
-            const lower = m.name?.trim()?.toLowerCase();
+            const lower = (m.name || '').trim().toLowerCase();
             if (assignedSet.has(lower)) return false;
         if (window.isLeaveToday(m.name)) return false;
 
@@ -1590,7 +1590,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
           });
 
           if (candidate) {
-            const lower = candidate.name?.trim()?.toLowerCase();
+            const lower = (candidate.name || '').trim().toLowerCase();
             teamsAssignments[key] = { name: candidate.name, job: candidate.job, power: candidate.power };
             occupiedMap.set(lower, key);
             rowJobFilter[key] = candidate.job;
@@ -1610,7 +1610,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
   if (subFm) {
     // Find all remaining candidates who are not assigned AND not locked to 'main'
     const allRemaining = masterList.filter(m => {
-      const lower = m.name?.trim()?.toLowerCase();
+      const lower = (m.name || '').trim().toLowerCase();
       if (assignedSet.has(lower)) return false;
         if (window.isLeaveToday(m.name)) return false;
       if (m.fieldPref === 'main') return false; // respect strict main preference
@@ -1644,9 +1644,9 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
         const p = subPriests[tIdx];
         const key = slotKey(1, teamName, 4); // slot 5
         teamsAssignments[key] = { name: p.name, job: p.job, power: p.power };
-        occupiedMap.set(p.name?.trim()?.toLowerCase(), key);
+        occupiedMap.set((p.name || '').trim().toLowerCase(), key);
         rowJobFilter[key] = p.job;
-        assignedSet.add(p.name?.trim()?.toLowerCase());
+        assignedSet.add((p.name || '').trim().toLowerCase());
       }
     });
 
@@ -1665,12 +1665,12 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
         const key = slotKey(1, teamName, i);
         if (!teamsAssignments[key]) {
           const candidate = allRemaining.find(m => {
-            const lower = m.name?.trim()?.toLowerCase();
+            const lower = (m.name || '').trim().toLowerCase();
             return !assignedSet.has(lower);
           });
 
           if (candidate) {
-            const lower = candidate.name?.trim()?.toLowerCase();
+            const lower = (candidate.name || '').trim().toLowerCase();
             teamsAssignments[key] = { name: candidate.name, job: candidate.job, power: candidate.power };
             occupiedMap.set(lower, key);
             rowJobFilter[key] = candidate.job;
@@ -1764,7 +1764,7 @@ function clearCurrentFieldTeams() {
       occupiedMap.clear();
       Object.keys(teamsAssignments).forEach(key => {
         const a = teamsAssignments[key];
-        if (a && a.name) occupiedMap.set(a.name.trim().toLowerCase(), key);
+        if (a && a.name) occupiedMap.set((a.name || '').trim().toLowerCase(), key);
       });
       renderAll();
       saveState();
@@ -1898,7 +1898,7 @@ function renderAll() {
   Object.keys(teamsAssignments).forEach(function(key) {
     var a = teamsAssignments[key];
     if (a && a.name) {
-      occupiedMap.set(a.name.trim().toLowerCase(), key);
+      occupiedMap.set((a.name || '').trim().toLowerCase(), key);
     }
   });
 
@@ -1922,21 +1922,21 @@ function getRecommendedMain60Candidates() {
   
   // 1. Get everyone locked to 'main'
   const mainLocked = eligible.filter(m => m.fieldPref === 'main').sort((a, b) => (b.power || 0) - (a.power || 0));
-  const mainLockedNames = new Set(mainLocked.map(p => p.name?.trim()?.toLowerCase()));
+  const mainLockedNames = new Set(mainLocked.map(p => (p.name || '').trim().toLowerCase()));
 
   // 2. We still need up to 12 priests in total (including those in mainLocked)
   const lockedPriestCount = mainLocked.filter(m => m.job === 'Priest').length;
   const neededPriests = Math.max(0, 12 - lockedPriestCount);
   
-  const remainingPriests = eligible.filter(m => m.job === 'Priest' && !mainLockedNames.has(m.name?.trim()?.toLowerCase()))
+  const remainingPriests = eligible.filter(m => m.job === 'Priest' && !mainLockedNames.has((m.name || '').trim().toLowerCase()))
                                    .sort((a, b) => (b.power || 0) - (a.power || 0));
   
   const topRemainingPriests = remainingPriests.slice(0, neededPriests);
-  const selectedPriestNames = new Set(topRemainingPriests.map(p => p.name?.trim()?.toLowerCase()));
+  const selectedPriestNames = new Set(topRemainingPriests.map(p => (p.name || '').trim().toLowerCase()));
 
   // 3. Fill the rest of the 60 slots with highest power 'any' players
   const neededOthers = Math.max(0, 60 - mainLocked.length - topRemainingPriests.length);
-  const remainingOthers = eligible.filter(m => !mainLockedNames.has(m.name?.trim()?.toLowerCase()) && !selectedPriestNames.has(m.name?.trim()?.toLowerCase()))
+  const remainingOthers = eligible.filter(m => !mainLockedNames.has((m.name || '').trim().toLowerCase()) && !selectedPriestNames.has((m.name || '').trim().toLowerCase()))
                                   .sort((a, b) => (b.power || 0) - (a.power || 0));
                                   
   const topOthers = remainingOthers.slice(0, neededOthers);
@@ -2018,7 +2018,7 @@ async function removeSpecificTeam(targetTeamName) {
       const key = slotKey(currentFieldIdx, targetTeamName, i);
       const a = teamsAssignments[key];
       if (a && a.name) {
-        occupiedMap.delete(a.name?.trim()?.toLowerCase());
+        occupiedMap.delete((a.name || '').trim().toLowerCase());
       }
       delete teamsAssignments[key];
       delete rowJobFilter[key];
@@ -2457,9 +2457,9 @@ window.isLeaveToday = function(name) {
   if (!window.leaveData || window.leaveData.length === 0) return false;
   const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
   const todayDay = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
-  const lowerName = name?.trim()?.toLowerCase();
+  const lowerName = (name || '').trim().toLowerCase();
   return window.leaveData.some(l => 
-    l.name?.trim()?.toLowerCase() === lowerName && 
+    (l.name || '').trim().toLowerCase() === lowerName && 
     (l.date === todayStr || l.day === todayDay)
   );
 };

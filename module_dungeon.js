@@ -124,7 +124,7 @@
       let nameInRoster = false;
       if (window.guildRoster) {
         for (const j in window.guildRoster) {
-          if ((window.guildRoster[j] || []).some(m => m.name?.trim().toLowerCase() === (name || '').trim().toLowerCase())) {
+          if ((window.guildRoster[j] || []).some(m => (m.name || '').trim().toLowerCase() === (name || '').trim().toLowerCase())) {
             nameInRoster = true;
             break;
           }
@@ -149,11 +149,11 @@
 
       // เช็คซ้ำ: scope เฉพาะ dungeon ที่กำลังจอง (ไม่ใช่ทั้งหมด)
       const isAlreadyInQueue = dungeonData.queues.some((q) =>
-        q.name?.trim().toLowerCase() === (name || '').trim().toLowerCase() && q.dungeon === dungeon
+        (q.name || '').trim().toLowerCase() === (name || '').trim().toLowerCase() && q.dungeon === dungeon && q.status !== 'done'
       );
       const isAlreadyInTeam = dungeonData.teams.some((t) =>
         t.type === dungeon &&
-        t.members && t.members.some((m) => m && m.name?.trim().toLowerCase() === (name || '').trim().toLowerCase())
+        t.members && t.members.some((m) => m && (m.name || '').trim().toLowerCase() === (name || '').trim().toLowerCase())
       );
       if (isAlreadyInQueue || isAlreadyInTeam) {
         return window.showToast(
