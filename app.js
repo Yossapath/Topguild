@@ -1461,7 +1461,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
         for (let i = 0; i < cap; i++) {
           const key = slotKey(0, teamName, i);
           if (teamsAssignments[key]) {
-            occupiedMap.delete(teamsAssignments[key].(name || '').trim().toLowerCase());
+            occupiedMap.delete((teamsAssignments[key].name || '').trim().toLowerCase());
             delete teamsAssignments[key];
             delete rowJobFilter[key];
           }
@@ -1477,7 +1477,7 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
         for (let i = 0; i < cap; i++) {
           const key = slotKey(1, teamName, i);
           if (teamsAssignments[key]) {
-            occupiedMap.delete(teamsAssignments[key].(name || '').trim().toLowerCase());
+            occupiedMap.delete((teamsAssignments[key].name || '').trim().toLowerCase());
             delete teamsAssignments[key];
             delete rowJobFilter[key];
           }
@@ -1496,8 +1496,8 @@ async function autoOptimizeTeams(customMainNames = null, mode = 'both') {
         const teamName = parts[1];
         if (isTeamLocked(fieldIdx, teamName)) {
            if (teamsAssignments[key].name) {
-             assignedSet.add(teamsAssignments[key].(name || '').trim().toLowerCase());
-             occupiedMap.set(teamsAssignments[key].(name || '').trim().toLowerCase(), key);
+             assignedSet.add((teamsAssignments[key].name || '').trim().toLowerCase());
+             occupiedMap.set((teamsAssignments[key].name || '').trim().toLowerCase(), key);
            }
         }
       }
