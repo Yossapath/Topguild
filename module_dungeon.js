@@ -1,4 +1,4 @@
-import {
+﻿import {
   doc,
   getDoc,
   setDoc,
@@ -171,7 +171,39 @@ import {
         if (found) power = found.power || 0;
       }
 
+      // ===== CHECK BOOKING TIME WINDOW =====
+      const _sched = dungeonData._schedule;
+      if (_sched && _sched.openDate) {
+        const _nowBkk = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+        const _todayStr = _nowBkk.toLocaleDateString('en-CA');
+
+        if (_todayStr !== _sched.openDate) {
+          const [_y, _m, _d] = _sched.openDate.split('-');
+          return window.showToast(
+            '\u23f0 \u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e16\u0e36\u0e07\u0e27\u0e31\u0e19\u0e40\u0e1b\u0e34\u0e14\u0e08\u0e2d\u0e07 (\u0e40\u0e1b\u0e34\u0e14\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48 ' + _d + '/' + _m + '/' + _y + ')',
+            'error'
+          );
+        }
+
+        if (_sched.openTime && _sched.closeTime) {
+          const [_oh, _om] = _sched.openTime.split(':').map(Number);
+          const [_ch, _cm] = _sched.closeTime.split(':').map(Number);
+          const _nowMins   = _nowBkk.getHours() * 60 + _nowBkk.getMinutes();
+          const _openMins  = _oh * 60 + _om;
+          const _closeMins = _ch * 60 + _cm;
+
+          if (_nowMins < _openMins || _nowMins > _closeMins) {
+            return window.showToast(
+              '\u23f0 \u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e16\u0e36\u0e07\u0e40\u0e27\u0e25\u0e32\u0e40\u0e1b\u0e34\u0e14\u0e08\u0e2d\u0e07 (\u0e40\u0e1b\u0e34\u0e14 ' + _sched.openTime + ' \u2013 ' + _sched.closeTime + ' \u0e19.)',
+              'error'
+            );
+          }
+        }
+      }
+      // ===== /CHECK BOOKING TIME WINDOW =====
+
       dungeonData.queues.push({
+
         id: Date.now().toString(),
         name,
         job,
