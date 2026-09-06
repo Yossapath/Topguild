@@ -3,7 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>จองคิวดันมายา - TopGuild (Public)</title>
+  <title>จองคิวดันเจี้ยน - TopGuild</title>
+  <meta name="description" content="ระบบจองคิวดันเจี้ยนกิลด์ ตรวจสอบสถานะ คิวที่กำลังลง และเวลาประมาณการ Real-time">
+  <meta property="og:title" content="จองคิวดันเจี้ยน | TopGuild">
+  <meta property="og:description" content="ระบบจองคิวดันเจี้ยนกิลด์ ตรวจสอบสถานะ คิวที่กำลังลง และเวลาประมาณการ Real-time">
+  <meta property="og:url" content="https://rowtopguild.vercel.app/booking.html">
+  <meta property="og:site_name" content="TopGuild">
+  <meta property="og:locale" content="th_TH">
+  <meta property="og:image" content="https://rowtopguild.vercel.app/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="TopGuild Dungeon Booking">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="จองคิวดันเจี้ยน | TopGuild">
+  <meta name="twitter:description" content="ระบบจองคิวดันเจี้ยนกิลด์ ตรวจสอบสถานะ คิวที่กำลังลง และเวลาประมาณการ Real-time">
+  <meta name="twitter:image" content="https://rowtopguild.vercel.app/og-image.png">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
@@ -414,6 +429,64 @@
   </style>
 </head>
 <body>
+
+  <!-- ===== AUTH OVERLAY (ใช้ session เดียวกับ main app) ===== -->
+  <div id="bookingAuthOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#f4f7fb; z-index:10000; overflow-y:auto; font-family:'Prompt',sans-serif; box-sizing:border-box;">
+    <div style="display:flex; flex-direction:row; width:100%; max-width:1000px; margin:0 auto; padding:40px 20px; gap:80px; align-items:center; justify-content:center; flex-wrap:wrap; min-height:100vh;">
+
+      <!-- Left Branding -->
+      <div style="flex:1; min-width:300px; display:flex; flex-direction:column; justify-content:center; text-align:left;">
+        <div style="width:72px; height:72px; background:#2563eb; border-radius:12px; margin-bottom:24px; display:flex; align-items:center; justify-content:center; color:white;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 12 12 17 22 12"></polyline><polyline points="2 17 12 22 22 17"></polyline></svg>
+        </div>
+        <h1 style="margin:0; font-size:64px; font-weight:900; color:#0f172a; line-height:1; letter-spacing:-1.5px; text-transform:uppercase;">TOPGUILD</h1>
+        <h2 style="margin:4px 0 16px 0; font-size:40px; font-weight:900; color:#2563eb; line-height:1.1; letter-spacing:-1px; text-transform:uppercase;">RAGNAROK<br>THE NEW WORLD</h2>
+        <p style="margin:0; color:#64748b; font-size:16px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;">GUILD DATA MANAGEMENT SYSTEM</p>
+        <div style="margin-top:20px; background:rgba(37,99,235,0.08); border:1.5px solid rgba(37,99,235,0.25); border-radius:10px; padding:12px 16px; font-size:13px; color:#1e40af; font-weight:600;">
+          &#x2694;&#xFE0F; กรุณาล็อกอินเพื่อเข้าถึงระบบจองคิวดันมายา
+        </div>
+      </div>
+
+      <!-- Right Login Card -->
+      <div style="flex:1; min-width:320px; max-width:440px;">
+        <div style="background:#ffffff; padding:48px 40px; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.08); border-top:4px solid #2563eb;">
+          <h3 style="margin:0 0 32px 0; font-size:28px; font-weight:900; color:#0f172a; font-style:italic; letter-spacing:-1px;">LOGIN</h3>
+
+          <!-- Login Form -->
+          <form id="bookingLoginForm" onsubmit="event.preventDefault(); handleBookingLogin();">
+            <div style="margin-bottom:24px;">
+              <label style="font-weight:800; color:#64748b; margin-bottom:8px; display:block; font-size:11px; text-transform:uppercase; letter-spacing:1px;">User</label>
+              <div style="position:relative; display:flex; align-items:center;">
+                <div style="position:absolute; left:14px; display:flex; align-items:center; justify-content:center;">
+                  <svg color="#94a3b8" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <input type="text" id="bkLoginUsername" style="width:100%; padding:16px 20px 16px 46px; border:none; border-radius:8px; font-size:16px; color:#0f172a; background:#eff6ff; outline:none; font-weight:600; font-family:inherit;" placeholder="ชื่อตัวละครของคุณ" required>
+              </div>
+            </div>
+            <div style="margin-bottom:32px;">
+              <label style="font-weight:800; color:#64748b; margin-bottom:8px; display:block; font-size:11px; text-transform:uppercase; letter-spacing:1px;">Password</label>
+              <div style="position:relative; display:flex; align-items:center;">
+                <div style="position:absolute; left:14px; display:flex; align-items:center; justify-content:center;">
+                  <svg color="#94a3b8" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <input type="password" id="bkLoginPassword" style="width:100%; padding:16px 20px 16px 46px; border:none; border-radius:8px; font-size:16px; color:#0f172a; background:#eff6ff; outline:none; font-weight:800; font-family:inherit;" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" required>
+              </div>
+            </div>
+            <div id="bkLoginError" style="display:none; background:rgba(239,68,68,0.08); color:#dc2626; border:1px solid #fca5a5; border-radius:8px; padding:10px 14px; font-size:13px; font-weight:600; margin-bottom:16px;"></div>
+            <button type="submit" id="bkLoginBtn" style="width:100%; padding:16px; background:#2563eb; color:white; border:none; border-radius:8px; font-size:16px; font-weight:800; letter-spacing:2px; text-transform:uppercase; cursor:pointer; font-family:inherit;">
+              LOGIN &#x279C;
+            </button>
+          </form>
+
+          <div style="margin-top:20px; text-align:center; font-size:12px; color:#94a3b8;">
+            ยังไม่มีบัญชี? ให้ Admin สร้างให้ หรือ <a href="index.html" style="color:#2563eb; font-weight:700; text-decoration:none;">สมัครที่หน้าหลัก</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ===== END AUTH OVERLAY ===== -->
+
   <div class="page-wrap">
     <!-- Toast container -->
     <div class="toast-container" id="toastContainer"></div>
@@ -531,6 +604,109 @@
     let attendanceData = { dates: {}, archived: {} };
     let scheduleData = null;
     let allNames = [];
+    let currentBookingUser = null;  // session จาก localStorage เดียวกับ main app
+
+    // ---- Auth helpers ----
+    function getStoredUser() {
+      try {
+        const saved = localStorage.getItem('guild_current_user');
+        return saved ? JSON.parse(saved) : null;
+      } catch(e) { return null; }
+    }
+
+    function showAuthOverlay() {
+      document.getElementById('bookingAuthOverlay').style.display = 'block';
+    }
+    function hideAuthOverlay() {
+      document.getElementById('bookingAuthOverlay').style.display = 'none';
+    }
+
+    // ---- handleBookingLogin (login ใน booking.html เลย ไม่ redirect) ----
+    window.handleBookingLogin = async function() {
+      const u = (document.getElementById('bkLoginUsername').value || '').trim().toLowerCase();
+      const p = (document.getElementById('bkLoginPassword').value || '');
+      const errEl = document.getElementById('bkLoginError');
+      const btn   = document.getElementById('bkLoginBtn');
+
+      errEl.style.display = 'none';
+      if (!u || !p) { errEl.textContent = 'กรุณากรอก Username และ Password'; errEl.style.display = 'block'; return; }
+
+      btn.disabled = true;
+      btn.textContent = 'กำลังเข้าสู่ระบบ...';
+
+      try {
+        if (!db) {
+          // Firebase ยังไม่ init — init ก่อน
+          app = initializeApp(firebaseConfig, 'booking-public');
+          db = getFirestore(app);
+        }
+        const snap = await getDoc(doc(db, 'users', u));
+        if (!snap.exists()) {
+          errEl.textContent = 'ไม่พบผู้ใช้งานนี้ในระบบ';
+          errEl.style.display = 'block';
+          btn.disabled = false; btn.textContent = 'LOGIN ➔';
+          return;
+        }
+        const data = snap.data();
+        if (data.password !== p) {
+          errEl.textContent = 'รหัสผ่านไม่ถูกต้อง';
+          errEl.style.display = 'block';
+          document.getElementById('bkLoginPassword').value = '';
+          document.getElementById('bkLoginPassword').focus();
+          btn.disabled = false; btn.textContent = 'LOGIN ➔';
+          return;
+        }
+        // สำเร็จ — บันทึก session เดียวกับ main app
+        currentBookingUser = { username: data.username, role: data.role || 'member', class: data.class };
+        localStorage.setItem('guild_current_user', JSON.stringify(currentBookingUser));
+        hideAuthOverlay();
+        showToast('ยินดีต้อนรับ ' + currentBookingUser.username + ' 🎉', 'success');
+        // auto-fill ชื่อตัวละคร
+        autoFillFromSession();
+        // โหลดข้อมูลต่อ
+        await loadBookingData();
+      } catch(err) {
+        errEl.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'LOGIN ➔';
+      }
+    };
+
+    // ---- Auto-fill ชื่อตัวละครจาก session ----
+    function autoFillFromSession() {
+      if (!currentBookingUser) return;
+      const nameEl = document.getElementById('bkName');
+      if (nameEl && !nameEl.value) {
+        nameEl.value = currentBookingUser.username;
+        // trigger score display
+        nameEl.dispatchEvent(new Event('input'));
+      }
+    }
+
+    // ---- Initialize ----
+    async function init() {
+      try {
+        // เช็ค session จาก localStorage (เดียวกับ main app)
+        currentBookingUser = getStoredUser();
+        if (!currentBookingUser) {
+          // ยังไม่ล็อกอิน — แสดง overlay แล้วรอ
+          showAuthOverlay();
+          // init Firebase ไว้รอ (สำหรับ handleBookingLogin ใช้)
+          app = initializeApp(firebaseConfig, 'booking-public');
+          db = getFirestore(app);
+          return;
+        }
+        // ล็อกอินแล้ว — โหลดปกติ
+        hideAuthOverlay();
+        app = initializeApp(firebaseConfig, 'booking-public');
+        db = getFirestore(app);
+        await loadBookingData();
+        autoFillFromSession();
+      } catch(e) {
+        document.getElementById('loadingArea').innerHTML = '<div style="color:var(--danger);">❌ โหลดข้อมูลไม่สำเร็จ: ' + (e.message || e) + '</div>';
+        console.error(e);
+      }
+    }
 
     // ---- Utility ----
     function escapeHtml(str) {
@@ -569,73 +745,65 @@
       aggregate(attendanceData.archived);
       const entry = statsMap[name];
       if (!entry) {
-        // Try case-insensitive match
         const key = Object.keys(statsMap).find(k => (k || '').trim().toLowerCase() === (name || '').trim().toLowerCase());
         return key ? statsMap[key].score : 0;
       }
       return entry.score;
     }
 
-    // ---- Initialize ----
-    async function init() {
-      try {
-        app = initializeApp(firebaseConfig, 'booking-public');
-        db = getFirestore(app);
+    // ---- loadBookingData (แยก logic ออกมาให้ใช้ได้หลังล็อกอิน) ----
+    async function loadBookingData() {
+      // Load roster
+      const rosterSnap = await getDoc(doc(db, 'guild_system', 'roster'));
+      if (rosterSnap.exists()) guildRoster = rosterSnap.data() || {};
+      buildRosterNames();
 
-        // Load roster
-        const rosterSnap = await getDoc(doc(db, 'guild_system', 'roster'));
-        if (rosterSnap.exists()) guildRoster = rosterSnap.data() || {};
-        buildRosterNames();
+      // Load attendance for score calculation
+      const attSnap = await getDoc(doc(db, 'guild_system', 'attendance'));
+      if (attSnap.exists()) attendanceData = attSnap.data() || { dates: {}, archived: {} };
+      if (!attendanceData.dates) attendanceData.dates = {};
+      if (!attendanceData.archived) attendanceData.archived = {};
 
-        // Load attendance for score calculation
-        const attSnap = await getDoc(doc(db, 'guild_system', 'attendance'));
-        if (attSnap.exists()) attendanceData = attSnap.data() || { dates: {}, archived: {} };
-        if (!attendanceData.dates) attendanceData.dates = {};
-        if (!attendanceData.archived) attendanceData.archived = {};
+      // Real-time attendance listener (for live score updates)
+      onSnapshot(doc(db, 'guild_system', 'attendance'), (snap) => {
+        if (snap.exists()) {
+          attendanceData = snap.data() || { dates: {}, archived: {} };
+          if (!attendanceData.dates) attendanceData.dates = {};
+          if (!attendanceData.archived) attendanceData.archived = {};
+          // Refresh score display if a name is typed
+          const nameVal = document.getElementById('bkName').value.trim();
+          if (nameVal) updateScoreDisplay(nameVal);
+        }
+      });
 
-        // Real-time attendance listener (for live score updates)
-        onSnapshot(doc(db, 'guild_system', 'attendance'), (snap) => {
-          if (snap.exists()) {
-            attendanceData = snap.data() || { dates: {}, archived: {} };
-            if (!attendanceData.dates) attendanceData.dates = {};
-            if (!attendanceData.archived) attendanceData.archived = {};
-            // Refresh score display if a name is typed
-            const nameVal = document.getElementById('bkName').value.trim();
-            if (nameVal) updateScoreDisplay(nameVal);
-          }
-        });
+      // Load schedule
+      const schedSnap = await getDoc(doc(db, 'guild_system', 'dungeon_schedule'));
+      if (schedSnap.exists()) scheduleData = schedSnap.data();
 
-        // Load schedule
-        const schedSnap = await getDoc(doc(db, 'guild_system', 'dungeon_schedule'));
-        if (schedSnap.exists()) scheduleData = schedSnap.data();
-
-        // Real-time schedule listener
-        onSnapshot(doc(db, 'guild_system', 'dungeon_schedule'), (snap) => {
-          scheduleData = snap.exists() ? snap.data() : null;
-          renderScheduleStatus();
-        });
-
-        // Real-time dungeon listener
-        onSnapshot(doc(db, 'guild_system', 'dungeons'), (snap) => {
-          if (snap.exists()) {
-            dungeonData = snap.data();
-            if (!dungeonData.queues) dungeonData.queues = [];
-            if (!dungeonData.teams)  dungeonData.teams = [];
-          } else {
-            dungeonData = { queues: [], teams: [] };
-          }
-          renderQueue();
-          renderTeams();
-        });
-
-        document.getElementById('loadingArea').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
+      // Real-time schedule listener
+      onSnapshot(doc(db, 'guild_system', 'dungeon_schedule'), (snap) => {
+        scheduleData = snap.exists() ? snap.data() : null;
         renderScheduleStatus();
-      } catch (e) {
-        document.getElementById('loadingArea').innerHTML = '<div style="color:var(--danger);">❌ โหลดข้อมูลไม่สำเร็จ: ' + escapeHtml(e.message) + '</div>';
-        console.error(e);
-      }
+      });
+
+      // Real-time dungeon listener
+      onSnapshot(doc(db, 'guild_system', 'dungeons'), (snap) => {
+        if (snap.exists()) {
+          dungeonData = snap.data();
+          if (!dungeonData.queues) dungeonData.queues = [];
+          if (!dungeonData.teams)  dungeonData.teams = [];
+        } else {
+          dungeonData = { queues: [], teams: [] };
+        }
+        renderQueue();
+        renderTeams();
+      });
+
+      document.getElementById('loadingArea').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+      renderScheduleStatus();
     }
+
 
     // ---- Roster / Autocomplete ----
     function buildRosterNames() {
