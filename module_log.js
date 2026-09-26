@@ -1,4 +1,4 @@
-import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, collection, addDoc, getDocs, query, orderBy, limit, setDoc } from "./firebase_shim.js";
 
 // ==========================================
 // MODULE: SYSTEM LOG + DUNGEON BACKUP

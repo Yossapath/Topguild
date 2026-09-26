@@ -570,8 +570,8 @@
 
   <!-- Firebase -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { initializeApp } from "./firebase_shim.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "./firebase_shim.js";
 
     // ---- Firebase Config (same as main app) ----
     const firebaseConfig = {

@@ -4,27 +4,637 @@ window.isUserAdmin = function() {
   return r === 'admin' || r === 'owner' || r === 'หัวหน้ากิลด์';
 };
 // Firebase Web SDK v10 Modular Imports from CDN
-import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { 
-  getFirestore, 
-  doc, 
-  getDoc,
-  setDoc, 
-  onSnapshot 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
 
 /* Default Initial Data */
 const INITIAL_ROSTER = {
-  "Lord Knight": [{"name": "Heinzer", "power": 35282}, {"name": "NpR_n", "power": 34336}, {"name": "Zerion", "power": 33957}, {"name": "บักตุ่น", "power": 32161}, {"name": "Yami", "power": 31274}, {"name": "Satanic", "power": 30844}, {"name": "HyPerTo", "power": 29994}, {"name": "InseptiOn", "power": 28953}, {"name": "Over_Topup", "power": 27579}, {"name": "หนูอ้ดนะพี่ไหวหรอ", "power": 25158}, {"name": "หญิงแท้", "power": 23494}, {"name": "หยองแยง", "power": 22336}],
-  "Paladin": [{"name": "XxerrosS", "power": 43684}, {"name": "Jaime", "power": 32665}, {"name": "Cal2nivaLxD", "power": 31697}, {"name": "Avalon", "power": 28038}, {"name": "DOMONCUS", "power": 23443}, {"name": "ดิมิโกะ", "power": 21651}, {"name": "SoLoPlayer", "power": 17806}],
-  "High Wizard": [{"name": "DMTz", "power": 41193}, {"name": "P1CaszO", "power": 34545}, {"name": "uwannadrink?", "power": 33369}, {"name": "SodaPure", "power": 33305}, {"name": "เอมิจังงง", "power": 32239}, {"name": "zzzTOzzz", "power": 31746}, {"name": "Lorying", "power": 31502}, {"name": "OTANI", "power": 31497}, {"name": "NaTzo", "power": 30848}, {"name": "Vaduka-Tampan", "power": 30527}, {"name": "P9D", "power": 29627}, {"name": "FishStop", "power": 28484}, {"name": "mochi3", "power": 27833}, {"name": "MANJI", "power": 25256}, {"name": "Lynlin", "power": 23647}, {"name": "Duckza", "power": 22059}, {"name": "Justice", "power": 19678}],
-  "Sniper": [{"name": "JossGoose", "power": 39091}, {"name": "spkn", "power": 34996}, {"name": "Pepzii2", "power": 34000}, {"name": "KiMuJi", "power": 33068}, {"name": "หวานเจี๊ยฟ", "power": 31969}, {"name": "Orasa", "power": 30376}, {"name": "Pairot_1995", "power": 29494}, {"name": "I'm18", "power": 29434}, {"name": "Maboom", "power": 29251}, {"name": "Atomic", "power": 28920}, {"name": "3ararentz", "power": 28530}, {"name": "Paxx", "power": 27752}, {"name": "BoyKub", "power": 27392}, {"name": "Ms,08", "power": 27104}, {"name": "aut", "power": 26455}, {"name": "banana1fruit", "power": 25873}, {"name": "TAETIS007", "power": 25670}, {"name": "Mahnow", "power": 25526}, {"name": "Joesoizero", "power": 24801}, {"name": "ZEON", "power": 23968}, {"name": "iRokz", "power": 23193}, {"name": "ONI", "power": 22880}, {"name": "TheNinez", "power": 22724}, {"name": "กระต่ายบิน", "power": 22556}, {"name": "BASFISHING", "power": 22285}, {"name": "Weedsp", "power": 21665}, {"name": "MUF4IN", "power": 21203}, {"name": "MrSilverz", "power": 20702}],
-  "Priest": [{"name": "กระดุมเม็ดบน", "power": 34277}, {"name": "McRai", "power": 32266}, {"name": "HarryPotter", "power": 32176}, {"name": "ironboy69", "power": 32142}, {"name": "Demons", "power": 32118}, {"name": "imQwQm", "power": 31749}, {"name": "คุคุ", "power": 31142}, {"name": "Baki_Hanma", "power": 30793}, {"name": "Dumpling", "power": 30456}, {"name": "หวังสี้เจ้า", "power": 29973}, {"name": "SappeXo", "power": 29690}, {"name": "ป่ายแก่ๆ", "power": 29247}, {"name": "GOLF", "power": 28745}, {"name": "พระปลาย", "power": 27745}, {"name": "Mahlakor", "power": 27552}, {"name": "อามะ-กันเต", "power": 26953}, {"name": "น้องxoe", "power": 26219}, {"name": "fluffi_cia", "power": 25712}, {"name": "monza", "power": 23440}, {"name": "เอรักดีดีคืนมา", "power": 21632}, {"name": "lll", "power": 21564}],
-  "Champion": [{"name": "TopGameTH", "power": 34786}, {"name": "SAFEZONE", "power": 32328}, {"name": "ROidiotgame", "power": 30736}, {"name": "MasterClover", "power": 29153}, {"name": "Almonso", "power": 25672}, {"name": "KiMuChi", "power": 22155}],
-  "Assassin Cross": [{"name": "YuGi", "power": 43663}, {"name": "พ่องมีไต", "power": 41098}, {"name": "Aramid", "power": 38700}, {"name": "ZelarS", "power": 36780}, {"name": "navanavin", "power": 36712}, {"name": "[H2H]Ian", "power": 36153}, {"name": "TonyX", "power": 33712}, {"name": "โอ๊ยร้อนน", "power": 33141}, {"name": "ChomPoo", "power": 32554}, {"name": "RMS", "power": 31560}, {"name": "Fujiro", "power": 30251}, {"name": "Flexx", "power": 27909}, {"name": "DARKCAFE", "power": 26693}, {"name": "cHk", "power": 25855}, {"name": "Akiri", "power": 23100}, {"name": "0xlantern", "power": 22247}, {"name": "อิหล่ามืดบิน", "power": 22048}],
-  "Merchant": [{"name": "Zendo", "power": 34677}, {"name": "12ED!TUS", "power": 33267}, {"name": "凡依", "power": 29313}, {"name": "Pew", "power": 26127}, {"name": "Homey", "power": 23832}, {"name": "โยชิแมวดื้อ", "power": 22287}],
-  "Gunslinger": [{"name": "RottoR", "power": 34494}, {"name": "KiTzAoo3", "power": 32452}, {"name": "นายไข่ดาว", "power": 30429}, {"name": "KJสารวัตรแจ๊ะ", "power": 30184}, {"name": "Katoonz", "power": 29936}, {"name": "ขุนทวนสวนทวาร", "power": 29093}, {"name": "CGame", "power": 28828}, {"name": "เวลดอล่า", "power": 28663}, {"name": "ยาซป", "power": 28297}, {"name": "Jade", "power": 27434}, {"name": "พระอาทิตย์", "power": 27347}, {"name": "Valkyriㅌ", "power": 26732}, {"name": "บักหรรม้อยเอง", "power": 26030}, {"name": "ชาวประมง", "power": 25714}, {"name": "Non79", "power": 25193}, {"name": "BixDix", "power": 24080}, {"name": "TARZANXIII", "power": 23201}, {"name": "GdGunSlinger", "power": 17527}, {"name": "zenkie", "power": 17397}],
-  "Druid": [{"name": "iwannatell", "power": 36377}, {"name": "Momju", "power": 35429}, {"name": "ตะขบ", "power": 33749}, {"name": "LinPing", "power": 32386}, {"name": "Yots10", "power": 31613}, {"name": "หรรม้อยแซงเลย", "power": 26292}, {"name": "McLai", "power": 23227}, {"name": "Leaf", "power": 19461}]
+  "Gypsy": [
+    {
+      "name": "Andanoi",
+      "power": 0
+    },
+    {
+      "name": "Hikarin",
+      "power": 0
+    },
+    {
+      "name": "乇loise",
+      "power": 0
+    },
+    {
+      "name": "HKToPhoenix",
+      "power": 0
+    },
+    {
+      "name": "Wallahi",
+      "power": 0
+    },
+    {
+      "name": "เสี่ยอ้วน",
+      "power": 0
+    }
+  ],
+  "Creator": [
+    {
+      "name": "Woof",
+      "power": 0
+    },
+    {
+      "name": "Moomin",
+      "power": 0
+    },
+    {
+      "name": "Tams",
+      "power": 0
+    },
+    {
+      "name": "vvvvvvvvvvv",
+      "power": 0
+    },
+    {
+      "name": "Yana",
+      "power": 0
+    },
+    {
+      "name": "DiSaSTrouS",
+      "power": 0
+    },
+    {
+      "name": "ไก่จ๋า",
+      "power": 0
+    },
+    {
+      "name": "Shu",
+      "power": 0
+    },
+    {
+      "name": "นะโม",
+      "power": 0
+    },
+    {
+      "name": "[H]-wENDy",
+      "power": 0
+    },
+    {
+      "name": "Gunnikki",
+      "power": 0
+    },
+    {
+      "name": "ZQNC",
+      "power": 0
+    },
+    {
+      "name": "JossGoose",
+      "power": 0
+    },
+    {
+      "name": "BoBByBoomBer",
+      "power": 0
+    }
+  ],
+  "Night Walker": [
+    {
+      "name": "BAEMON",
+      "power": 0
+    },
+    {
+      "name": "Chenen",
+      "power": 0
+    },
+    {
+      "name": "Kleith",
+      "power": 0
+    },
+    {
+      "name": "SEIKO",
+      "power": 0
+    },
+    {
+      "name": "-[FaRaDay]-",
+      "power": 0
+    },
+    {
+      "name": "น้องภูผา",
+      "power": 0
+    },
+    {
+      "name": "ขนมกรอบ",
+      "power": 0
+    },
+    {
+      "name": "Mugetsu",
+      "power": 0
+    },
+    {
+      "name": "Darkvader",
+      "power": 0
+    },
+    {
+      "name": "iPhone",
+      "power": 0
+    }
+  ],
+  "Assassin Cross": [
+    {
+      "name": "ไม่กินผัก",
+      "power": 0
+    },
+    {
+      "name": "yunj!n",
+      "power": 0
+    },
+    {
+      "name": "F1NNYZ",
+      "power": 0
+    },
+    {
+      "name": "Sigmaboiii",
+      "power": 0
+    },
+    {
+      "name": "EazyX",
+      "power": 0
+    },
+    {
+      "name": "Dreyar",
+      "power": 0
+    },
+    {
+      "name": "no_el",
+      "power": 0
+    },
+    {
+      "name": "[H]-MarShall-D",
+      "power": 0
+    },
+    {
+      "name": "Titanooz",
+      "power": 0
+    },
+    {
+      "name": "จิ้นส้ม",
+      "power": 0
+    },
+    {
+      "name": "FE4Rs",
+      "power": 0
+    },
+    {
+      "name": "spkn",
+      "power": 0
+    },
+    {
+      "name": "Kanomroo`",
+      "power": 0
+    },
+    {
+      "name": "BUNGEEGUM",
+      "power": 0
+    },
+    {
+      "name": "YuGi",
+      "power": 0
+    },
+    {
+      "name": "บุญช่วย",
+      "power": 0
+    }
+  ],
+  "Paladin": [
+    {
+      "name": "PaIadin",
+      "power": 0
+    },
+    {
+      "name": "UKINA",
+      "power": 0
+    },
+    {
+      "name": "ascii",
+      "power": 0
+    },
+    {
+      "name": "Moosachi",
+      "power": 0
+    },
+    {
+      "name": "[H]-ROGERs",
+      "power": 0
+    },
+    {
+      "name": "Ivaldi",
+      "power": 0
+    },
+    {
+      "name": "POMPUENN",
+      "power": 0
+    },
+    {
+      "name": "x888",
+      "power": 0
+    },
+    {
+      "name": "UnLimit888",
+      "power": 0
+    },
+    {
+      "name": "InseptiOn",
+      "power": 0
+    }
+  ],
+  "อาลิเทีย": [
+    {
+      "name": "Aegis",
+      "power": 0
+    },
+    {
+      "name": "ยุงลาย",
+      "power": 0
+    },
+    {
+      "name": "เจ๊หมวย",
+      "power": 0
+    },
+    {
+      "name": "JCrimson777",
+      "power": 0
+    },
+    {
+      "name": "บะหมี่หยก",
+      "power": 0
+    },
+    {
+      "name": "Escapism",
+      "power": 0
+    },
+    {
+      "name": "Pink7anter",
+      "power": 0
+    },
+    {
+      "name": "NomYen",
+      "power": 0
+    },
+    {
+      "name": "Indica",
+      "power": 0
+    },
+    {
+      "name": "Acelaretor",
+      "power": 0
+    },
+    {
+      "name": "Bearbrickxxz",
+      "power": 0
+    },
+    {
+      "name": "IGNOREME!",
+      "power": 0
+    },
+    {
+      "name": "สีกาแพรววา",
+      "power": 0
+    },
+    {
+      "name": "`ปิกัสโซ่",
+      "power": 0
+    },
+    {
+      "name": "JAMEJET",
+      "power": 0
+    },
+    {
+      "name": "DMTz",
+      "power": 0
+    }
+  ],
+  "Whitesmith": [
+    {
+      "name": "Koo",
+      "power": 0
+    },
+    {
+      "name": "Hayward",
+      "power": 0
+    },
+    {
+      "name": "EyEcoN",
+      "power": 0
+    },
+    {
+      "name": "GuN-S",
+      "power": 0
+    },
+    {
+      "name": "Jokobo",
+      "power": 0
+    },
+    {
+      "name": "JACKPOT_789",
+      "power": 0
+    }
+  ],
+  "Sniper": [
+    {
+      "name": "Shivs",
+      "power": 0
+    },
+    {
+      "name": "ป้าแต๋น",
+      "power": 0
+    },
+    {
+      "name": "FreYa",
+      "power": 0
+    },
+    {
+      "name": "น้๏Jโตเกีeว",
+      "power": 0
+    },
+    {
+      "name": "จิ๊กโก๋",
+      "power": 0
+    },
+    {
+      "name": "Krisz",
+      "power": 0
+    },
+    {
+      "name": "[H]-Balista'",
+      "power": 0
+    },
+    {
+      "name": "Kizo",
+      "power": 0
+    },
+    {
+      "name": "BeerBusTerz`",
+      "power": 0
+    },
+    {
+      "name": "Jarvis",
+      "power": 0
+    }
+  ],
+  "High Wizard": [
+    {
+      "name": "RagingRatbu",
+      "power": 0
+    },
+    {
+      "name": "UnLimited",
+      "power": 0
+    },
+    {
+      "name": "หมูยอ",
+      "power": 0
+    },
+    {
+      "name": "Birdkk",
+      "power": 0
+    },
+    {
+      "name": "อิฐจะเอาGTR",
+      "power": 0
+    },
+    {
+      "name": "KHAWWWW",
+      "power": 0
+    },
+    {
+      "name": "POOMXD",
+      "power": 0
+    },
+    {
+      "name": "Enchantresss",
+      "power": 0
+    },
+    {
+      "name": "RankDieP",
+      "power": 0
+    },
+    {
+      "name": "`เฮอร์มอยโอนี๋",
+      "power": 0
+    },
+    {
+      "name": "บุ๋มบุ๋ม",
+      "power": 0
+    }
+  ],
+  "Champion": [
+    {
+      "name": "BORSALINO",
+      "power": 0
+    },
+    {
+      "name": "ตะวันฉาย",
+      "power": 0
+    },
+    {
+      "name": "Mali",
+      "power": 0
+    },
+    {
+      "name": "Peach",
+      "power": 0
+    },
+    {
+      "name": "ลูกแก้วนำโชค",
+      "power": 0
+    },
+    {
+      "name": "มารี",
+      "power": 0
+    },
+    {
+      "name": "TuaInwZa888吉",
+      "power": 0
+    }
+  ],
+  "Clown": [
+    {
+      "name": "Tack",
+      "power": 0
+    },
+    {
+      "name": "ลุ้น",
+      "power": 0
+    },
+    {
+      "name": "ไก่-ทอด",
+      "power": 0
+    },
+    {
+      "name": "Soiduk",
+      "power": 0
+    },
+    {
+      "name": "[H]-RX78-2",
+      "power": 0
+    },
+    {
+      "name": "HKToChimera",
+      "power": 0
+    },
+    {
+      "name": "[Ar]JanDang",
+      "power": 0
+    }
+  ],
+  "High Priest": [
+    {
+      "name": "HyeLeluJah",
+      "power": 0
+    },
+    {
+      "name": "YUMYUM",
+      "power": 0
+    },
+    {
+      "name": "Bitchesa",
+      "power": 0
+    },
+    {
+      "name": "MamaCow",
+      "power": 0
+    },
+    {
+      "name": "Ella",
+      "power": 0
+    },
+    {
+      "name": "cheesecakes",
+      "power": 0
+    },
+    {
+      "name": "ヘNewPORヘ",
+      "power": 0
+    },
+    {
+      "name": "ตัวจี๊ด",
+      "power": 0
+    },
+    {
+      "name": "พี่ตะวัน",
+      "power": 0
+    },
+    {
+      "name": "ไร้นาม",
+      "power": 0
+    },
+    {
+      "name": "__Batprw__",
+      "power": 0
+    },
+    {
+      "name": "BG",
+      "power": 0
+    },
+    {
+      "name": "Yuge",
+      "power": 0
+    },
+    {
+      "name": "กิมจิเก่า",
+      "power": 0
+    },
+    {
+      "name": "ท่าuo๋oJ888",
+      "power": 0
+    },
+    {
+      "name": "Momayz",
+      "power": 0
+    },
+    {
+      "name": "-˃PudDing",
+      "power": 0
+    },
+    {
+      "name": "LipzKiss",
+      "power": 0
+    },
+    {
+      "name": "หิวตีน",
+      "power": 0
+    },
+    {
+      "name": "Biewwitch",
+      "power": 0
+    },
+    {
+      "name": "JunnyS",
+      "power": 0
+    },
+    {
+      "name": "[H]-พระยอม",
+      "power": 0
+    },
+    {
+      "name": "Bacon",
+      "power": 0
+    },
+    {
+      "name": "[H]-Gaia",
+      "power": 0
+    },
+    {
+      "name": "Naokikung",
+      "power": 0
+    },
+    {
+      "name": "Demons",
+      "power": 0
+    },
+    {
+      "name": "MaKaLiTa",
+      "power": 0
+    },
+    {
+      "name": "IssyWitchy",
+      "power": 0
+    },
+    {
+      "name": "Akenakub",
+      "power": 0
+    }
+  ],
+  "Lord Knight": [
+    {
+      "name": "Albeddo",
+      "power": 0
+    },
+    {
+      "name": "SteveRogers",
+      "power": 0
+    },
+    {
+      "name": "นิโคตีน",
+      "power": 0
+    },
+    {
+      "name": "พี่ปอนด์56",
+      "power": 0
+    },
+    {
+      "name": "BabyBigboss",
+      "power": 0
+    },
+    {
+      "name": "เซนอิง_นาโอยะ",
+      "power": 0
+    },
+    {
+      "name": "[H]-Marine",
+      "power": 0
+    },
+    {
+      "name": "TungMayZ",
+      "power": 0
+    }
+  ]
 };
 
 const INITIAL_TEAMS = [
@@ -69,14 +679,15 @@ const INITIAL_TEAMS = [
   }
 ];
 
-/* Default Firebase Cloud Database Config */
+
+
 const DEFAULT_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBXPfxhSLBt9dQqf5glFrXvx6KLxqPmEE8",
-  authDomain: "topguild-eeb40.firebaseapp.com",
-  projectId: "topguild-eeb40",
-  storageBucket: "topguild-eeb40.firebasestorage.app",
-  messagingSenderId: "879954426796",
-  appId: "1:879954426796:web:48e305dc9f78bda6a51809"
+  apiKey: "dummy",
+  authDomain: "dummy",
+  projectId: "dummy",
+  storageBucket: "dummy",
+  messagingSenderId: "dummy",
+  appId: "dummy"
 };
 
 const JOB_COLORS = {
@@ -85,19 +696,22 @@ const JOB_COLORS = {
   "High Wizard": "#2c7eb9",
   "Sniper": "#d4a015",
   "Priest": "#25ae62",
+  "High Priest": "#25ae62",
   "Champion": "#15a083",
   "Assassin Cross": "#8b46af",
   "Merchant": "#c2185d",
+  "Whitesmith": "#c2185d",
   "Gunslinger": "#894517",
-  "Druid": "#41b388"
+  "Druid": "#41b388",
+  "Night Walker": "#6a1b9a",
+  "Gypsy": "#f06292",
+  "อาลิเทีย": "#ba68c8",
+  "Creator": "#ff9800",
+  "Clown": "#f44336"
 };
 window.JOB_COLORS = JOB_COLORS;
 
-const JOB_LIST = [
-  "Lord Knight", "Paladin", "High Wizard", "Sniper", 
-  "Priest", "Champion", "Assassin Cross", "Merchant", 
-  "Gunslinger", "Druid"
-];
+const JOB_LIST = ["Sniper", "Whitesmith", "High Wizard", "Night Walker", "Champion", "Gypsy", "อาลิเทีย", "Lord Knight", "Paladin", "Creator", "Clown", "High Priest", "Assassin Cross"];
 
 /* App State - Firebase Only (no LocalStorage) */
 let guildRoster = {};
