@@ -961,7 +961,7 @@ async function setupFirebase(configObj) {
       getDoc(teamsDocRef)
     ]);
 
-    updateStatusUI('online', 'เชื่อมต่อ Firebase Cloud Database (' + configObj.projectId + ') Active 🟢');
+    updateStatusUI('online', 'ระบบ Local Storage (ออฟไลน์) Active 🟢');
 
     if (window.ensureDefaultAdmin) window.ensureDefaultAdmin();
     if (window.checkAuth) window.checkAuth();
@@ -972,11 +972,11 @@ async function setupFirebase(configObj) {
     const rosterData = toRoster(rSnap);
     const teamsData  = toTeams(tSnap);
 
-    guildRoster = rosterData || {};
+    guildRoster = rosterData || JSON.parse(JSON.stringify(INITIAL_ROSTER));
     if (teamsData) {
       initTeamStructure(teamsData);
     } else {
-      initTeamStructure([]);
+      initTeamStructure(INITIAL_TEAMS);
     }
 
     renderAll();
@@ -2809,7 +2809,7 @@ function initApp() {
 
   // Firebase Only Mode: render empty first, then Firebase will fill data
   guildRoster = {};
-  initTeamStructure([]);
+  initTeamStructure(INITIAL_TEAMS);
   renderAll(); // shows loading state
 
   // Connect to Firebase (data will render automatically when fetched)
@@ -2935,7 +2935,7 @@ function handleDisconnectFirebase() {
   isFirebaseActive = false;
   db = null;
   guildRoster = {};
-  initTeamStructure([]);
+  initTeamStructure(INITIAL_TEAMS);
   updateStatusUI('local', 'ยกเลิกการเชื่อมต่อ Firebase แล้ว');
   renderAll();
   showToast("ยกเลิกการเชื่อมต่อ Firebase แล้ว", "info");
@@ -2972,7 +2972,7 @@ function handleImportJSON() {
 async function handleClearAllData() {
   if (await window.UI.confirm("⚠️ คำเตือน: คุณต้องการลบข้อมูลสมาชิกและการจัดทีมทั้งหมดใช่หรือไม่?")) {
     guildRoster = {};
-    initTeamStructure([]);
+    initTeamStructure(INITIAL_TEAMS);
     renderAll();
     saveState();
     showToast("ล้างข้อมูลเรียบร้อยแล้ว", "info");
@@ -3035,7 +3035,7 @@ window.appImportJSON = function(parsed) {
 
 window.appClearAll = function() {
   guildRoster = {};
-  initTeamStructure([]);
+  initTeamStructure(INITIAL_TEAMS);
   renderAll();
   saveState();
   showToast("ล้างข้อมูลเรียบร้อยแล้ว", "info");
