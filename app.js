@@ -736,6 +736,7 @@ function escapeHtml(str) {
   div.textContent = str == null ? '' : String(str);
   return div.innerHTML;
 }
+window.escapeHtml = escapeHtml;
 
 function colorOf(job) {
   return JOB_COLORS[job] || '#8fa8bd';
@@ -3063,7 +3064,7 @@ window.handleTeamSearch = handleTeamSearch;
 window.warpToFoundTeam = warpToFoundTeam;
 window.showToast = showToast;
 window.renderAll = renderAll;
-window.escapeHtml = escapeHtml;
+
 window.saveState = saveState;
 window.isLeaveToday = function(name) {
   if (!window.leaveData || window.leaveData.length === 0) return false;
