@@ -3575,18 +3575,3 @@ window.onSlotDragLeave = function(event) {
 
 
 window.onSlotDragLeave = function(event) {
-  const tr = event.currentTarget;
-  if (tr && !tr.contains(event.relatedTarget)) {
-    tr.classList.remove('slot-drag-over');
-  }
-};
-
-
-
-
-  // Guarantee execution for ES Module scripts regardless of document.readyState
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-  } else {
-    initApp();
-  }
