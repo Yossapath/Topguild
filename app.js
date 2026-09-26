@@ -3592,3 +3592,11 @@ window.onSlotDragLeave = function(event) {
 };
 
 
+
+
+  // Guarantee execution for ES Module scripts regardless of document.readyState
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
