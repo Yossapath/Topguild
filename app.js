@@ -7,629 +7,605 @@ window.isUserAdmin = function() {
 import { initializeApp, getApps, deleteApp, getFirestore, doc, getDoc, setDoc, onSnapshot } from "./firebase_shim.js";
 /* Default Initial Data */
 const INITIAL_ROSTER = {
-  "Gypsy": [
+  "Unknown": [
     {
-      "name": "Andanoi",
+      "name": "Gypsy",
       "power": 0
     },
     {
-      "name": "Hikarin",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "乇loise",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "HKToPhoenix",
+      "name": "Druid",
       "power": 0
     },
     {
-      "name": "Wallahi",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "เสี่ยอ้วน",
+      "name": "อาลิเทีย",
       "power": 0
-    }
-  ],
-  "Creator": [
+    },
     {
-      "name": "Woof",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "Moomin",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "Tams",
+      "name": "Clown",
       "power": 0
     },
     {
-      "name": "vvvvvvvvvvv",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "Yana",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "DiSaSTrouS",
+      "name": "Whitesmith",
       "power": 0
     },
     {
-      "name": "ไก่จ๋า",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "Shu",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "นะโม",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "[H]-wENDy",
+      "name": "Paladin",
       "power": 0
     },
     {
-      "name": "Gunnikki",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "ZQNC",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "JossGoose",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "BoBByBoomBer",
+      "name": "High Priest",
       "power": 0
-    }
-  ],
-  "Night Walker": [
+    },
     {
-      "name": "BAEMON",
+      "name": "Paladin",
       "power": 0
     },
     {
-      "name": "Chenen",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "Kleith",
+      "name": "Lord Knight",
       "power": 0
     },
     {
-      "name": "SEIKO",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "-[FaRaDay]-",
+      "name": "Night Walker",
       "power": 0
     },
     {
-      "name": "น้องภูผา",
+      "name": "Whitesmith",
       "power": 0
     },
     {
-      "name": "ขนมกรอบ",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "Mugetsu",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "Darkvader",
+      "name": "Paladin",
       "power": 0
     },
     {
-      "name": "iPhone",
+      "name": "Assassin Cross",
       "power": 0
-    }
-  ],
-  "Assassin Cross": [
+    },
     {
-      "name": "ไม่กินผัก",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "yunj!n",
+      "name": "Clown",
       "power": 0
     },
     {
-      "name": "F1NNYZ",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "Sigmaboiii",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "EazyX",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "Dreyar",
+      "name": "Sniper",
       "power": 0
     },
     {
-      "name": "no_el",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "[H]-MarShall-D",
+      "name": "Lord Knight",
       "power": 0
     },
     {
-      "name": "Titanooz",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "จิ้นส้ม",
+      "name": "Sniper",
       "power": 0
     },
     {
-      "name": "FE4Rs",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "spkn",
+      "name": "Whitesmith",
       "power": 0
     },
     {
-      "name": "Kanomroo`",
+      "name": "Champion",
       "power": 0
     },
     {
-      "name": "BUNGEEGUM",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "YuGi",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "บุญช่วย",
+      "name": "Champion",
       "power": 0
-    }
-  ],
-  "Paladin": [
+    },
     {
-      "name": "PaIadin",
+      "name": "Whitesmith",
       "power": 0
     },
     {
-      "name": "UKINA",
+      "name": "Whitesmith",
       "power": 0
     },
     {
-      "name": "ascii",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "Moosachi",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "[H]-ROGERs",
+      "name": "Paladin",
       "power": 0
     },
     {
-      "name": "Ivaldi",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "POMPUENN",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "x888",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "UnLimit888",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "InseptiOn",
+      "name": "Creator",
       "power": 0
-    }
-  ],
-  "อาลิเทีย": [
+    },
     {
-      "name": "Aegis",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "ยุงลาย",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "เจ๊หมวย",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "JCrimson777",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "บะหมี่หยก",
+      "name": "Sniper",
       "power": 0
     },
     {
-      "name": "Escapism",
+      "name": "Night Walker",
       "power": 0
     },
     {
-      "name": "Pink7anter",
+      "name": "Clown",
       "power": 0
     },
     {
-      "name": "NomYen",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "Indica",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "Acelaretor",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "Bearbrickxxz",
+      "name": "Sniper",
       "power": 0
     },
     {
-      "name": "IGNOREME!",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "สีกาแพรววา",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "`ปิกัสโซ่",
+      "name": "Champion",
       "power": 0
     },
     {
-      "name": "JAMEJET",
+      "name": "Sniper",
       "power": 0
     },
     {
-      "name": "DMTz",
+      "name": "Paladin",
       "power": 0
-    }
-  ],
-  "Whitesmith": [
+    },
     {
-      "name": "Koo",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "Hayward",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "EyEcoN",
+      "name": "Champion",
       "power": 0
     },
     {
-      "name": "GuN-S",
+      "name": "Sniper",
       "power": 0
     },
     {
-      "name": "Jokobo",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "JACKPOT_789",
+      "name": "Night Walker",
       "power": 0
-    }
-  ],
-  "Sniper": [
+    },
     {
-      "name": "Shivs",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "ป้าแต๋น",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "FreYa",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "น้๏Jโตเกีeว",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "จิ๊กโก๋",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "Krisz",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "[H]-Balista'",
+      "name": "Gypsy",
       "power": 0
     },
     {
-      "name": "Kizo",
+      "name": "Paladin",
       "power": 0
     },
     {
-      "name": "BeerBusTerz`",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "Jarvis",
+      "name": "Lord Knight",
       "power": 0
-    }
-  ],
-  "High Wizard": [
+    },
     {
-      "name": "RagingRatbu",
+      "name": "Clown",
       "power": 0
     },
     {
-      "name": "UnLimited",
+      "name": "Night Walker",
       "power": 0
     },
     {
-      "name": "หมูยอ",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "Birdkk",
+      "name": "Gypsy",
       "power": 0
     },
     {
-      "name": "อิฐจะเอาGTR",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "KHAWWWW",
+      "name": "Sniper",
       "power": 0
     },
     {
-      "name": "POOMXD",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "Enchantresss",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "RankDieP",
+      "name": "Whitesmith",
       "power": 0
     },
     {
-      "name": "`เฮอร์มอยโอนี๋",
+      "name": "Night Walker",
       "power": 0
     },
     {
-      "name": "บุ๋มบุ๋ม",
+      "name": "Night Walker",
       "power": 0
-    }
-  ],
-  "Champion": [
+    },
     {
-      "name": "BORSALINO",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "ตะวันฉาย",
+      "name": "Paladin",
       "power": 0
     },
     {
-      "name": "Mali",
+      "name": "Clown",
       "power": 0
     },
     {
-      "name": "Peach",
+      "name": "Night Walker",
       "power": 0
     },
     {
-      "name": "ลูกแก้วนำโชค",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "มารี",
+      "name": "Lord Knight",
       "power": 0
     },
     {
-      "name": "TuaInwZa888吉",
+      "name": "Clown",
       "power": 0
-    }
-  ],
-  "Clown": [
+    },
     {
-      "name": "Tack",
+      "name": "Champion",
       "power": 0
     },
     {
-      "name": "ลุ้น",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "ไก่-ทอด",
+      "name": "Paladin",
       "power": 0
     },
     {
-      "name": "Soiduk",
+      "name": "Lord Knight",
       "power": 0
     },
     {
-      "name": "[H]-RX78-2",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "HKToChimera",
+      "name": "Sniper",
       "power": 0
     },
     {
-      "name": "[Ar]JanDang",
+      "name": "อาลิเทีย",
       "power": 0
-    }
-  ],
-  "High Priest": [
+    },
     {
-      "name": "HyeLeluJah",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "YUMYUM",
+      "name": "Night Walker",
       "power": 0
     },
     {
-      "name": "Bitchesa",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "MamaCow",
+      "name": "Lord Knight",
       "power": 0
     },
     {
-      "name": "Ella",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "cheesecakes",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "ヘNewPORヘ",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "ตัวจี๊ด",
+      "name": "Champion",
       "power": 0
     },
     {
-      "name": "พี่ตะวัน",
+      "name": "Lord Knight",
       "power": 0
     },
     {
-      "name": "ไร้นาม",
+      "name": "Champion",
       "power": 0
     },
     {
-      "name": "__Batprw__",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "BG",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "Yuge",
+      "name": "Paladin",
       "power": 0
     },
     {
-      "name": "กิมจิเก่า",
+      "name": "Gypsy",
       "power": 0
     },
     {
-      "name": "ท่าuo๋oJ888",
+      "name": "Paladin",
       "power": 0
     },
     {
-      "name": "Momayz",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "-˃PudDing",
+      "name": "High Wizard",
       "power": 0
     },
     {
-      "name": "LipzKiss",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "หิวตีน",
+      "name": "Sniper",
       "power": 0
     },
     {
-      "name": "Biewwitch",
+      "name": "Assassin Cross",
       "power": 0
     },
     {
-      "name": "JunnyS",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "[H]-พระยอม",
+      "name": "Gypsy",
       "power": 0
     },
     {
-      "name": "Bacon",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "[H]-Gaia",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "Naokikung",
+      "name": "Sniper",
       "power": 0
     },
     {
-      "name": "Demons",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "MaKaLiTa",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "IssyWitchy",
+      "name": "Gypsy",
       "power": 0
     },
     {
-      "name": "Akenakub",
+      "name": "Night Walker",
       "power": 0
-    }
-  ],
-  "Lord Knight": [
+    },
     {
-      "name": "Albeddo",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "SteveRogers",
+      "name": "Creator",
       "power": 0
     },
     {
-      "name": "นิโคตีน",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "พี่ปอนด์56",
+      "name": "Clown",
       "power": 0
     },
     {
-      "name": "BabyBigboss",
+      "name": "High Priest",
       "power": 0
     },
     {
-      "name": "เซนอิง_นาโอยะ",
+      "name": "อาลิเทีย",
       "power": 0
     },
     {
-      "name": "[H]-Marine",
+      "name": "Night Walker",
       "power": 0
     },
     {
-      "name": "TungMayZ",
+      "name": "Lord Knight",
       "power": 0
     }
   ]
@@ -641,34 +617,34 @@ const INITIAL_TEAMS = [
     "teams": {
       "ทีม 1": [{"name": "XxerrosS", "job": "Paladin", "power": 43684}, {"name": "YuGi", "job": "Assassin Cross", "power": 43663}, {"name": "DMTz", "job": "High Wizard", "power": 41193}, {"name": "พ่องมีไต", "job": "Assassin Cross", "power": 41098}, {"name": "กระดุมเม็ดบน", "job": "Priest", "power": 34277}],
       "ทีม 2": [{"name": "JossGoose", "job": "Sniper", "power": 39091}, {"name": "Aramid", "job": "Assassin Cross", "power": 38700}, {"name": "ZelarS", "job": "Assassin Cross", "power": 36780}, {"name": "navanavin", "job": "Assassin Cross", "power": 36712}, {"name": "McRai", "job": "Priest", "power": 32266}],
-      "ทีม 3": [{"name": "iwannatell", "job": "Druid", "power": 36377}, {"name": "[H2H]Ian", "job": "Assassin Cross", "power": 36153}, {"name": "Momju", "job": "Druid", "power": 35429}, {"name": "Heinzer", "job": "Lord Knight", "power": 35282}, {"name": "HarryPotter", "job": "Priest", "power": 32176}],
+      "ทีม 3": [{"name": "iwannatell", "job": "Druid", "power": 36377}, {"name": "[H2H]Ian", "job": "Assassin Cross", "power": 36153}, {"name": "Momju", "job": "Druid", "power": 35429}, {"name": "Heinzer", "job": "Merchant", "power": 35282}, {"name": "HarryPotter", "job": "Priest", "power": 32176}],
       "ทีม 4": [{"name": "spkn", "job": "Sniper", "power": 34996}, {"name": "TopGameTH", "job": "Champion", "power": 34786}, {"name": "Zendo", "job": "Merchant", "power": 34677}, {"name": "P1CaszO", "job": "High Wizard", "power": 34545}, {"name": "ironboy69", "job": "Priest", "power": 32142}],
-      "ทีม 5": [{"name": "RottoR", "job": "Gunslinger", "power": 34494}, {"name": "NpR_n", "job": "Lord Knight", "power": 34336}, {"name": "Pepzii2", "job": "Sniper", "power": 34000}, {"name": "Zerion", "job": "Lord Knight", "power": 33957}, {"name": "Demons", "job": "Priest", "power": 32118}],
+      "ทีม 5": [{"name": "RottoR", "job": "Gunslinger", "power": 34494}, {"name": "NpR_n", "job": "Merchant", "power": 34336}, {"name": "Pepzii2", "job": "Sniper", "power": 34000}, {"name": "Zerion", "job": "Merchant", "power": 33957}, {"name": "Demons", "job": "Priest", "power": 32118}],
       "ทีม 6": [{"name": "ตะขบ", "job": "Druid", "power": 33749}, {"name": "TonyX", "job": "Assassin Cross", "power": 33712}, {"name": "uwannadrink?", "job": "High Wizard", "power": 33369}, {"name": "SodaPure", "job": "High Wizard", "power": 33305}, {"name": "imQwQm", "job": "Priest", "power": 31749}],
       "ทีม 7": [{"name": "12ED!TUS", "job": "Merchant", "power": 33267}, {"name": "โอ๊ยร้อนน", "job": "Assassin Cross", "power": 33141}, {"name": "KiMuJi", "job": "Sniper", "power": 33068}, {"name": "Jaime", "job": "Paladin", "power": 32665}, {"name": "คุคุ", "job": "Priest", "power": 31142}],
       "ทีม 8": [{"name": "ChomPoo", "job": "Assassin Cross", "power": 32554}, {"name": "KiTzAoo3", "job": "Gunslinger", "power": 32452}, {"name": "LinPing", "job": "Druid", "power": 32386}, {"name": "SAFEZONE", "job": "Champion", "power": 32328}, {"name": "Baki_Hanma", "job": "Priest", "power": 30793}],
-      "ทีม 9": [{"name": "เอมิจังงง", "job": "High Wizard", "power": 32239}, {"name": "บักตุ่น", "job": "Lord Knight", "power": 32161}, {"name": "หวานเจี๊ยฟ", "job": "Sniper", "power": 31969}, {"name": "zzzTOzzz", "job": "High Wizard", "power": 31746}, {"name": "Dumpling", "job": "Priest", "power": 30456}],
+      "ทีม 9": [{"name": "เอมิจังงง", "job": "High Wizard", "power": 32239}, {"name": "บักตุ่น", "job": "Merchant", "power": 32161}, {"name": "หวานเจี๊ยฟ", "job": "Sniper", "power": 31969}, {"name": "zzzTOzzz", "job": "High Wizard", "power": 31746}, {"name": "Dumpling", "job": "Priest", "power": 30456}],
       "ทีม 10": [{"name": "Cal2nivaLxD", "job": "Paladin", "power": 31697}, {"name": "Yots10", "job": "Druid", "power": 31613}, {"name": "RMS", "job": "Assassin Cross", "power": 31560}, {"name": "Lorying", "job": "High Wizard", "power": 31502}, {"name": "หวังสี้เจ้า", "job": "Priest", "power": 29973}],
-      "ทีม 11": [{"name": "OTANI", "job": "High Wizard", "power": 31497}, {"name": "Yami", "job": "Lord Knight", "power": 31274}, {"name": "NaTzo", "job": "High Wizard", "power": 30848}, {"name": "Satanic", "job": "Lord Knight", "power": 30844}, {"name": "SappeXo", "job": "Priest", "power": 29690}],
+      "ทีม 11": [{"name": "OTANI", "job": "High Wizard", "power": 31497}, {"name": "Yami", "job": "Merchant", "power": 31274}, {"name": "NaTzo", "job": "High Wizard", "power": 30848}, {"name": "Satanic", "job": "Merchant", "power": 30844}, {"name": "SappeXo", "job": "Priest", "power": 29690}],
       "ทีม 12": [{"name": "ROidiotgame", "job": "Champion", "power": 30736}, {"name": "Vaduka-Tampan", "job": "High Wizard", "power": 30527}, {"name": "นายไข่ดาว", "job": "Gunslinger", "power": 30429}, {"name": "Orasa", "job": "Sniper", "power": 30376}, {"name": "ป่ายแก่ๆ", "job": "Priest", "power": 29247}]
     }
   },
   {
     "title": "สนามรอง  (81 คน / 17 ทีม)",
     "teams": {
-      "ทีม 1": [{"name": "Fujiro", "job": "Assassin Cross", "power": 30251}, {"name": "KJสารวัตรแจ๊ะ", "job": "Gunslinger", "power": 30184}, {"name": "HyPerTo", "job": "Lord Knight", "power": 29994}, {"name": "Katoonz", "job": "Gunslinger", "power": 29936}, {"name": "P9D", "job": "High Wizard", "power": 29627}],
+      "ทีม 1": [{"name": "Fujiro", "job": "Assassin Cross", "power": 30251}, {"name": "KJสารวัตรแจ๊ะ", "job": "Gunslinger", "power": 30184}, {"name": "HyPerTo", "job": "Merchant", "power": 29994}, {"name": "Katoonz", "job": "Gunslinger", "power": 29936}, {"name": "P9D", "job": "High Wizard", "power": 29627}],
       "ทีม 2": [{"name": "Pairot_1995", "job": "Sniper", "power": 29494}, {"name": "I'm18", "job": "Sniper", "power": 29434}, {"name": "凡依", "job": "Merchant", "power": 29313}, {"name": "Maboom", "job": "Sniper", "power": 29251}, {"name": "MasterClover", "job": "Champion", "power": 29153}],
-      "ทีม 3": [{"name": "ขุนทวนสวนทวาร", "job": "Gunslinger", "power": 29093}, {"name": "InseptiOn", "job": "Lord Knight", "power": 28953}, {"name": "Atomic", "job": "Sniper", "power": 28920}, {"name": "CGame", "job": "Gunslinger", "power": 28828}, {"name": "GOLF", "job": "Priest", "power": 28745}],
+      "ทีม 3": [{"name": "ขุนทวนสวนทวาร", "job": "Gunslinger", "power": 29093}, {"name": "InseptiOn", "job": "Merchant", "power": 28953}, {"name": "Atomic", "job": "Sniper", "power": 28920}, {"name": "CGame", "job": "Gunslinger", "power": 28828}, {"name": "GOLF", "job": "Priest", "power": 28745}],
       "ทีม 4": [{"name": "เวลดอล่า", "job": "Gunslinger", "power": 28663}, {"name": "3ararentz", "job": "Sniper", "power": 28530}, {"name": "FishStop", "job": "High Wizard", "power": 28484}, {"name": "ยาซป", "job": "Gunslinger", "power": 28297}, {"name": "Avalon", "job": "Paladin", "power": 28038}],
-      "ทีม 5": [{"name": "Flexx", "job": "Assassin Cross", "power": 27909}, {"name": "mochi3", "job": "High Wizard", "power": 27833}, {"name": "Paxx", "job": "Sniper", "power": 27752}, {"name": "พระปลาย", "job": "Priest", "power": 27745}, {"name": "Over_Topup", "job": "Lord Knight", "power": 27579}],
+      "ทีม 5": [{"name": "Flexx", "job": "Assassin Cross", "power": 27909}, {"name": "mochi3", "job": "High Wizard", "power": 27833}, {"name": "Paxx", "job": "Sniper", "power": 27752}, {"name": "พระปลาย", "job": "Priest", "power": 27745}, {"name": "Over_Topup", "job": "Merchant", "power": 27579}],
       "ทีม 6": [{"name": "Mahlakor", "job": "Priest", "power": 27552}, {"name": "Jade", "job": "Gunslinger", "power": 27434}, {"name": "BoyKub", "job": "Sniper", "power": 27392}, {"name": "พระอาทิตย์", "job": "Gunslinger", "power": 27347}, {"name": "Ms,08", "job": "Sniper", "power": 27104}],
       "ทีม 7": [{"name": "อามะ-กันเต", "job": "Priest", "power": 26953}, {"name": "Valkyriㅌ", "job": "Gunslinger", "power": 26732}, {"name": "DARKCAFE", "job": "Assassin Cross", "power": 26693}, {"name": "aut", "job": "Sniper", "power": 26455}, {"name": "หรรม้อยแซงเลย", "job": "Druid", "power": 26292}],
       "ทีม 8": [{"name": "น้องxoe", "job": "Priest", "power": 26219}, {"name": "Pew", "job": "Merchant", "power": 26127}, {"name": "บักหรรม้อยเอง", "job": "Gunslinger", "power": 26030}, {"name": "banana1fruit", "job": "Sniper", "power": 25873}, {"name": "cHk", "job": "Assassin Cross", "power": 25855}],
       "ทีม 9": [{"name": "ชาวประมง", "job": "Gunslinger", "power": 25714}, {"name": "fluffi_cia", "job": "Priest", "power": 25712}, {"name": "Almonso", "job": "Champion", "power": 25672}, {"name": "TAETIS007", "job": "Sniper", "power": 25670}, {"name": "Mahnow", "job": "Sniper", "power": 25526}],
-      "ทีม 10": [{"name": "MANJI", "job": "High Wizard", "power": 25256}, {"name": "Non79", "job": "Gunslinger", "power": 25193}, {"name": "หนูอ้ดนะพี่ไหวหรอ", "job": "Lord Knight", "power": 25158}, {"name": "Joesoizero", "job": "Sniper", "power": 24801}, {"name": "BixDix", "job": "Gunslinger", "power": 24080}],
-      "ทีม 11": [{"name": "ZEON", "job": "Sniper", "power": 23968}, {"name": "Homey", "job": "Merchant", "power": 23832}, {"name": "Lynlin", "job": "High Wizard", "power": 23647}, {"name": "หญิงแท้", "job": "Lord Knight", "power": 23494}, {"name": "DOMONCUS", "job": "Paladin", "power": 23443}],
+      "ทีม 10": [{"name": "MANJI", "job": "High Wizard", "power": 25256}, {"name": "Non79", "job": "Gunslinger", "power": 25193}, {"name": "หนูอ้ดนะพี่ไหวหรอ", "job": "Merchant", "power": 25158}, {"name": "Joesoizero", "job": "Sniper", "power": 24801}, {"name": "BixDix", "job": "Gunslinger", "power": 24080}],
+      "ทีม 11": [{"name": "ZEON", "job": "Sniper", "power": 23968}, {"name": "Homey", "job": "Merchant", "power": 23832}, {"name": "Lynlin", "job": "High Wizard", "power": 23647}, {"name": "หญิงแท้", "job": "Merchant", "power": 23494}, {"name": "DOMONCUS", "job": "Paladin", "power": 23443}],
       "ทีม 12": [{"name": "monza", "job": "Priest", "power": 23440}, {"name": "McLai", "job": "Druid", "power": 23227}, {"name": "TARZANXIII", "job": "Gunslinger", "power": 23201}, {"name": "iRokz", "job": "Sniper", "power": 23193}, {"name": "Akiri", "job": "Assassin Cross", "power": 23100}],
-      "ทีม 13": [{"name": "ONI", "job": "Sniper", "power": 22880}, {"name": "TheNinez", "job": "Sniper", "power": 22724}, {"name": "กระต่ายบิน", "job": "Sniper", "power": 22556}, {"name": "หยองแยง", "job": "Lord Knight", "power": 22336}, {"name": "โยชิแมวดื้อ", "job": "Merchant", "power": 22287}],
+      "ทีม 13": [{"name": "ONI", "job": "Sniper", "power": 22880}, {"name": "TheNinez", "job": "Sniper", "power": 22724}, {"name": "กระต่ายบิน", "job": "Sniper", "power": 22556}, {"name": "หยองแยง", "job": "Merchant", "power": 22336}, {"name": "โยชิแมวดื้อ", "job": "Merchant", "power": 22287}],
       "ทีม 14": [{"name": "BASFISHING", "job": "Sniper", "power": 22285}, {"name": "0xlantern", "job": "Assassin Cross", "power": 22247}, {"name": "KiMuChi", "job": "Champion", "power": 22155}, {"name": "Duckza", "job": "High Wizard", "power": 22059}, {"name": "อิหล่ามืดบิน", "job": "Assassin Cross", "power": 22048}],
       "ทีม 15": [{"name": "Weedsp", "job": "Sniper", "power": 21665}, {"name": "ดิมิโกะ", "job": "Paladin", "power": 21651}, {"name": "เอรักดีดีคืนมา", "job": "Priest", "power": 21632}, {"name": "lll", "job": "Priest", "power": 21564}, {"name": "MUF4IN", "job": "Sniper", "power": 21203}],
       "ทีม 16": [{"name": "MrSilverz", "job": "Sniper", "power": 20702}, {"name": "Justice", "job": "High Wizard", "power": 19678}, {"name": "Leaf", "job": "Druid", "power": 19461}, {"name": "SoLoPlayer", "job": "Paladin", "power": 17806}, {"name": "GdGunSlinger", "job": "Gunslinger", "power": 17527}],
@@ -689,27 +665,23 @@ const DEFAULT_FIREBASE_CONFIG = {
 };
 
 const JOB_COLORS = {
-  "Lord Knight": "#c13829",
+  "Merchant": "#c2185d",
   "Paladin": "#e18028",
   "High Wizard": "#2c7eb9",
   "Sniper": "#d4a015",
   "Priest": "#25ae62",
-  "High Priest": "#25ae62",
   "Champion": "#15a083",
   "Assassin Cross": "#8b46af",
-  "Merchant": "#c2185d",
   "Whitesmith": "#c2185d",
   "Gunslinger": "#894517",
   "Druid": "#41b388",
-  "Night Walker": "#6a1b9a",
   "Gypsy": "#f06292",
-  "อาลิเทีย": "#ba68c8",
   "Creator": "#ff9800",
   "Clown": "#f44336"
-};
+}
 window.JOB_COLORS = JOB_COLORS;
 
-const JOB_LIST = ["Sniper", "Whitesmith", "High Wizard", "Night Walker", "Champion", "Gypsy", "อาลิเทีย", "Lord Knight", "Paladin", "Creator", "Clown", "High Priest", "Assassin Cross"];
+const JOB_LIST = ["Sniper", "High Wizard", "Champion", "Paladin", "Assassin Cross", "Merchant", "Whitesmith", "Gunslinger", "Druid", "Priest", "Gypsy", "Creator", "Clown"];
 
 /* App State - Firebase Only (no LocalStorage) */
 let guildRoster = {};
@@ -935,7 +907,7 @@ async function setupFirebase(configObj) {
     const toRoster = (snap) => {
       if (!snap.exists()) return null;
       const d = snap.data();
-      // stored as { data: { "Lord Knight": [...], ... } }
+      // stored as { data: { "Merchant": [...], ... } }
       if (d && d.data && typeof d.data === 'object' && !Array.isArray(d.data)) return d.data;
       return null;
     };
@@ -1909,6 +1881,7 @@ async function deleteMember(job, name, triggerSave = true) {
 
   if (triggerSave) {
     saveState();
+    renderAll();
     showToast(`ลบสมาชิก "${name}" เรียบร้อยแล้ว`, "info");
   }
 }
@@ -2609,6 +2582,7 @@ function addNewTeam() {
   }
 
   saveState();
+  renderAll();
   const fieldTitle = fm.isMain ? "สนามหลัก" : "สนามรอง";
   showToast(`เพิ่ม "${newTeamName}" (5 คน) ใน${fieldTitle}เรียบร้อยแล้ว!`, 'success');
 }
@@ -2641,6 +2615,7 @@ async function removeSpecificTeam(targetTeamName) {
     delete fm.capacity[targetTeamName];
 
     saveState();
+    renderAll();
     showToast(`ลบ "${targetTeamName}" ออกจาก${fieldTitle}เรียบร้อยแล้ว!`, 'info');
   }
 }
@@ -2816,6 +2791,15 @@ function initApp() {
   // Connect to Firebase (data will render automatically when fetched)
   try {
     setupFirebase(DEFAULT_FIREBASE_CONFIG);
+    // Force write the 150 members to local storage on first load after this update
+    if (!localStorage.getItem('150_seeded')) {
+       localStorage.setItem('150_seeded', 'true');
+       setTimeout(() => {
+          guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
+          saveState();
+          renderAll();
+       }, 500);
+    }
   } catch (err) {
     console.error("Firebase auto-connect error:", err);
   }

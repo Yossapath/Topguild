@@ -39,6 +39,11 @@ function loadCastleAssignments() {
     }
   }
   castleOccupiedMap.clear();
+  
+  // Auto populate on first load
+  setTimeout(() => {
+    if (window.autoAssignCastle) window.autoAssignCastle(true);
+  }, 1000);
 }
 
 function saveCastleAssignments() {
@@ -282,3 +287,42 @@ export function wrappedInitCastleModule() {
   window.renderCastleRoster();
 }
 window.initCastleModule = wrappedInitCastleModule;
+
+
+window.autoAssignCastle = function(silent = false) {
+  if (!silent) {
+    if (!confirm("คุณต้องการจัดทีมชิงปราสาทอัตโนมัติ (150 คน) ใช่หรือไม่? ข้อมูลเดิมจะถูกทับทั้งหมด")) return;
+  }
+  
+  let allMembers = [];
+  if (window.guildRoster) {
+    for (const job in window.guildRoster) {
+      window.guildRoster[job].forEach(m => {
+         allMembers.push({name: m.name, job: job, power: m.power});
+      });
+    }
+  }
+  
+  // Sort by power descending
+  allMembers.sort((a, b) => b.power - a.power);
+  
+  let memberIdx = 0;
+  for (let z = 0; z < CASTLE_ZONES; z++) {
+    for (let t = 0; t < CASTLE_TEAMS_PER_ZONE; t++) {
+      for (let s = 0; s < CASTLE_TEAM_SIZE; s++) {
+        const slotKey = getCastleSlotKey(z, t, s);
+        if (memberIdx < allMembers.length) {
+          castleAssignments[slotKey] = allMembers[memberIdx++];
+        } else {
+          castleAssignments[slotKey] = null;
+        }
+      }
+    }
+  }
+  
+  rebuildCastleOccupiedMap();
+  saveCastleAssignments();
+  renderCastlePage();
+  if (window.renderRoster) window.renderRoster();
+  if (!silent && window.showToast) window.showToast("จัดทีมชิงปราสาทอัตโนมัติสำเร็จ", "success");
+}
