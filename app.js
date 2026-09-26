@@ -4,9 +4,7 @@ window.isUserAdmin = function() {
   return r === 'admin' || r === 'owner' || r === 'หัวหน้ากิลด์';
 };
 // Firebase Web SDK v10 Modular Imports from CDN
-
-
-
+import { initializeApp, getApps, deleteApp, getFirestore, doc, getDoc, setDoc, onSnapshot } from "./firebase_shim.js";
 /* Default Initial Data */
 const INITIAL_ROSTER = {
   "Gypsy": [
