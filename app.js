@@ -656,12 +656,12 @@ const INITIAL_TEAMS = [
 
 
 const DEFAULT_FIREBASE_CONFIG = {
-  apiKey: "dummy",
-  authDomain: "dummy",
-  projectId: "dummy",
-  storageBucket: "dummy",
-  messagingSenderId: "dummy",
-  appId: "dummy"
+  apiKey: "AIzaSyBXPfxhSLBt9dQqf5glFrXvx6KLxqPmEE8",
+  authDomain: "topguild-eeb40.firebaseapp.com",
+  projectId: "topguild-eeb40",
+  storageBucket: "topguild-eeb40.firebasestorage.app",
+  messagingSenderId: "879954426796",
+  appId: "1:879954426796:web:48e305dc9f78bda6a51809"
 };
 
 const JOB_COLORS = {
