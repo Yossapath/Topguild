@@ -2791,14 +2791,19 @@ function initApp() {
   // Connect to Firebase (data will render automatically when fetched)
   try {
     setupFirebase(DEFAULT_FIREBASE_CONFIG);
-    // Force write the 150 members to local storage on first load after this update
-    if (!localStorage.getItem('150_seeded')) {
-       localStorage.setItem('150_seeded', 'true');
+    // Force write the 150 members to Firebase on first load after this update
+    if (!localStorage.getItem('150_seeded_fb')) {
+       localStorage.setItem('150_seeded_fb', 'true');
        setTimeout(() => {
           guildRoster = JSON.parse(JSON.stringify(INITIAL_ROSTER));
-          saveState();
+          saveState(); // Writes to Firebase
           renderAll();
-       }, 500);
+          
+          // Seed Castle Siege as well
+          if (window.autoAssignCastle) {
+            window.autoAssignCastle(true);
+          }
+       }, 1500);
     }
   } catch (err) {
     console.error("Firebase auto-connect error:", err);

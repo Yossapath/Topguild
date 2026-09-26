@@ -1,3 +1,4 @@
+import { doc, getDoc, setDoc, onSnapshot } from "./firebase_shim.js";
 // module_castle.js - Castle Siege (ชิงปราสาท) team organization
 
 let castleAssignments = {}; // slotKey -> {name, job, power} | null
@@ -17,41 +18,53 @@ function getCastleSlotKey(zoneIdx, teamIdx, slotIdx) {
   return `castle|${zoneIdx}|${teamIdx}|${slotIdx}`;
 }
 
-function loadCastleAssignments() {
-  try {
-    const data = localStorage.getItem('castle_assignments');
-    if (data) {
-      castleAssignments = JSON.parse(data);
-      rebuildCastleOccupiedMap();
-      return;
-    }
-  } catch (e) {
-    console.error("Error loading castle assignments", e);
-  }
+let unsubscribeCastle = null;
 
-  // Initialize empty
-  castleAssignments = {};
-  for (let z = 0; z < CASTLE_ZONES; z++) {
-    for (let t = 0; t < CASTLE_TEAMS_PER_ZONE; t++) {
-      for (let s = 0; s < CASTLE_TEAM_SIZE; s++) {
-        castleAssignments[getCastleSlotKey(z, t, s)] = null;
+function loadCastleAssignments() {
+  if (!window.db) {
+    // If db not ready, wait and retry
+    setTimeout(loadCastleAssignments, 500);
+    return;
+  }
+  
+  const docRef = doc(window.db, "guild_data", "castle");
+  
+  if (unsubscribeCastle) unsubscribeCastle();
+  
+  unsubscribeCastle = onSnapshot(docRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data && data.assignments) {
+        castleAssignments = data.assignments;
+        rebuildCastleOccupiedMap();
+        renderCastlePage();
+        if (window.renderRoster) window.renderRoster();
+        return;
       }
     }
-  }
-  castleOccupiedMap.clear();
-  
-  // Auto populate on first load
-  setTimeout(() => {
-    if (window.autoAssignCastle) window.autoAssignCastle(true);
-  }, 1000);
+    
+    // If not exists or no assignments, initialize empty
+    castleAssignments = {};
+    for (let z = 0; z < CASTLE_ZONES; z++) {
+      for (let t = 0; t < CASTLE_TEAMS_PER_ZONE; t++) {
+        for (let s = 0; s < CASTLE_TEAM_SIZE; s++) {
+          castleAssignments[getCastleSlotKey(z, t, s)] = null;
+        }
+      }
+    }
+    castleOccupiedMap.clear();
+    
+
+  }, (err) => {
+    console.error("Error listening to castle assignments:", err);
+  });
 }
 
 function saveCastleAssignments() {
-  try {
-    localStorage.setItem('castle_assignments', JSON.stringify(castleAssignments));
-  } catch(e) {
-    console.error("Error saving castle assignments", e);
-  }
+  if (!window.db) return;
+  const docRef = doc(window.db, "guild_data", "castle");
+  setDoc(docRef, { assignments: castleAssignments }, { merge: true })
+    .catch(e => console.error("Error saving castle assignments", e));
 }
 
 function rebuildCastleOccupiedMap() {
@@ -326,3 +339,6 @@ window.autoAssignCastle = function(silent = false) {
   if (window.renderRoster) window.renderRoster();
   if (!silent && window.showToast) window.showToast("จัดทีมชิงปราสาทอัตโนมัติสำเร็จ", "success");
 }
+
+
+document.addEventListener("DOMContentLoaded", initCastleModule);
