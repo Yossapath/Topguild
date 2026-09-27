@@ -3572,6 +3572,3 @@ window.onSlotDragLeave = function(event) {
   }
 };
 
-
-
-window.onSlotDragLeave = function(event) {
