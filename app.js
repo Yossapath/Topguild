@@ -1076,6 +1076,7 @@ function renderLeavePanel() {
 window.renderLeavePanel = renderLeavePanel;
 
 function renderRoster() {
+  if (typeof renderLeavePanel === 'function') renderLeavePanel();
   const masterList = getMasterMemberList();
   const datalist = document.getElementById('rosterDatalist');
   if (datalist) {
@@ -1085,84 +1086,76 @@ function renderRoster() {
   const jobGrid = document.getElementById('jobGrid');
   if (!summaryStrip || !jobGrid) return;
 
-  let totalMembers = 0;
-  const filteredRoster = {};
-
+  let allMembers = [];
   Object.keys(guildRoster).forEach(job => {
     const rawList = Array.isArray(guildRoster[job]) ? guildRoster[job] : [];
-    const seen = new Set();
-
-    const list = rawList.filter(m => {
-      if (!m || !m.name) return false;
+    rawList.forEach(m => {
+      if (!m || !m.name) return;
       const mName = String(m.name).trim();
-      if (!mName) return false;
+      if (!mName) return;
       if (rosterSearchQuery && !mName?.toLowerCase()?.includes(rosterSearchQuery?.toLowerCase())) {
-        return false;
+        return;
       }
-      const k = mName?.toLowerCase();
-      if (seen.has(k)) return false;
+      allMembers.push({ ...m, job });
+    });
+  });
+  
+  // Sort by power descending, then by name
+  allMembers.sort((a, b) => {
+    const pA = Number(a.power) || 0;
+    const pB = Number(b.power) || 0;
+    if (pB !== pA) return pB - pA;
+    return (a.name || '').localeCompare(b.name || '');
+  });
+  
+  // Unique names
+  const uniqueMembers = [];
+  const seen = new Set();
+  allMembers.forEach(m => {
+    const k = m.name.toLowerCase();
+    if (!seen.has(k)) {
       seen.add(k);
-      return true;
-    }).sort((a, b) => (Number(b.power) || 0) - (Number(a.power) || 0));
-
-    filteredRoster[job] = list;
-    totalMembers += list.length;
+      uniqueMembers.push(m);
+    }
   });
 
-  const jobsSorted = Object.keys(filteredRoster).sort((a, b) => filteredRoster[b].length - filteredRoster[a].length);
+  const totalMembers = uniqueMembers.length;
 
   summaryStrip.innerHTML = `
-    <div class="summary-total-card">
+    <div class="summary-total-card" style="width: 100%;">
       <div class="summary-total-info">
-        <span class="summary-total-icon">🛡️</span>
+        <span class="summary-total-icon">???</span>
         <div>
-          <div class="summary-total-title">สมาชิกทั้งหมดในกิลด์</div>
-          <div class="summary-total-subtitle">จำแนกตาม 10 สายอาชีพ</div>
+          <div class="summary-total-title">��ª�����Ҫԡ������</div>
+          <div class="summary-total-subtitle">�Ѵ���§�����Ҿ�ѧ</div>
         </div>
       </div>
-      <div class="summary-total-count">${totalMembers} <span>คน</span></div>
+      <div class="summary-total-count">${totalMembers} <span>��</span></div>
     </div>
+  `;
 
-    <div class="summary-jobs-grid">
-      ${jobsSorted.map(job => {
-        const count = filteredRoster[job].length;
-        const color = colorOf(job);
-        return `
-          <div class="summary-job-card" style="--job-color:${color}">
-            <div class="summary-job-title">
-              <span class="dot" style="background:${color}"></span>
-              <span>${escapeHtml(job)}</span>
-            </div>
-            <div class="summary-job-count">${count}</div>
-          </div>`;
-      }).join('')}
+  const rows = uniqueMembers.map((m, i) => `
+    <tr>
+      <td class="rank">${i + 1}</td>
+      <td><b>${escapeHtml(m.name)}</b>${(window.getUserScore && window.getUserScore(m.name) <= -3) ? '<span style="font-size:10px; background:var(--danger); color:white; padding:2px 6px; border-radius:10px; margin-left:6px;" title="��ṹ�ĵԡ��� '+window.getUserScore(m.name)+'">?? �Ҵ�����¤���</span>' : ''}</td>
+      <td><span style="font-size:12px; color:var(--text-muted);"><span class="dot" style="background:${colorOf(m.job)}"></span> ${escapeHtml(m.job)}</span></td>
+      <td class="power num-col">${m.power != null ? m.power.toLocaleString('en-US') : '-'}</td>
+      <td class="actions" style="text-align:center;">
+        <button class="btn-secondary edit-btn" style="padding:3px 10px;font-size:12px;border-radius:6px;" data-job="${escapeHtml(m.job)}" data-name="${escapeHtml(m.name)}" data-power="${m.power || ''}" data-fieldpref="${m.fieldPref || 'any'}">���</button>
+      </td>
+    </tr>`).join('');
+
+  jobGrid.innerHTML = `
+    <div class="job-card" style="--job-color:var(--primary); width:100%; max-width:100%;">
+      <div class="job-card-head">
+        <span class="job-name">�����Ҫԡ������</span>
+        <span class="job-count">${uniqueMembers.length} ��</span>
+      </div>
+      <table style="width:100%;">
+        <thead><tr><th style="width:40px;">�ӴѺ</th><th>���͵���Ф�</th><th>�Ҫվ</th><th class="num-col">��Ҿ�ѧ</th><th style="width:80px;text-align:center;">�Ѵ���</th></tr></thead>
+        <tbody>${rows.length > 0 ? rows : '<tr><td colspan="5" style="text-align:center;color:var(--text-lo);padding:14px;">����բ�����</td></tr>'}</tbody>
+      </table>
     </div>`;
-
-  jobGrid.innerHTML = jobsSorted.map(job => {
-    const list = filteredRoster[job];
-    const color = colorOf(job);
-    const rows = list.map((m, i) => `
-      <tr>
-        <td class="rank">${i + 1}</td>
-        <td><b>${escapeHtml(m.name)}</b>${(window.getUserScore && window.getUserScore(m.name) <= -3) ? '<span style="font-size:10px; background:var(--danger); color:white; padding:2px 6px; border-radius:10px; margin-left:6px;" title="คะแนนพฤติกรรม '+window.getUserScore(m.name)+'">⚠️ ขาดวอหลายครั้ง</span>' : ''}</td>
-        <td class="power num-col">${m.power != null ? m.power.toLocaleString('en-US') : '-'}</td>
-        <td class="actions" style="text-align:center;">
-          <button class="btn-secondary edit-btn" style="padding:3px 10px;font-size:12px;border-radius:6px;" data-job="${escapeHtml(job)}" data-name="${escapeHtml(m.name)}" data-power="${m.power || ''}" data-fieldpref="${m.fieldPref || 'any'}">แก้ไข</button>
-        </td>
-      </tr>`).join('');
-
-    return `
-      <div class="job-card" style="--job-color:${color}">
-        <div class="job-card-head">
-          <span class="job-name"><span class="dot"></span>${escapeHtml(job)}</span>
-          <span class="job-count">${list.length} คน</span>
-        </div>
-        <table>
-          <thead><tr><th style="width:30px;">#</th><th>ชื่อ</th><th class="num-col">ค่าพลัง</th><th style="width:65px;text-align:center;">การจัดการ</th></tr></thead>
-          <tbody>${rows.length > 0 ? rows : '<tr><td colspan="4" style="text-align:center;color:var(--text-lo);padding:14px;">ไม่มีข้อมูล</td></tr>'}</tbody>
-        </table>
-      </div>`;
-  }).join('');
 
   // Attach Edit Listeners
   jobGrid.querySelectorAll('.edit-btn').forEach(btn => {
